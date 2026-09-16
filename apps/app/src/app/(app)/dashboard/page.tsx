@@ -32,7 +32,9 @@ export default async function DashboardPage() {
     loadDashboard(ctx.org.id, ctx.brand?.id ?? null),
     loadPerformanceSummary(ctx.org.id, ctx.brand?.id ?? null, 7),
   ]);
-  const money = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: perf.currency || "USD", maximumFractionDigits: n < 100 ? 2 : 0 }).format(n);
+  // Summary amounts are in minor units (cents).
+  const money = (minor: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: perf.currency || "USD", maximumFractionDigits: minor < 10000 ? 2 : 0 }).format(minor / 100);
   const now = new Date();
   const dateLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase();
   const firstName = ctx.viewer.name.split(/[\s@.]/)[0];

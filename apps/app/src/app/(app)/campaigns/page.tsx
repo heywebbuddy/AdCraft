@@ -74,16 +74,16 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
               {card.accounts.length ? (
                 <ul className="m-0 flex list-none flex-col gap-2 p-0">
                   {card.accounts.map((a) => (
-                    <li key={a.id} className="flex items-center justify-between gap-3 rounded-[7px] border border-line px-3 py-2">
-                      <div className="flex min-w-0 flex-col">
-                        <span className="truncate text-[13px] font-semibold">{a.name}</span>
-                        <span className="text-[11px] text-muted">
+                    <li key={a.id} className="flex flex-col gap-2 rounded-[7px] border border-line px-3 py-2.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 truncate text-[13px] font-semibold">{a.name}</span>
+                        <StatusChip status={a.status} />
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 truncate text-[11px] text-muted">
                           {a.currency} · synced {relative(a.lastSyncedAt)}
                           {a.tokenExpiresAt && a.status === "connected" ? ` · token ${a.tokenExpiresAt < new Date() ? "expired" : `to ${a.tokenExpiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}` : ""}
                         </span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <StatusChip status={a.status} />
                         {canEdit && a.status === "connected" ? (
                           <form action={disconnectAccountAction.bind(null, a.id)}>
                             <button type="submit" className="text-[11px] text-muted hover:text-ink">
