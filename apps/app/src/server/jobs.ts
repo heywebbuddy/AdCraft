@@ -9,13 +9,25 @@ import { inngest } from "@/inngest/client";
  * Every pipeline is a plain async function in `src/pipelines/*` registered here; the
  * Inngest function in `src/inngest/functions.ts` wraps the same function.
  */
-export type JobName = "concepts.generate" | "static.generate" | "product.cutout" | "render.variants";
+export type JobName =
+  | "concepts.generate"
+  | "static.generate"
+  | "product.cutout"
+  | "render.variants"
+  | "video.generate"
+  | "ugc.generate"
+  | "publish.campaign"
+  | "insights.sync";
 
 export type JobPayloads = {
   "concepts.generate": { orgId: string; briefId: string; count?: number };
   "static.generate": { orgId: string; creativeId: string; model?: string };
   "product.cutout": { orgId: string; productId: string };
   "render.variants": { orgId: string; creativeId: string };
+  "video.generate": { orgId: string; creativeId: string; model?: string };
+  "ugc.generate": { orgId: string; creativeId: string };
+  "publish.campaign": { orgId: string; campaignId: string };
+  "insights.sync": { orgId: string; adAccountId?: string };
 };
 
 type Handler<N extends JobName> = (data: JobPayloads[N]) => Promise<unknown>;

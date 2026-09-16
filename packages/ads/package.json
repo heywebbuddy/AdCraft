@@ -9,8 +9,12 @@
     ".": "./src/index.ts",
     "./meta": "./src/meta/index.ts",
     "./tiktok": "./src/tiktok/index.ts",
-    "./google": "./src/google/index.ts"
+    "./google": "./src/google/index.ts",
+    "./sandbox": "./src/sandbox.ts"
   },
   "scripts": { "typecheck": "tsc --noEmit" },
-  "devDependencies": { "typescript": "^5.9.2" }
+  "dependencies": {
+    "@adcraft/specs": "workspace:*"
+  },
+  "devDependencies": { "@types/node": "^22.18.6", "typescript": "^5.9.2" }
 }
