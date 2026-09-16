@@ -1742,13 +1742,52 @@
 .wall-art {
   position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 12px;
   color: #fff;
+  /* Every tile shares this frame; the creative sits inside at its real ratio. */
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #e9ebe3;
+}
+.wall-backdrop {
+  position: absolute;
+  inset: -12%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(22px) saturate(0.9);
+  opacity: 0.55;
+}
+.wall-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #f4f5f0;
+  opacity: 0.35;
+}
+.wall-frame {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  box-shadow: 0 6px 18px #2c251533;
+}
+/* Tall creatives fill the frame's height; square and wide ones fill its width. */
+.wall-frame[data-orient="wide"] {
+  width: 100%;
+  height: auto;
 }
 .wall-headline {
+  align-self: flex-end;
   margin-top: auto;
   padding-right: 8px;
+  padding-top: 32px;
   font-family: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
   font-size: 20px;
   line-height: 1;

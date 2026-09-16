@@ -49,14 +49,20 @@ export function WallTile({ id, name, kind, ratio, status, previewUrl, headline, 
   const kindLabel = kind === "static" ? "Static ad" : kind === "ugc" ? "UGC video" : "Video";
   return (
     <Link href={kind === "static" ? `/creatives/${id}` : `/videos/${id}`} className="wall-tile">
-      <div
-        className="wall-art"
-        style={{
-          aspectRatio: ratioValue[ratio] ?? "4 / 5",
-          background: previewUrl ? `url(${previewUrl}) center/cover` : wallPlaceholders[index % wallPlaceholders.length],
-        }}
-      >
-        {!previewUrl && headline ? <span className="wall-headline">{headline}</span> : null}
+      <div className="wall-art" style={previewUrl ? undefined : { background: wallPlaceholders[index % wallPlaceholders.length] }}>
+        {previewUrl ? (
+          <>
+            {/* Soft blur of the same image fills the frame behind the letterboxed creative. */}
+            <span className="wall-backdrop" style={{ backgroundImage: `url(${previewUrl})` }} aria-hidden="true" />
+            <span
+              className="wall-frame"
+              data-orient={ratio === "9:16" || ratio === "4:5" ? "tall" : "wide"}
+              style={{ aspectRatio: ratioValue[ratio] ?? "4 / 5", backgroundImage: `url(${previewUrl})` }}
+            />
+          </>
+        ) : headline ? (
+          <span className="wall-headline">{headline}</span>
+        ) : null}
         {kind !== "static" ? (
           <span className="wall-play">
             <PlayIcon width={13} height={13} />
