@@ -21,9 +21,14 @@
   cursor: wait;
   opacity: 0.55;
 }
-.app-shell :is(a, button, input, select, textarea, summary):focus-visible {
+.app-shell :is(a, button, summary):focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 3px;
+}
+.app-shell :is(input, select, textarea):focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px #2425211a;
 }
 .workspace-skip {
   position: fixed;
@@ -2142,9 +2147,6 @@
   border-color: var(--ink);
 }
 @media (max-width: 1250px) {
-  .wall {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
   .home-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -2156,10 +2158,6 @@
   }
 }
 @media (max-width: 767px) {
-  .wall,
-  .queue-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .home-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2199,4 +2197,64 @@
   .wall-page {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* ---------- Robustness: no horizontal overflow, container-sized wall ---------- */
+.app-shell {
+  overflow-x: clip;
+}
+.workspace-body,
+.workspace-main,
+.overview-columns,
+.overview-primary,
+.overview-aside,
+.home-section {
+  min-width: 0;
+}
+.overview-primary {
+  container-type: inline-size;
+  container-name: primary;
+}
+@container primary (max-width: 980px) {
+  .wall {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container primary (max-width: 640px) {
+  .wall {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .queue-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.workspace-main {
+  container-type: inline-size;
+  container-name: main;
+}
+@container main (max-width: 1280px) {
+  .wall-page {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container main (max-width: 980px) {
+  .wall-page {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container main (max-width: 640px) {
+  .wall-page {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Command palette: the dialog frames the field; the input itself carries no ring. */
+.app-shell .command-input input:focus-visible,
+.workspace-command .command-input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+.workspace-command:focus-within .command-input {
+  box-shadow: inset 0 -1px 0 var(--orange);
 }
