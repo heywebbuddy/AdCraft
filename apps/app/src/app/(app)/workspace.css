@@ -3,6 +3,7 @@
   --muted: #73756d;
   --line: #e7e8e2;
   display: flex;
+  flex: none;
   min-height: 100dvh;
   background: #f7f8f5;
   font-size: 14px;
@@ -2201,9 +2202,8 @@
 }
 
 /* ---------- Robustness: no horizontal overflow, container-sized wall ---------- */
-.app-shell {
-  overflow-x: clip;
-}
+/* Horizontal overflow is clipped at the document level (globals.css), never on the shell:
+   clipping the shell would also clip vertically and break the sticky sidebar. */
 .workspace-body,
 .workspace-main,
 .overview-columns,

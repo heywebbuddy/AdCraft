@@ -11,12 +11,17 @@
   --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
 }
 
-html,
-body {
+html {
   height: 100%;
+}
+body {
+  /* min-height, never height: a fixed-height flex column would shrink the app shell to the
+     viewport and break the sticky sidebar. */
+  min-height: 100%;
 }
 
 body {
+  overflow-x: hidden;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
