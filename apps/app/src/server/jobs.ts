@@ -1,0 +1,41 @@
+import "server-only";
+import { inngest } from "@/inngest/client";
+
+/**
+ * Background work runs as Inngest functions in production. Locally, when no
+ * INNGEST_EVENT_KEY is configured, the same pipeline function runs inline in the
+ * server process (fire-and-forget) so the product works without the Inngest dev server.
+ *
+ * Every pipeline is a plain async function in `src/pipelines/*` registered here; the
+ * Inngest function in `src/inngest/functions.ts` wraps the same function.
+ */
+export type JobName = "concepts.generate" | "static.generate" | "product.cutout" | "render.variants";
+
+export type JobPayloads = {
+  "concepts.generate": { orgId: string; briefId: string; count?: number };
+  "static.generate": { orgId: string; creativeId: string; model?: string };
+  "product.cutout": { orgId: string; productId: string };
+  "render.variants": { orgId: string; creativeId: string };
+};
+
+type Handler<N extends JobName> = (data: JobPayloads[N]) => Promise<unknown>;
+const registry = new Map<JobName, Handler<JobName>>();
+
+export function registerJob<N extends JobName>(name: N, handler: Handler<N>) {
+  registry.set(name, handler as Handler<JobName>);
+}
+
+export const inngestConfigured = Boolean(process.env.INNGEST_EVENT_KEY);
+
+export async function dispatch<N extends JobName>(name: N, data: JobPayloads[N]) {
+  if (inngestConfigured) {
+    await inngest.send({ name: name.replace(".", "/") as never, data: data as never });
+    return { mode: "inngest" as const };
+  }
+  const handler = registry.get(name);
+  if (!handler) throw new Error(`No inline handler registered for job ${name}`);
+  void Promise.resolve()
+    .then(() => handler(data))
+    .catch((err) => console.error(`[jobs] ${name} failed`, err));
+  return { mode: "inline" as const };
+}

@@ -1,12 +1,11 @@
 import { EventSchemas, Inngest } from "inngest";
+import type { JobPayloads } from "@/server/jobs";
 
 type Events = {
-  "brief/submitted": {
-    data: { orgId: string; briefId: string };
-  };
-  "concepts/generate": {
-    data: { orgId: string; briefId: string; count?: number };
-  };
+  "concepts/generate": { data: JobPayloads["concepts.generate"] };
+  "static/generate": { data: JobPayloads["static.generate"] };
+  "product/cutout": { data: JobPayloads["product.cutout"] };
+  "render/variants": { data: JobPayloads["render.variants"] };
 };
 
 export const inngest = new Inngest({
