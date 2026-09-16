@@ -32,19 +32,46 @@ function create(): { db: Db; ready: Promise<void> } {
   if (process.env.NODE_ENV === "production") {
     console.warn("[@adcraft/db] DATABASE_URL is not set in production; falling back to PGlite at", dataDir);
   }
-  fs.mkdirSync(dataDir, { recursive: true });
   // PGlite is ESM-only and loads its wasm relative to its own file, so it must not be
-  // bundled by webpack. Resolve it through Node's loader (Node 22 supports require(esm)).
-  // `process.getBuiltinModule` is opaque to webpack, so this stays a real Node require.
+  // bundled by webpack. `process.getBuiltinModule` is opaque to webpack, so this stays a real Node require.
   const nodeModule = process.getBuiltinModule("node:module") as typeof import("node:module");
   const nodeRequire = nodeModule.createRequire(path.resolve(migrationsFolder, "../package.json"));
   const { PGlite } = nodeRequire("@electric-sql/pglite") as { PGlite: typeof PGliteType };
-  const client = new PGlite(dataDir);
+
+  const open = () => {
+    fs.mkdirSync(dataDir, { recursive: true });
+    return new PGlite(dataDir);
+  };
+  let client: PGliteType = open();
   const db = drizzlePglite(client, { schema }) as unknown as Db;
-  const ready = migratePglite(db as never, { migrationsFolder }).catch((err) => {
+
+  const ready = (async () => {
+    try {
+      await client.waitReady;
+    } catch (err) {
+      // An unclean shutdown can leave the directory in a state PGlite refuses to open.
+      // Development data only: move it aside and start fresh rather than crash every request.
+      const aside = `${dataDir}-corrupt-${Date.now()}`;
+      console.error(`[@adcraft/db] PGlite could not open ${dataDir} (${(err as Error).message}). Moving it to ${aside} and starting fresh.`);
+      fs.renameSync(dataDir, aside);
+      client = open();
+      // Rebind the drizzle instance's session to the new client.
+      (db as unknown as { session: { client: PGliteType } }).session.client = client;
+      await client.waitReady;
+    }
+    await migratePglite(db as never, { migrationsFolder });
+  })().catch((err) => {
     console.error("[@adcraft/db] PGlite migration failed", err);
     throw err;
   });
+
+  // Close cleanly so the next boot finds a consistent directory.
+  const shutdown = () => {
+    void client.close().finally(() => process.exit(0));
+  };
+  for (const sig of ["SIGINT", "SIGTERM"] as const) {
+    process.once(sig, shutdown);
+  }
   return { db, ready };
 }
 

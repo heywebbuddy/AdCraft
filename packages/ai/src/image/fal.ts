@@ -205,7 +205,7 @@ export async function placeholderImage(req: ImageRequest, index = 0): Promise<Ge
     </svg>`;
   let bytes: Buffer;
   try {
-    bytes = await sharp(Buffer.from(svg(true))).png().toBuffer();
+    bytes = await sharp(Buffer.from(svg(false))).png().toBuffer();
   } catch {
     bytes = await sharp(Buffer.from(svg(false))).png().toBuffer();
   }
