@@ -4,6 +4,7 @@ import { STATIC_TEMPLATES } from "@adcraft/render";
 import { requireOrg } from "@/server/org";
 import { getCreative, imageModelChoices, STATIC_SCENE_CREDITS, type CreativeStatus } from "@/server/creatives";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { ReviewPanel } from "@/components/review-panel";
 import { AlertIcon } from "@/components/icons";
 import { regenerateScene, rerender, updateCreativeDocument } from "../actions";
 import { Editor } from "./editor";
@@ -296,6 +297,17 @@ export default async function CreativePage({
           ) : null}
         </aside>
       </div>
+
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <ReviewPanel creativeId={creativeId} />
+        <div className="panel flex flex-col gap-2 p-5 text-[13px]">
+          <span className="eyebrow">Share and reuse</span>
+          <p className="m-0 text-muted">Send a review link to a client, or save this layout as a template for the next brief.</p>
+          <Link href={`/creatives/${creativeId}/review`} className="btn btn-outline mt-2 h-11 justify-between">
+            Share for review <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

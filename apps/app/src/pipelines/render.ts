@@ -93,6 +93,14 @@ export async function runRenderPipeline({ orgId, creativeId }: { orgId: string; 
 
   // Touch the creative so lists ordered by updatedAt surface fresh renders.
   await db.update(creatives).set({ updatedAt: new Date() }).where(eq(creatives.id, creativeId));
+
+  if (results.some((r) => r.status === "succeeded") && !results.some((r) => r.status === "failed")) {
+    const { emitWebhook } = await import("@/server/webhooks");
+    void emitWebhook(orgId, "creative.rendered", {
+      creativeId,
+      renders: results.filter((r) => r.status !== "failed").map((r) => ({ variantId: r.variantId, renderId: r.renderId ?? null })),
+    }).catch((err) => console.error("[render.variants] webhook failed", err));
+  }
   return { creativeId, results };
 }
 
