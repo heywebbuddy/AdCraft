@@ -1,17 +1,282 @@
-import { Badge, Card } from "@adcraft/ui";
+import Link from "next/link";
+import { requireOrg } from "@/server/org";
+import { loadDashboard } from "@/server/dashboard";
+import { AlertIcon, PlayIcon, PlusIcon, SearchIcon, StarIcon, TextIcon } from "@/components/icons";
 
-export default function DashboardPage() {
+export const dynamic = "force-dynamic";
+
+function greeting(d: Date) {
+  const h = d.getHours();
+  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+}
+
+const ratioClass: Record<string, string> = {
+  "1:1": "aspect-square",
+  "4:5": "aspect-[4/5]",
+  "9:16": "aspect-[9/16]",
+  "16:9": "aspect-video",
+  "1.91:1": "aspect-[1.91/1]",
+};
+
+const gradients = [
+  "radial-gradient(120% 90% at 20% 10%, #fbe7cf 0%, #f0b489 45%, #d9744a 100%)",
+  "linear-gradient(170deg, #e5ead9 0%, #b9c7a8 45%, #6f8064 100%)",
+  "linear-gradient(135deg, #1d2a4a 0%, #2f4a7a 55%, #e97b5a 130%)",
+  "linear-gradient(160deg, #2a5bd7 0%, #4f8bf7 50%, #d6f25a 130%)",
+];
+
+export default async function DashboardPage() {
+  const ctx = await requireOrg();
+  const data = await loadDashboard(ctx.org.id, ctx.brand?.id ?? null);
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase();
+  const firstName = ctx.viewer.name.split(/[\s@.]/)[0];
+  const readyCount = data.tiles.filter((t) => t.status === "rendered").length;
+  const headline =
+    data.queue.length > 0
+      ? `${data.queue.length} generating right now.`
+      : readyCount > 0
+        ? `${readyCount} ready to review.`
+        : data.counts.briefs === 0
+          ? "Let’s make your first one."
+          : "Pick up where you left off.";
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <h1 className="font-serif text-4xl text-ink">Dashboard</h1>
-        <Badge>Placeholder</Badge>
+    <>
+      <header className="flex flex-wrap items-end justify-between gap-6">
+        <div className="flex flex-col gap-1.5">
+          <div className="eyebrow">{dateLabel}</div>
+          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+            {greeting(now)}, {firstName}. <span className="font-serif italic tracking-[-0.6px] text-orange">{headline}</span>
+          </h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <label className="flex h-11 w-[220px] items-center gap-2 rounded-[7px] border border-line bg-white px-3.5 text-[13px] text-muted">
+            <SearchIcon width={16} height={16} />
+            <input placeholder="Search creatives" className="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-muted" />
+            <span className="rounded border border-line px-1.5 text-[11px]">⌘K</span>
+          </label>
+          <Link href="/briefs/new" className="btn btn-orange h-11">
+            New brief <span aria-hidden="true" className="text-lg leading-none">↗</span>
+          </Link>
+        </div>
+      </header>
+
+      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
+        <div className="flex min-w-0 flex-col gap-[26px]">
+          {/* Generating now */}
+          <section className="flex flex-col gap-3">
+            <div className="flex items-baseline justify-between">
+              <div className="eyebrow flex items-center gap-2">
+                <span className={`h-[7px] w-[7px] rounded-full ${data.queue.length ? "bg-orange shadow-[0_0_0_3px_#fbe3d9]" : "bg-line"}`} />
+                Generating now
+              </div>
+              <span className="text-[12px] text-muted">
+                {data.queue.length ? `Queue · ${data.queue.length} running` : "Queue is empty"}
+              </span>
+            </div>
+            {data.queue.length ? (
+              <div className="grid gap-3 md:grid-cols-2">
+                {data.queue.map((q, i) => (
+                  <div key={q.id} className="panel flex gap-3.5 p-3.5">
+                    <div className="h-[72px] w-[54px] shrink-0 rounded-[5px]" style={{ background: gradients[i % gradients.length] }} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <div className="flex justify-between gap-2 text-[13px]">
+                        <span className="truncate font-semibold">{q.label}</span>
+                        <span className="tabular whitespace-nowrap text-muted">{Math.max(1, Math.round((Date.now() - q.startedAt.getTime()) / 1000))} s</span>
+                      </div>
+                      <div className="text-[12px] text-muted">{q.detail}</div>
+                      <div className="mt-0.5 h-[5px] overflow-hidden rounded-full bg-[#efeee8]">
+                        <div className="h-full w-1/2 animate-pulse rounded-full bg-orange" />
+                      </div>
+                      <div className="mt-0.5 flex gap-1.5">
+                        <span className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]">{q.credits} credits</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="panel flex items-center justify-between gap-4 border-dashed p-4 text-[13px] text-muted">
+                Nothing in the queue. A new brief gives you ten concepts in about ten seconds.
+                <Link href="/briefs/new" className="font-semibold text-orange">
+                  Start one ↗
+                </Link>
+              </div>
+            )}
+          </section>
+
+          {/* The wall */}
+          <section className="flex flex-col gap-3.5">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <div className="eyebrow">The wall</div>
+                <h2 className="m-0 text-[24px] font-medium tracking-[-1px]">
+                  Recent creative. <span className="font-serif italic text-muted">Every size it needs to be.</span>
+                </h2>
+              </div>
+              <div className="flex gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+                {["All", "Static", "Video", "UGC"].map((f, i) => (
+                  <Link
+                    key={f}
+                    href={i === 0 ? "/creatives" : `/creatives?kind=${f.toLowerCase()}`}
+                    className={`inline-flex min-h-9 items-center rounded-[5px] px-3 ${i === 0 ? "bg-ink text-white" : "text-[#4a4b44] hover:bg-paper"}`}
+                  >
+                    {f}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {data.tiles.length ? (
+              <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                {data.tiles.map((t, i) => (
+                  <Link key={t.id} href={`/creatives/${t.id}`} className="tile flex flex-col">
+                    <div
+                      className={`relative flex flex-col p-3.5 text-white ${ratioClass[t.ratio] ?? "aspect-[4/5]"}`}
+                      style={{
+                        background: t.previewUrl ? `url(${t.previewUrl}) center/cover` : gradients[i % gradients.length],
+                      }}
+                    >
+                      {!t.previewUrl && t.headline ? (
+                        <span className="mt-auto font-serif text-[22px] leading-none tracking-[-0.4px]">{t.headline}</span>
+                      ) : null}
+                      {t.kind !== "static" ? (
+                        <span className="absolute left-1/2 top-[42%] flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-ink">
+                          <PlayIcon />
+                        </span>
+                      ) : null}
+                      <span
+                        className={`absolute right-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold ${
+                          t.status === "rendered" ? "text-[#3f7a55]" : t.status === "failed" ? "text-[#b4382a]" : "text-muted"
+                        }`}
+                      >
+                        {t.status === "rendered" ? "Ready" : t.status === "failed" ? "Failed" : "Draft"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1.5 px-[13px] pb-[13px] pt-3">
+                      <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
+                        <span className="min-w-0 truncate">{t.name}</span>
+                        <span className="text-[11px] font-medium text-muted">{t.ratio}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 whitespace-nowrap text-[11px] text-muted">
+                        <span className="min-w-0 truncate">{t.model ?? t.kind}</span>
+                        <span>{relative(t.updatedAt)}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="panel flex flex-col items-start gap-3 border-dashed p-6">
+                <div className="font-serif text-[22px] italic">Your wall is empty. That never lasts long.</div>
+                <p className="m-0 max-w-[52ch] text-[13px] text-muted">
+                  Add a product photo to {ctx.brand?.name ?? "your brand"}, write a two-line brief, and the first static ads land here in every size.
+                </p>
+                <Link href="/briefs/new" className="btn btn-dark h-11">
+                  Write the first brief <span aria-hidden="true">↗</span>
+                </Link>
+              </div>
+            )}
+
+            <div className="mt-1 flex items-center gap-3">
+              <Link href="/creatives" className="btn btn-outline h-11">
+                All {data.counts.creatives} creative{data.counts.creatives === 1 ? "" : "s"} <span aria-hidden="true">↗</span>
+              </Link>
+              <span className="text-[12px] text-muted">
+                {readyCount} ready · {data.tiles.length - readyCount} in progress
+              </span>
+            </div>
+          </section>
+        </div>
+
+        {/* Right column */}
+        <div className="flex flex-col gap-4">
+          <section className="panel overflow-hidden">
+            <div className="flex items-baseline justify-between px-4 pb-2.5 pt-3.5">
+              <span className="eyebrow">This week</span>
+              <span className="text-[11px] text-muted">{data.adAccountsConnected ? "vs last 7 days" : "not connected"}</span>
+            </div>
+            {data.adAccountsConnected ? (
+              <div className="px-4 pb-4 text-[13px] text-muted">Metrics sync starts within the hour.</div>
+            ) : (
+              <div className="flex flex-col gap-2.5 px-4 pb-4">
+                <p className="m-0 text-[13px] text-muted">
+                  Performance shows up here once an ad account is connected. Until then, export finished creative and upload it to Meta, TikTok or Google yourself.
+                </p>
+                <Link href="/campaigns" className="text-[12px] font-semibold text-orange">
+                  About connecting accounts ↗
+                </Link>
+              </div>
+            )}
+          </section>
+
+          <section className="panel flex flex-col gap-2.5 px-4 py-3.5">
+            <span className="eyebrow">Needs attention</span>
+            {data.counts.failedRenders === 0 && ctx.credits.balance > 10 ? (
+              <p className="m-0 text-[13px] text-muted">All clear.</p>
+            ) : null}
+            {data.counts.failedRenders > 0 ? (
+              <div className="flex items-start gap-2.5">
+                <AlertIcon className="mt-px shrink-0 text-[#b4382a]" />
+                <span className="flex flex-col gap-0.5 text-[12px]">
+                  <span className="font-semibold">
+                    {data.counts.failedRenders} render{data.counts.failedRenders === 1 ? "" : "s"} failed
+                  </span>
+                  <span className="text-muted">
+                    Credits were not charged.{" "}
+                    <Link href="/creatives?status=failed" className="font-semibold text-orange">
+                      Retry
+                    </Link>
+                  </span>
+                </span>
+              </div>
+            ) : null}
+            {ctx.credits.balance <= 10 ? (
+              <div className="flex items-start gap-2.5">
+                <AlertIcon className="mt-px shrink-0 text-[#b7791f]" />
+                <span className="flex flex-col gap-0.5 text-[12px]">
+                  <span className="font-semibold">{ctx.credits.balance} credits left</span>
+                  <span className="text-muted">
+                    A UGC video needs 40.{" "}
+                    <Link href="/settings/billing" className="font-semibold text-orange">
+                      Top up
+                    </Link>
+                  </span>
+                </span>
+              </div>
+            ) : null}
+          </section>
+
+          <section className="flex flex-col gap-2 px-0.5 py-1">
+            <span className="eyebrow">Start from</span>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { href: "/library/new", label: "Product photo", Icon: PlusIcon },
+                { href: "/briefs/new", label: "Written brief", Icon: TextIcon },
+                { href: "/creatives", label: "A winner", Icon: StarIcon },
+              ].map(({ href, label, Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex flex-col items-center gap-1.5 rounded-[7px] border border-dashed border-[#d4d3ca] px-2.5 py-3 text-center text-[12px] font-semibold hover:border-ink"
+                >
+                  <Icon width={20} height={20} />
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
       </div>
-      <Card className="p-6">
-        <p className="text-muted">
-          The real dashboard is being designed. This route group is protected by Auth.js middleware.
-        </p>
-      </Card>
-    </div>
+    </>
   );
+}
+
+function relative(d: Date) {
+  const s = Math.round((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.round(s / 60)}m ago`;
+  if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+  return `${Math.round(s / 86400)}d ago`;
 }

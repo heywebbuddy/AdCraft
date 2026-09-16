@@ -1,25 +1,57 @@
-import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
+import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
+import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import postgres from "postgres";
+import type { PGlite as PGliteType } from "@electric-sql/pglite";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import fs from "node:fs";
 import * as schema from "./schema";
 
-export type Db = PostgresJsDatabase<typeof schema>;
+/**
+ * One database type for the whole app, whichever driver is underneath.
+ *
+ * - `DATABASE_URL` set → postgres-js against a real Postgres (staging/prod, or local if you have one).
+ * - unset → PGlite, an embedded Postgres persisted under `.data/pglite`, migrated on first use.
+ *   Zero setup for local development.
+ */
+export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
 
-const globalForDb = globalThis as unknown as { __adcraftSql?: ReturnType<typeof postgres> };
+const g = globalThis as unknown as { __adcraftDb?: Db; __adcraftReady?: Promise<void> };
 
-const PLACEHOLDER_URL = "postgres://localhost:5432/adcraft";
+const migrationsFolder = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../drizzle");
 
-function createSql() {
+function create(): { db: Db; ready: Promise<void> } {
   const url = process.env.DATABASE_URL;
-  if (!url) {
-    // postgres-js opens no socket until the first query, so a placeholder keeps
-    // `next build` (which imports this module) working without a database.
-    console.warn("[@adcraft/db] DATABASE_URL is not set; queries will fail until it is.");
+  if (url) {
+    const sql = postgres(url, { prepare: false, max: 10 });
+    return { db: drizzlePostgres(sql, { schema }) as unknown as Db, ready: Promise.resolve() };
   }
-  return postgres(url ?? PLACEHOLDER_URL, { prepare: false, max: 10 });
+  const dataDir = process.env.PGLITE_DATA_DIR ?? path.resolve(process.cwd(), "../../.data/pglite");
+  if (process.env.NODE_ENV === "production") {
+    console.warn("[@adcraft/db] DATABASE_URL is not set in production; falling back to PGlite at", dataDir);
+  }
+  fs.mkdirSync(dataDir, { recursive: true });
+  // PGlite is ESM-only and loads its wasm relative to its own file, so it must not be
+  // bundled by webpack. Resolve it through Node's loader (Node 22 supports require(esm)).
+  // `process.getBuiltinModule` is opaque to webpack, so this stays a real Node require.
+  const nodeModule = process.getBuiltinModule("node:module") as typeof import("node:module");
+  const nodeRequire = nodeModule.createRequire(path.resolve(migrationsFolder, "../package.json"));
+  const { PGlite } = nodeRequire("@electric-sql/pglite") as { PGlite: typeof PGliteType };
+  const client = new PGlite(dataDir);
+  const db = drizzlePglite(client, { schema }) as unknown as Db;
+  const ready = migratePglite(db as never, { migrationsFolder }).catch((err) => {
+    console.error("[@adcraft/db] PGlite migration failed", err);
+    throw err;
+  });
+  return { db, ready };
 }
 
-// Reuse the connection pool across HMR reloads in dev.
-const sql = globalForDb.__adcraftSql ?? createSql();
-if (process.env.NODE_ENV !== "production") globalForDb.__adcraftSql = sql;
+const instance = g.__adcraftDb ? { db: g.__adcraftDb, ready: g.__adcraftReady! } : create();
+g.__adcraftDb = instance.db;
+g.__adcraftReady = instance.ready;
 
-export const db: Db = drizzle(sql, { schema });
+export const db: Db = instance.db;
+/** Resolves once the embedded database has its migrations applied (immediately for Postgres). */
+export const dbReady: Promise<void> = instance.ready;

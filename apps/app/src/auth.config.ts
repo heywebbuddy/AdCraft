@@ -12,7 +12,7 @@ export const authConfig = {
     authorized({ auth, request }) {
       const isLoggedIn = Boolean(auth?.user);
       const { pathname } = request.nextUrl;
-      const isProtected = pathname.startsWith("/dashboard");
+      const isProtected = !["/", "/sign-in"].includes(pathname) && !pathname.startsWith("/api/");
       if (isProtected) return isLoggedIn;
       return true;
     },

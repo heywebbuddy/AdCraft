@@ -1,8 +1,9 @@
-.DS_Store
-node_modules/
-.env*
 !.env.example
+*.tsbuildinfo
+.DS_Store
+.data/
+.env*
 .next/
 .turbo/
-*.tsbuildinfo
 next-env.d.ts
+node_modules/

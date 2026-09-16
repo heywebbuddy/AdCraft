@@ -1,9 +1,51 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db, users, accounts, sessions, verificationTokens } from "@adcraft/db";
+import { eq } from "drizzle-orm";
+import { db, dbReady, users, accounts, sessions, verificationTokens } from "@adcraft/db";
 import { authConfig } from "./auth.config";
+
+/**
+ * Local development without an email provider or Google credentials:
+ * when RESEND_API_KEY is absent (and we are not in production) a "dev sign-in"
+ * provider accepts any email and creates the user on the fly.
+ */
+export const devLoginEnabled = process.env.NODE_ENV !== "production" && !process.env.RESEND_API_KEY;
+
+const providers = [
+  ...(process.env.AUTH_GOOGLE_ID ? [Google] : []),
+  ...(process.env.RESEND_API_KEY
+    ? [
+        Resend({
+          apiKey: process.env.RESEND_API_KEY,
+          from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>",
+        }),
+      ]
+    : []),
+  ...(devLoginEnabled
+    ? [
+        Credentials({
+          id: "dev",
+          name: "Dev sign-in",
+          credentials: { email: { label: "Email", type: "email" } },
+          async authorize(credentials) {
+            const email = String(credentials?.email ?? "").trim().toLowerCase();
+            if (!email.includes("@")) return null;
+            await dbReady;
+            const existing = await db.query.users.findFirst({ where: eq(users.email, email) });
+            if (existing) return { id: existing.id, email: existing.email, name: existing.name };
+            const [created] = await db
+              .insert(users)
+              .values({ email, name: email.split("@")[0], emailVerified: new Date() })
+              .returning();
+            return { id: created.id, email: created.email, name: created.name };
+          },
+        }),
+      ]
+    : []),
+];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -13,18 +55,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  session: { strategy: "database" },
-  providers: [
-    Google,
-    Resend({
-      apiKey: process.env.RESEND_API_KEY,
-      from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>",
-    }),
-  ],
+  // JWT sessions so the Credentials dev provider works; users/accounts still persist via the adapter.
+  session: { strategy: "jwt" },
+  providers,
   callbacks: {
     ...authConfig.callbacks,
-    session({ session, user }) {
-      session.user.id = user.id;
+    jwt({ token, user }) {
+      if (user?.id) token.sub = user.id;
+      return token;
+    },
+    session({ session, token }) {
+      if (token.sub) session.user.id = token.sub;
       return session;
     },
   },
