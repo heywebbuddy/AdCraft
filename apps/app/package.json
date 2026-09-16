@@ -11,18 +11,22 @@
   "dependencies": {
     "@adcraft/ai": "workspace:*",
     "@adcraft/db": "workspace:*",
+    "@adcraft/render": "workspace:^",
     "@adcraft/specs": "workspace:*",
     "@adcraft/storage": "workspace:*",
     "@adcraft/ui": "workspace:*",
     "@auth/drizzle-adapter": "^1.10.0",
     "drizzle-orm": "^0.44.5",
     "inngest": "^3.40.1",
+    "jszip": "^3.10.2",
     "next": "^15.5.4",
     "next-auth": "5.0.0-beta.32",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "resend": "^6.1.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.4",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
