@@ -57,7 +57,7 @@ export default async function CreativesPage({ searchParams }: { searchParams: Pr
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5">
           <div className="eyebrow">Creatives · {ctx.brand?.name ?? ctx.org.name}</div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {items.length === 0 && !filtered ? (
               <>
                 Nothing here yet. <span className="font-serif italic tracking-[-0.6px] text-orange">Let’s fix that.</span>

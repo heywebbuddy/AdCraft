@@ -27,11 +27,46 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
 
   if (!session?.user) redirect(`/sign-in?callbackUrl=${encodeURIComponent(`/invite/${token}`)}`);
 
-  const result = await acceptInvite(token);
-  if (result.ok) redirect("/dashboard");
-
   const org = await db.query.organizations.findFirst({ where: eq(organizations.id, invite.orgId) });
-  return <Shell title="Couldn’t accept this invite." body={`Reason: ${result.reason}. Ask an owner of ${org?.name ?? "the workspace"} for a new link.`} />;
+  const orgName = org?.name ?? "the workspace";
+  const viewerEmail = (session.user.email ?? "").toLowerCase();
+  const matches = viewerEmail === invite.email.toLowerCase();
+
+  if (!matches) {
+    return (
+      <Shell
+        title={`This invite is for ${invite.email}.`}
+        body={`You are signed in as ${session.user.email ?? "another account"}. Sign in with the invited address to join ${orgName}.`}
+        cta={{ href: `/api/auth/reset?callbackUrl=${encodeURIComponent(`/invite/${token}`)}`, label: "Switch account" }}
+      />
+    );
+  }
+
+  async function join() {
+    "use server";
+    const result = await acceptInvite(token);
+    redirect(result.ok ? "/dashboard" : `/invite/${token}?error=${result.reason}`);
+  }
+
+  return (
+    <main className="flex flex-1 items-center justify-center px-6 py-16">
+      <div className="w-full max-w-[420px]">
+        <div className="mb-8 flex items-center gap-1.5 text-[26px] font-semibold leading-none tracking-[-1.3px]">
+          <span className="text-[32px] font-normal leading-[.8] text-orange">✳</span>adcraft<span className="-ml-1 text-orange">.</span>
+        </div>
+        <div className="eyebrow">You’re invited</div>
+        <h1 className="mt-3 text-[34px] font-medium leading-[1.05] tracking-[-1.6px]">
+          Join {orgName} <span className="font-serif italic text-orange">as {invite.role}.</span>
+        </h1>
+        <p className="mt-4 text-[15px] text-muted">Signed in as {session.user.email}. Joining adds this workspace to your account; you can switch between workspaces from the sidebar.</p>
+        <form action={join} className="mt-6">
+          <button type="submit" className="btn btn-orange h-12 justify-between text-[15px]">
+            Join {orgName} <span aria-hidden="true">↗</span>
+          </button>
+        </form>
+      </div>
+    </main>
+  );
 }
 
 function Shell({ title, body, cta }: { title: string; body: string; cta?: { href: string; label: string } }) {

@@ -12,18 +12,31 @@ const SCENE_RATIO = "4:5" as const;
 export const STATIC_SCENE_CREDITS = 2;
 
 /** Prompt for the scene layer only: the template adds text, logo and CTA afterwards. */
-export function buildScenePrompt(input: { visualDirection: string; tone: string[]; productName?: string; brandName: string }) {
-  const tone = input.tone.length ? `Brand tone: ${input.tone.join(", ")}.` : "";
-  const product = input.productName ? `The product is ${input.productName} by ${input.brandName}.` : `Brand: ${input.brandName}.`;
+/**
+ * The scene is a BACKGROUND layer. The product cutout, headline, CTA and logo are
+ * composited by the template engine, so the image model must not paint a product,
+ * packaging or any text — otherwise the render shows two bottles and clashing copy.
+ */
+export function buildScenePrompt(input: { visualDirection: string; scenePrompt?: string; tone: string[]; productName?: string; brandName: string }) {
+  const tone = input.tone.length ? `Mood: ${input.tone.join(", ")}.` : "";
+  const scene = (input.scenePrompt?.trim() || stripProductAndText(input.visualDirection)).trim();
   return [
-    input.visualDirection.trim(),
-    product,
+    scene,
     tone,
-    "Premium product photography, natural light, shallow depth of field, editorial composition with generous negative space for a headline.",
-    "No text, no typography, no logos, no watermarks, no labels, no people’s faces in close-up.",
+    "Empty background plate for a premium advert: natural light, shallow depth of field, editorial composition, large clean negative space in the lower half and one side where a headline and a product will be placed later.",
+    "Absolutely no product, no bottle, no packaging, no hands, no people, no text, no letters, no typography, no logos, no watermarks, no labels, no stickers, no graphics.",
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+export function stripProductAndText(visual: string): string {
+  const kept = visual
+    .split(/(?<=[.;])\s+/)
+    .filter((sentence) => !/\b(text|headline|logo|typograph|graphic|caption|label|product|bottle|jar|tube|hand|holding|held|stamp|badge)\b/i.test(sentence))
+    .join(" ")
+    .trim();
+  return kept || "Soft minimal studio backdrop with a warm gradient and a clean surface.";
 }
 
 /**
@@ -78,18 +91,15 @@ export async function runStaticPipeline({ orgId, creativeId, model }: { orgId: s
   try {
     const prompt = buildScenePrompt({
       visualDirection: row.concept.data.visualDirection,
+      scenePrompt: row.concept.data.scenePrompt,
       tone: kit?.data.voice?.tone ?? [],
       productName: product?.name,
       brandName: doc.brand.name,
     });
 
+    // No product reference: the cutout is composited as its own layer by the template
+    // engine, and passing it makes edit models paint a second copy into the scene.
     const references: ReferenceImage[] = [];
-    const cutoutKey = product?.cutoutKey ?? doc.product?.cutoutKey;
-    if (cutoutKey) {
-      const storage = getStorage();
-      const obj = await storage.get(cutoutKey);
-      if (obj) references.push({ url: storage.url(cutoutKey), mimeType: obj.contentType, bytes: obj.body });
-    }
 
     const { output, usage } = await generateImage({ model: spec.id, prompt, ratio: SCENE_RATIO, references, count: 1 });
     const first = output[0];

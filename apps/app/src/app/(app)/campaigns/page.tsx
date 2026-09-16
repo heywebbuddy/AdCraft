@@ -25,7 +25,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5">
           <div className="eyebrow">Campaigns</div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {connectedCount === 0 ? (
               <>
                 Connect an ad account. <span className="font-serif italic tracking-[-0.6px] text-orange">Publish without leaving.</span>
@@ -82,7 +82,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                       <div className="flex items-center justify-between gap-3">
                         <span className="min-w-0 truncate text-[11px] text-muted">
                           {a.currency} · synced {relative(a.lastSyncedAt)}
-                          {a.tokenExpiresAt && a.status === "connected" ? ` · token ${a.tokenExpiresAt < new Date() ? "expired" : `to ${a.tokenExpiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}` : ""}
+                          {a.tokenExpiresAt && a.status === "connected" ? ` · token ${a.tokenExpiresAt < new Date() ? "expired" : `to ${a.tokenExpiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}` : ""}
                         </span>
                         {canEdit && a.status === "connected" ? (
                           <form action={disconnectAccountAction.bind(null, a.id)}>

@@ -42,7 +42,7 @@ export default async function NewVideoPage({ searchParams }: { searchParams: Pro
             </Link>{" "}
             · New video
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {concept.title}. <span className="font-serif italic tracking-[-0.6px] text-orange">Script to storyboard to video.</span>
           </h1>
           <p className="m-0 max-w-[640px] text-[13px] text-muted">

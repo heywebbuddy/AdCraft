@@ -59,7 +59,7 @@ export default async function BriefPage({ params }: { params: Promise<{ briefId:
             </Link>{" "}
             · {objectiveLabel[data.objective] ?? data.objective} · {relative(brief.createdAt)}
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {brief.title}. <span className="font-serif italic tracking-[-0.6px] text-orange">{headline}</span>
           </h1>
         </div>

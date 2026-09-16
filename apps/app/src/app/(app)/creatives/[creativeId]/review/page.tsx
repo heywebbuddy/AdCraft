@@ -49,7 +49,7 @@ export default async function CreativeReviewPage({
             </Link>{" "}
             / <Link href={`/creatives/${creativeId}`} className="hover:text-ink">{creative.name}</Link> / Review
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {creative.name}. <span className="font-serif italic text-muted">{ready.length ? `${ready.length} of ${sizes.length} sizes ready.` : "Rendering the first size."}</span>
           </h1>
         </div>

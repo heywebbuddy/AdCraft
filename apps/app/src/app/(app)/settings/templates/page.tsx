@@ -17,7 +17,7 @@ export default async function TemplatesPage() {
     <>
       <header className="flex flex-col gap-1.5">
         <div className="eyebrow">Templates</div>
-        <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
           {list.length} saved {list.length === 1 ? "template" : "templates"}.{" "}
           <span className="font-serif italic text-muted">Start the next brief from a winner.</span>
         </h1>

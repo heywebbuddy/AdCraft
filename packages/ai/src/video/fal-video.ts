@@ -24,8 +24,9 @@ export const isFalVideoConfigured = Boolean(process.env.FAL_KEY);
 export const FAL_VIDEO_ENDPOINTS: Record<string, { imageToVideo: string; textToVideo: string }> = {
   "kling-3.0": { imageToVideo: "fal-ai/kling-video/v3/standard/image-to-video", textToVideo: "fal-ai/kling-video/v3/standard/text-to-video" },
   "veo-3.1": { imageToVideo: "fal-ai/veo3.1/image-to-video", textToVideo: "fal-ai/veo3.1" },
-  "seedance-2.5": { imageToVideo: "fal-ai/bytedance/seedance/v2.5/pro/image-to-video", textToVideo: "fal-ai/bytedance/seedance/v2.5/pro/text-to-video" },
-  "seedance-2.0": { imageToVideo: "fal-ai/bytedance/seedance/v2/lite/image-to-video", textToVideo: "fal-ai/bytedance/seedance/v2/lite/text-to-video" },
+  // Verified against fal.ai model pages (Sep 2026): Seedance 2.x live under "bytedance/…" without the "fal-ai/" prefix.
+  "seedance-2.5": { imageToVideo: "bytedance/seedance-2.5/image-to-video", textToVideo: "bytedance/seedance-2.5/text-to-video" },
+  "seedance-2.0": { imageToVideo: "bytedance/seedance-2.0/image-to-video", textToVideo: "bytedance/seedance-2.0/text-to-video" },
 };
 
 /** Approximate USD per second of output. TODO: replace with measured costs from generation_events. */
@@ -108,11 +109,13 @@ export function buildFalVideoInput(modelId: string, req: FalVideoRequest, imageU
       ...(req.seed !== undefined ? { seed: req.seed } : {}),
     };
   }
-  // Seedance family (v1.5 input shape; TODO(verify) for 2.x).
+  // Seedance 2.x: duration is a whole number of seconds ("auto" or 4–15); 2.5 image-to-video
+  // derives the aspect ratio from the start frame ("auto"), 2.0 accepts explicit ratios.
+  const seedanceRatio = req.ratio === "4:5" ? "3:4" : req.ratio === "1.91:1" ? "16:9" : req.ratio;
   return {
     prompt: req.prompt,
-    duration: String(duration),
-    aspect_ratio: req.ratio === "4:5" ? "3:4" : req.ratio === "1.91:1" ? "16:9" : req.ratio,
+    duration: String(Math.min(15, Math.max(4, Math.round(duration)))),
+    aspect_ratio: modelId === "seedance-2.5" && imageUrl ? "auto" : seedanceRatio,
     resolution: "1080p",
     generate_audio: wantsAudio,
     ...(imageUrl ? { image_url: imageUrl } : {}),

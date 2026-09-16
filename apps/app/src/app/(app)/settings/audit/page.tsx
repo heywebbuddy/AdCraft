@@ -60,7 +60,7 @@ export default async function AuditPage() {
     <>
       <header className="flex flex-col gap-1.5">
         <div className="eyebrow">Audit log</div>
-        <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
           Who did what. <span className="font-serif italic text-muted">The last 50 things that happened in {ctx.org.name}.</span>
         </h1>
       </header>

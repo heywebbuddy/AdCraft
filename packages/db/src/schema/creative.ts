@@ -51,6 +51,8 @@ export type ConceptData = {
   description?: string;
   cta: string;
   visualDirection: string;
+  /** Background-only prompt for the image model; product and copy are composited layers. */
+  scenePrompt?: string;
   script?: string;
 };
 

@@ -53,12 +53,12 @@ export default async function DashboardPage() {
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5">
           <div className="eyebrow">{dateLabel}</div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {greeting(now)}, {firstName}. <span className="font-serif italic tracking-[-0.6px] text-orange">{headline}</span>
           </h1>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <label className="flex h-11 w-[220px] items-center gap-2 rounded-[7px] border border-line bg-white px-3.5 text-[13px] text-muted">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <label className="flex h-11 w-full items-center gap-2 sm:w-[220px] rounded-[7px] border border-line bg-white px-3.5 text-[13px] text-muted">
             <SearchIcon width={16} height={16} />
             <input placeholder="Search creatives" className="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-muted" />
             <span className="rounded border border-line px-1.5 text-[11px]">⌘K</span>
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
           <section className="panel overflow-hidden">
             <div className="flex items-baseline justify-between px-4 pb-2.5 pt-3.5">
               <span className="eyebrow">This week</span>
-              <span className="text-[11px] text-muted">{perf.connected ? "vs last 7 days" : "not connected"}</span>
+              <span className="text-[11px] text-muted">{perf.connected ? (data.sandboxOnly ? "sandbox data · vs last 7 days" : "vs last 7 days") : "not connected"}</span>
             </div>
             {perf.connected && perf.hasData ? (
               <>
@@ -288,9 +288,39 @@ export default async function DashboardPage() {
 
           <section className="panel flex flex-col gap-2.5 px-4 py-3.5">
             <span className="eyebrow">Needs attention</span>
-            {data.counts.failedRenders === 0 && ctx.credits.balance > 10 && perf.alerts.length === 0 ? (
+            {data.counts.failedRenders === 0 && data.counts.failedPipelines.length === 0 && data.changeRequests.length === 0 && ctx.credits.balance > 10 && perf.alerts.length === 0 ? (
               <p className="m-0 text-[13px] text-muted">All clear.</p>
             ) : null}
+            {data.counts.failedPipelines.map((f, i) => (
+              <div key={`fp-${i}`} className="flex items-start gap-2.5">
+                <AlertIcon className="mt-px shrink-0 text-[#b4382a]" />
+                <span className="flex flex-col gap-0.5 text-[12px]">
+                  <span className="font-semibold">Generation failed{f.label && typeof f.label.label === "string" ? `: ${f.label.label}` : ""}</span>
+                  <span className="text-muted">
+                    {(f.error ?? "Unknown error").slice(0, 90)}. Credits were not charged.{" "}
+                    {f.creativeId ? (
+                      <Link href={`/creatives/${f.creativeId}`} className="font-semibold text-orange">
+                        Open and retry
+                      </Link>
+                    ) : null}
+                  </span>
+                </span>
+              </div>
+            ))}
+            {data.changeRequests.map((c) => (
+              <div key={`cr-${c.creativeId}`} className="flex items-start gap-2.5">
+                <AlertIcon className="mt-px shrink-0 text-[#b7791f]" />
+                <span className="flex flex-col gap-0.5 text-[12px]">
+                  <span className="font-semibold">Changes requested on “{c.name}”</span>
+                  <span className="text-muted">
+                    {(c.note ?? "See the review thread").slice(0, 90)}.{" "}
+                    <Link href={`/creatives/${c.creativeId}/review`} className="font-semibold text-orange">
+                      Open review
+                    </Link>
+                  </span>
+                </span>
+              </div>
+            ))}
             {perf.alerts.map((a) => (
               <div key={`${a.kind}-${a.creativeId ?? a.campaignId}`} className="flex items-start gap-2.5">
                 {a.kind === "fatigue" ? (

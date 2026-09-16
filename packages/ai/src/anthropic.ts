@@ -173,6 +173,7 @@ How to work:
 - Write copy for the platforms in "platformFit" and keep every field within the tightest limit among them. Copy limits are given in the brief as character counts; a limit of 0 means the platform has no such field, so leave it empty.
 - The hook is one sentence a person would actually say or read, not a slogan. The headline and primary text must be usable as-is.
 - Visual direction describes one frame (or the opening frame for video): setting, subject, product placement, light, on-screen text treatment. Concrete enough to brief a photographer.
+- Scene prompt is what an image model paints as the BACKGROUND: setting, surfaces, light, colour palette, mood, lens. It must not mention the product, packaging, bottles, hands, text, logos or typography, because the real product photo and the copy are layered on afterwards. Ask for generous empty space where a headline and a product can sit.
 - Match the brand voice. Use the "do say" phrases where natural and never use "don't say" phrases.
 - Never invent product claims, statistics, awards or testimonials that are not in the brief. Social-proof angles must use only what the brief provides, or use clearly generic framing ("customers tell us...").
 - No emojis in headlines. Sentence case. No ALL CAPS.`;
@@ -433,6 +434,7 @@ export function sampleConcepts(brief: ConceptBrief): GenerationResult<ConceptsOu
       description: Number.isFinite(dMax) ? clip(offer, dMax) : "",
       cta,
       visualDirection: `${t.visual}${tone ? ` Tone: ${tone}.` : ""}`,
+      scenePrompt: sceneOnly(t.visual),
       script,
       platformFit: platforms,
     };
@@ -449,4 +451,14 @@ export function sampleConcepts(brief: ConceptBrief): GenerationResult<ConceptsOu
       durationMs: Date.now() - startedAt,
     },
   };
+}
+
+/** Strip product/text mentions from a visual direction so it reads as a background-only prompt (sample mode). */
+function sceneOnly(visual: string): string {
+  const cleaned = visual
+    .split(/(?<=[.;])\s+/)
+    .filter((sentence) => !/\b(text|headline|logo|typograph|graphic|caption|label|product|bottle|jar|tube|hand|holding|held)\b/i.test(sentence))
+    .join(" ")
+    .trim();
+  return `${cleaned || "Soft, minimal studio backdrop with a warm gradient and a clean surface."} Generous empty space, nothing in the foreground.`;
 }

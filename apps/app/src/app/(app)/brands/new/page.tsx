@@ -21,7 +21,7 @@ export default async function NewBrandPage({ searchParams }: { searchParams: Pro
           </Link>{" "}
           · New
         </div>
-        <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
           {first ? "First brand." : "Another brand."} <span className="font-serif italic tracking-[-0.6px] text-orange">Who are we making ads for?</span>
         </h1>
       </header>

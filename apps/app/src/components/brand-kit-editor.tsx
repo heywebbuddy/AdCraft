@@ -109,7 +109,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
         </Section>
 
         <Section title="Colours" hint="Hex values">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             {COLOR_FIELDS.map(({ key, label, hint }) => (
               <div key={key} className="flex items-center gap-3 rounded-[7px] border border-line bg-white p-2.5">
                 <label className="relative h-11 w-11 shrink-0 cursor-pointer overflow-hidden rounded-[7px] border border-line" style={{ background: colors[key] }}>
@@ -122,8 +122,8 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
                   />
                 </label>
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-[12px] font-semibold">{label}</span>
-                  <span className="truncate text-[11px] text-muted">{hint}</span>
+                  <span className="whitespace-nowrap text-[12px] font-semibold">{label}</span>
+                  <span className="text-[11px] leading-snug text-muted">{hint}</span>
                 </div>
                 <input
                   name={`color.${key}`}

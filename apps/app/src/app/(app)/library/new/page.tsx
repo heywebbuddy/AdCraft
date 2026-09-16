@@ -32,7 +32,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
             </Link>{" "}
             · New product
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             Add a product. <span className="font-serif italic tracking-[-0.6px] text-orange">We’ll cut it out for you.</span>
           </h1>
         </div>

@@ -118,16 +118,18 @@ export async function removeMember(formData: FormData) {
 }
 
 /**
- * /invite/[token]: join the org with the invited role. The signed-in user's email need
- * not match the invite (agencies forward invites); the token is the credential.
+ * /invite/[token]: join the org with the invited role. Runs from a server action
+ * (a "Join" button), never during render, and only for the invited email — so an
+ * owner previewing their own link cannot burn it.
  */
-export async function acceptInvite(token: string): Promise<{ ok: true } | { ok: false; reason: "invalid" | "expired" | "used" }> {
+export async function acceptInvite(token: string): Promise<{ ok: true } | { ok: false; reason: "invalid" | "expired" | "used" | "wrong_email" }> {
   await dbReady;
   const viewer = await requireViewer();
   const inv = await db.query.invites.findFirst({ where: eq(invites.token, token) });
   if (!inv) return { ok: false, reason: "invalid" };
   if (inv.acceptedAt) return { ok: false, reason: "used" };
   if (inv.expiresAt < new Date()) return { ok: false, reason: "expired" };
+  if (inv.email.trim().toLowerCase() !== viewer.email.trim().toLowerCase()) return { ok: false, reason: "wrong_email" };
 
   const existing = await db.query.memberships.findFirst({ where: and(eq(memberships.orgId, inv.orgId), eq(memberships.userId, viewer.userId)) });
   if (!existing) {

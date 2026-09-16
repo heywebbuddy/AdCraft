@@ -82,7 +82,7 @@ export default async function SignInPage({
               <p className="text-sm text-muted">
                 No email provider is configured, so any address signs you straight in. Add <code className="rounded bg-paper px-1">RESEND_API_KEY</code> to switch to magic links.
               </p>
-              <input name="email" type="email" required placeholder="you@brand.com" defaultValue="ratnesh@adcraft.local" className={inputClass} />
+              <input name="email" type="email" required placeholder="you@brand.com" className={inputClass} />
               <button type="submit" className="btn btn-orange h-11 justify-between">
                 Sign in <span aria-hidden="true">↗</span>
               </button>

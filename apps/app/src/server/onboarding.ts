@@ -38,7 +38,7 @@ export async function createWorkspace(formData: FormData) {
     data: {
       colors: { primary: "#242521", accent: "#e65c32", background: "#f8f7f3", text: "#242521" },
       fonts: { heading: "DM Sans", body: "DM Sans" },
-      voice: { tone: ["warm", "confident"] },
+      voice: { tone: ["warm", "honest"] },
     },
   });
   await db.insert(creditLedger).values({

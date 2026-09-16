@@ -24,7 +24,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
     <>
       <header className="flex flex-col gap-1.5">
         <div className="eyebrow">Plan and credits</div>
-        <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
           {ctx.credits.balance} credits left.{" "}
           <span className="font-serif italic text-orange">{planId ? `On ${PLANS[planId].name}.` : "On the free trial."}</span>
         </h1>

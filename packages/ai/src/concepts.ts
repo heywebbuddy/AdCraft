@@ -73,6 +73,11 @@ export const ConceptSchema = z.object({
     .describe("Optional link description. Empty string when the platform has no description field or none is needed."),
   cta: z.string().describe("Call to action button text, <= 20 characters"),
   visualDirection: z.string().describe("Scene, composition, lighting, product placement, on-screen text treatment"),
+  scenePrompt: z
+    .string()
+    .describe(
+      "Image-model prompt for the BACKGROUND SCENE ONLY: setting, surfaces, light, colours, mood, camera. The product, people holding it, text, logos and packaging are never mentioned; the product is composited on top later. Leave clear negative space.",
+    ),
   script: z
     .string()
     .describe(

@@ -29,12 +29,37 @@ const nav = [
 export function Sidebar(props: SidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [drawer, setDrawer] = useState(false);
   const [pending, start] = useTransition();
   const pct = props.credits.grant > 0 ? Math.min(100, Math.round((props.credits.balance / props.credits.grant) * 100)) : 0;
   const initial = (props.brand?.name ?? props.org.name).slice(0, 1).toLowerCase();
 
   return (
-    <aside className="flex w-[232px] shrink-0 flex-col gap-[22px] border-r border-line bg-paper px-4 py-[22px]">
+    <>
+      {/* Phone / tablet top bar */}
+      <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-paper px-4 lg:hidden">
+        <Link href="/dashboard" className="flex items-center gap-1.5 text-[22px] font-semibold leading-none tracking-[-1.1px]">
+          <span className="text-[26px] font-normal leading-[.8] text-orange">✳</span>adcraft<span className="-ml-[3px] text-orange">.</span>
+        </Link>
+        <button
+          type="button"
+          aria-label={drawer ? "Close menu" : "Open menu"}
+          aria-expanded={drawer}
+          onClick={() => setDrawer((v) => !v)}
+          className="flex h-11 w-11 items-center justify-center rounded-[7px] border border-line bg-white"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+            {drawer ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+          </svg>
+        </button>
+      </div>
+      {drawer ? <button type="button" aria-label="Close menu" onClick={() => setDrawer(false)} className="fixed inset-0 z-30 bg-ink/30 lg:hidden" /> : null}
+    <aside
+      className={`${drawer ? "fixed inset-y-0 left-0 z-40 flex shadow-[0_10px_40px_#2c251533]" : "hidden"} w-[232px] shrink-0 flex-col gap-[22px] border-r border-line bg-paper px-4 py-[22px] lg:static lg:flex lg:shadow-none`}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest("a")) setDrawer(false);
+      }}
+    >
       <Link href="/dashboard" className="flex items-center gap-1.5 px-2 text-[24px] font-semibold leading-none tracking-[-1.2px]">
         <span className="text-[30px] font-normal leading-[.8] text-orange">✳</span>adcraft<span className="-ml-[3px] text-orange">.</span>
       </Link>
@@ -141,5 +166,6 @@ export function Sidebar(props: SidebarProps) {
         </div>
       </div>
     </aside>
+    </>
   );
 }

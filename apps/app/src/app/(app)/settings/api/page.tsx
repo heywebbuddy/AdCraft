@@ -17,7 +17,19 @@ export default async function ApiPage({
   searchParams: Promise<{ ok?: string; error?: string; created?: string; key?: string; webhook?: string; secret?: string }>;
 }) {
   const ctx = await requireOrg();
-  const { ok, error, created, key: plainKey, webhook: newHook, secret } = await searchParams;
+  const { ok, error, created, webhook: newHook } = await searchParams;
+  const { cookies } = await import("next/headers");
+  const jar = await cookies();
+  const reveal = (() => {
+    try {
+      const raw = jar.get("adcraft_reveal")?.value;
+      return raw ? (JSON.parse(raw) as { kind: "key" | "webhook"; id: string; value: string }) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const plainKey = reveal?.kind === "key" && reveal.id === created ? reveal.value : undefined;
+  const secret = reveal?.kind === "webhook" && reveal.id === newHook ? reveal.value : undefined;
   await dbReady;
   const [keys, hooks, origin] = await Promise.all([
     db.select().from(apiKeys).where(eq(apiKeys.orgId, ctx.org.id)).orderBy(desc(apiKeys.createdAt)),
@@ -31,7 +43,7 @@ export default async function ApiPage({
     <>
       <header className="flex flex-col gap-1.5">
         <div className="eyebrow">API and webhooks</div>
-        <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
           Export creative anywhere. <span className="font-serif italic text-muted">Keys, endpoints and signed webhooks.</span>
         </h1>
       </header>

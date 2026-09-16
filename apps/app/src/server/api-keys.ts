@@ -2,6 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { db, dbReady, apiKeys, webhooks } from "@adcraft/db";
 import { requireOrg } from "./org";
@@ -26,7 +27,10 @@ export async function createApiKey(formData: FormData) {
     .returning({ id: apiKeys.id });
   await logAudit(ctx.org.id, ctx.viewer.userId, "api_key.created", "api_key", row.id, { name, prefix: key.prefix });
   revalidatePath("/settings/api");
-  redirect(`/settings/api?created=${row.id}&key=${encodeURIComponent(key.plain)}`);
+  // Show the secret once via a short-lived httpOnly cookie; never in the URL (logs, history, referrers).
+  const jar = await cookies();
+  jar.set("adcraft_reveal", JSON.stringify({ kind: "key", id: row.id, value: key.plain }), { path: "/settings/api", httpOnly: true, sameSite: "lax", maxAge: 120 });
+  redirect(`/settings/api?created=${row.id}`);
 }
 
 export async function revokeApiKey(formData: FormData) {
@@ -62,7 +66,9 @@ export async function addWebhook(formData: FormData) {
     .returning({ id: webhooks.id });
   await logAudit(ctx.org.id, ctx.viewer.userId, "webhook.created", "webhook", row.id, { url, events });
   revalidatePath("/settings/api");
-  redirect(`/settings/api?webhook=${row.id}&secret=${encodeURIComponent(secret)}`);
+    const jar2 = await cookies();
+  jar2.set("adcraft_reveal", JSON.stringify({ kind: "webhook", id: row.id, value: secret }), { path: "/settings/api", httpOnly: true, sameSite: "lax", maxAge: 120 });
+  redirect(`/settings/api?webhook=${row.id}`);
 }
 
 export async function deleteWebhook(formData: FormData) {

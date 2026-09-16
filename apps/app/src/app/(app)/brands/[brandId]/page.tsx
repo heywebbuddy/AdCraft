@@ -41,7 +41,7 @@ export default async function BrandKitPage({
             · Brand kit · v{active?.version ?? 1}
             {versions.length > 1 ? ` of ${versions.length}` : ""}
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {brand.name}. <span className="font-serif italic tracking-[-0.6px] text-orange">Every ad starts here.</span>
           </h1>
         </div>

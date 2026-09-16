@@ -60,7 +60,7 @@ export default async function ProductPage({
             </Link>{" "}
             · {ctx.brand.name}
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {product.name}.{" "}
             <span className="font-serif italic tracking-[-0.6px] text-orange">
               {status === "ready" ? "Ready for any scene." : status === "failed" ? "The cutout needs another go." : "Cutting it out now."}

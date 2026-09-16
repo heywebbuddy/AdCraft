@@ -118,7 +118,7 @@ export function parseScriptToScenes(script: string, opts: { kind: VideoKind; vis
     line: m.spoken,
     // The hook is shown large over scene 1, so do not repeat it as a caption.
     caption: i === 0 && hook && m.spoken === hook ? "" : m.spoken.length > 90 ? m.spoken.slice(0, 87).replace(/\s+\S*$/, "") + "…" : m.spoken,
-    prompt: m.visual || `${opts.visualDirection ? `${opts.visualDirection}. ` : ""}${product} in a scene that matches: "${m.spoken}". Photoreal, ad-quality, no text.`,
+    prompt: `${noTextInstructions(m.visual || `${opts.visualDirection ? `${opts.visualDirection}. ` : ""}${product} in a scene that matches: "${m.spoken}".`)} Photoreal, ad-quality. No text, no letters, no typography, no logos, no captions, no graphics anywhere in the frame.`,
     durationSec: opts.kind === "ugc" ? Math.max(2, Math.round(m.spoken.split(/\s+/).length / 2.5)) : per,
     hookText: i === 0 ? hook : undefined,
     role: "scene" as const,
@@ -476,4 +476,14 @@ export async function getVideo(orgId: string, creativeId: string): Promise<Video
     credits: CREDITS[kind],
     updatedAt: row.creative.updatedAt,
   };
+}
+
+/** Drop sentences that instruct on-screen text or graphics: captions are composited by the video renderer, not painted by the image model. */
+function noTextInstructions(visual: string): string {
+  const kept = visual
+    .split(/(?<=[.;])\s+/)
+    .filter((sentence) => !/\b(on-screen|text|headline|logo|typograph|graphic|caption|stamp|badge|subtitle|overlay)\b/i.test(sentence))
+    .join(" ")
+    .trim();
+  return kept || visual;
 }

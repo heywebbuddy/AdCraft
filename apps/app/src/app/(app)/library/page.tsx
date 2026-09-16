@@ -22,7 +22,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5">
           <div className="eyebrow">Library · {ctx.brand.name}</div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             Products. <span className="font-serif italic tracking-[-0.6px] text-orange">Cut out and ready for any scene.</span>
           </h1>
         </div>

@@ -35,7 +35,7 @@ export default async function NewCreativePage({ searchParams }: { searchParams: 
             </Link>{" "}
             · New
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             Start from a concept. <span className="font-serif italic tracking-[-0.6px] text-orange">Pick one in a brief.</span>
           </h1>
         </header>
@@ -71,7 +71,7 @@ export default async function NewCreativePage({ searchParams }: { searchParams: 
             </Link>{" "}
             · New
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             {concept.title}. <span className="font-serif italic tracking-[-0.6px] text-orange">Make it real.</span>
           </h1>
         </div>

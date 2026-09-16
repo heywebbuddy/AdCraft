@@ -30,7 +30,7 @@ export default async function NewCampaignPage({ searchParams }: { searchParams: 
             </Link>{" "}
             · New
           </div>
-          <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
             One form. <span className="font-serif italic tracking-[-0.6px] text-orange">Every platform&rsquo;s native objects.</span>
           </h1>
           <p className="m-0 max-w-[62ch] text-[15px] text-muted">

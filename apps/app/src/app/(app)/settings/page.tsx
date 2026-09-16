@@ -22,7 +22,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <>
       <header className="flex flex-col gap-1.5">
         <div className="eyebrow">Settings</div>
-        <h1 className="m-0 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
+        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
           {ctx.org.name}. <span className="font-serif italic text-muted">The boring but important bits.</span>
         </h1>
       </header>
