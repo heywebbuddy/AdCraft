@@ -1,0 +1,188 @@
+import "server-only";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import {
+  db,
+  dbReady,
+  briefs,
+  concepts,
+  generationEvents,
+  products,
+  projects,
+  type BriefData,
+} from "@adcraft/db";
+import { ANTHROPIC_MODEL, SAMPLE_MODEL, isAnthropicConfigured } from "@adcraft/ai";
+import { dispatch } from "./jobs";
+import "@/pipelines";
+
+export const OBJECTIVES = [
+  { id: "awareness", label: "Awareness", hint: "Reach new people" },
+  { id: "consideration", label: "Consideration", hint: "Explain and compare" },
+  { id: "conversion", label: "Conversion", hint: "Drive purchases" },
+  { id: "retention", label: "Retention", hint: "Bring customers back" },
+] as const;
+export const PLATFORMS = [
+  { id: "meta", label: "Meta" },
+  { id: "instagram", label: "Instagram" },
+  { id: "tiktok", label: "TikTok" },
+  { id: "google", label: "Google" },
+  { id: "youtube", label: "YouTube" },
+] as const;
+export const FORMATS = [
+  { id: "static", label: "Static ads" },
+  { id: "video", label: "Product video" },
+  { id: "ugc", label: "UGC video" },
+] as const;
+
+export type Objective = (typeof OBJECTIVES)[number]["id"];
+export type FormatId = (typeof FORMATS)[number]["id"];
+
+/** Brief-level fields stored in `briefs.data` on top of the shared `BriefData` shape. */
+export type BriefExtras = { tone?: string };
+export type StoredBriefData = BriefData & BriefExtras;
+
+export const DEFAULT_CONCEPT_COUNT = 8;
+export const MORE_CONCEPT_COUNT = 4;
+
+export type BriefListItem = {
+  id: string;
+  title: string;
+  objective: string;
+  formats: BriefData["formats"];
+  platforms: string[];
+  conceptCount: number;
+  generating: boolean;
+  createdAt: Date;
+};
+
+/** Briefs for a brand (via projects.brandId), newest first. */
+export async function listBriefs(orgId: string, brandId: string | null): Promise<BriefListItem[]> {
+  await dbReady;
+  const rows = await db
+    .select({ brief: briefs })
+    .from(briefs)
+    .innerJoin(projects, eq(projects.id, briefs.projectId))
+    .where(brandId ? and(eq(briefs.orgId, orgId), eq(projects.brandId, brandId)) : eq(briefs.orgId, orgId))
+    .orderBy(desc(briefs.createdAt));
+  if (rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.brief.id);
+  const [counts, running] = await Promise.all([
+    db
+      .select({ briefId: concepts.briefId, n: sql<number>`count(*)::int` })
+      .from(concepts)
+      .where(inArray(concepts.briefId, ids))
+      .groupBy(concepts.briefId),
+    db
+      .select({ briefId: generationEvents.briefId })
+      .from(generationEvents)
+      .where(
+        and(
+          eq(generationEvents.orgId, orgId),
+          eq(generationEvents.capability, "text"),
+          eq(generationEvents.status, "started"),
+          inArray(generationEvents.briefId, ids),
+        ),
+      ),
+  ]);
+  const countBy = new Map(counts.map((c) => [c.briefId, c.n]));
+  const runningSet = new Set(running.map((r) => r.briefId));
+
+  return rows.map(({ brief }) => ({
+    id: brief.id,
+    title: brief.title,
+    objective: brief.data.objective,
+    formats: brief.data.formats,
+    platforms: brief.data.platforms,
+    conceptCount: countBy.get(brief.id) ?? 0,
+    generating: runningSet.has(brief.id),
+    createdAt: brief.createdAt,
+  }));
+}
+
+/** Products of a brand for the brief form's product select. */
+export async function listProductsForBrand(orgId: string, brandId: string | null) {
+  await dbReady;
+  if (!brandId) return [];
+  return db
+    .select({ id: products.id, name: products.name })
+    .from(products)
+    .where(and(eq(products.orgId, orgId), eq(products.brandId, brandId)))
+    .orderBy(products.name);
+}
+
+export type BriefDetail = {
+  brief: typeof briefs.$inferSelect;
+  project: typeof projects.$inferSelect;
+  product: { id: string; name: string } | null;
+  concepts: Array<typeof concepts.$inferSelect>;
+  /** Latest concept-generation event for this brief, if any. */
+  event: typeof generationEvents.$inferSelect | null;
+};
+
+export async function loadBrief(orgId: string, briefId: string): Promise<BriefDetail | null> {
+  await dbReady;
+  const [row] = await db
+    .select({ brief: briefs, project: projects, productId: products.id, productName: products.name })
+    .from(briefs)
+    .innerJoin(projects, eq(projects.id, briefs.projectId))
+    .leftJoin(products, eq(products.id, briefs.productId))
+    .where(and(eq(briefs.id, briefId), eq(briefs.orgId, orgId)))
+    .limit(1);
+  if (!row) return null;
+
+  const [list, [event]] = await Promise.all([
+    // A batch insert shares one created_at, so break ties on id to keep the order stable across refreshes.
+    db.select().from(concepts).where(eq(concepts.briefId, briefId)).orderBy(concepts.createdAt, concepts.id),
+    db
+      .select()
+      .from(generationEvents)
+      .where(
+        and(
+          eq(generationEvents.orgId, orgId),
+          eq(generationEvents.briefId, briefId),
+          eq(generationEvents.capability, "text"),
+        ),
+      )
+      .orderBy(desc(generationEvents.createdAt))
+      .limit(1),
+  ]);
+
+  return {
+    brief: row.brief,
+    project: row.project,
+    product: row.productId ? { id: row.productId, name: row.productName ?? "" } : null,
+    concepts: list,
+    event: event ?? null,
+  };
+}
+
+export function conceptsModel() {
+  return isAnthropicConfigured() ? ANTHROPIC_MODEL : SAMPLE_MODEL;
+}
+
+/** Records the "started" generation_events row and kicks off the concepts job. */
+export async function startConceptsRun(input: {
+  orgId: string;
+  userId: string;
+  briefId: string;
+  title: string;
+  count: number;
+}) {
+  await dbReady;
+  const [event] = await db
+    .insert(generationEvents)
+    .values({
+      orgId: input.orgId,
+      userId: input.userId,
+      briefId: input.briefId,
+      capability: "text",
+      provider: "anthropic",
+      model: conceptsModel(),
+      status: "started",
+      credits: 1,
+      meta: { label: `${input.title} · concepts`, detail: `${input.count} hooks and angles` },
+    })
+    .returning();
+  await dispatch("concepts.generate", { orgId: input.orgId, briefId: input.briefId, count: input.count });
+  return event;
+}

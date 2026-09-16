@@ -1,0 +1,220 @@
+import { and, desc, eq } from "drizzle-orm";
+import {
+  db,
+  dbReady,
+  brandKits,
+  brands,
+  briefs,
+  concepts,
+  creditLedger,
+  generationEvents,
+  products,
+  projects,
+  type ConceptData,
+} from "@adcraft/db";
+import {
+  ANTHROPIC_MODEL,
+  SAMPLE_MODEL,
+  generateConcepts,
+  isAnthropicConfigured,
+  type ConceptBrief,
+  type ConceptKind,
+  type PlatformTextLimits,
+} from "@adcraft/ai";
+import { placementsFor, type Platform } from "@adcraft/specs";
+import { registerJob, type JobPayloads } from "@/server/jobs";
+import type { StoredBriefData } from "@/server/briefs";
+
+const CREDITS_PER_RUN = 1;
+
+/** Brief platforms map onto @adcraft/specs platforms (Instagram shares Meta's placements). */
+const SPEC_PLATFORM: Record<string, Platform> = {
+  meta: "meta",
+  instagram: "meta",
+  tiktok: "tiktok",
+  google: "google",
+  youtube: "youtube",
+};
+
+/** Tightest copy limits per brief platform across all its placements. */
+function limitsFor(platforms: string[]): Record<string, PlatformTextLimits> {
+  const out: Record<string, PlatformTextLimits> = {};
+  for (const p of platforms) {
+    const spec = SPEC_PLATFORM[p];
+    if (!spec) continue;
+    const specs = placementsFor(spec);
+    if (specs.length === 0) continue;
+    const min = (field: keyof PlatformTextLimits) => {
+      const values = specs.map((s) => s.text[field]).filter((n) => n > 0);
+      return values.length ? Math.min(...values) : 0;
+    };
+    out[p] = { headline: min("headline"), primaryText: min("primaryText"), description: min("description") };
+  }
+  return out;
+}
+
+function toKind(kind: string): ConceptKind {
+  return kind === "video" || kind === "ugc" ? kind : "static";
+}
+
+/**
+ * brief -> Claude -> concepts rows. Updates the latest "started" text generation event
+ * for the brief (recorded by the server action that dispatched us) and charges one credit
+ * on success. Safe to call from the inline dispatcher or an Inngest step.
+ */
+export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]) {
+  await dbReady;
+  const { orgId, briefId } = data;
+  const count = data.count ?? 8;
+  const startedAt = Date.now();
+
+  const [row] = await db
+    .select({ brief: briefs, project: projects, brand: brands, product: products })
+    .from(briefs)
+    .innerJoin(projects, eq(projects.id, briefs.projectId))
+    .innerJoin(brands, eq(brands.id, projects.brandId))
+    .leftJoin(products, eq(products.id, briefs.productId))
+    .where(and(eq(briefs.id, briefId), eq(briefs.orgId, orgId)))
+    .limit(1);
+  if (!row) throw new Error(`Brief ${briefId} not found in org ${orgId}`);
+
+  const [kit] = await db
+    .select()
+    .from(brandKits)
+    .where(and(eq(brandKits.brandId, row.brand.id), eq(brandKits.isActive, true)))
+    .orderBy(desc(brandKits.version))
+    .limit(1);
+
+  // The event recorded by the dispatcher. Fallback: create one so the run is always accounted for.
+  let [event] = await db
+    .select()
+    .from(generationEvents)
+    .where(
+      and(
+        eq(generationEvents.orgId, orgId),
+        eq(generationEvents.briefId, briefId),
+        eq(generationEvents.capability, "text"),
+        eq(generationEvents.status, "started"),
+      ),
+    )
+    .orderBy(desc(generationEvents.createdAt))
+    .limit(1);
+  if (!event) {
+    [event] = await db
+      .insert(generationEvents)
+      .values({
+        orgId,
+        briefId,
+        capability: "text",
+        provider: "anthropic",
+        model: isAnthropicConfigured() ? ANTHROPIC_MODEL : SAMPLE_MODEL,
+        status: "started",
+        credits: CREDITS_PER_RUN,
+        meta: { label: `${row.brief.title} · concepts`, detail: `${count} hooks and angles` },
+      })
+      .returning();
+  }
+  const eventId = event!.id;
+
+  const briefData = row.brief.data as StoredBriefData;
+  const input: ConceptBrief = {
+    brand: {
+      name: row.brand.name,
+      industry: row.brand.industry ?? undefined,
+      tone: kit?.data.voice?.tone,
+      doSay: kit?.data.voice?.doSay,
+      dontSay: kit?.data.voice?.dontSay,
+      tagline: kit?.data.tagline,
+      ctaStyle: kit?.data.ctaStyle,
+    },
+    product: row.product
+      ? {
+          name: row.product.name,
+          description: row.product.description ?? undefined,
+          price: row.product.price ?? undefined,
+          url: row.product.url ?? undefined,
+          attributes: row.product.attributes ?? undefined,
+        }
+      : undefined,
+    objective: briefData.objective,
+    audience: briefData.audience,
+    offer: briefData.offer,
+    keyMessages: briefData.keyMessages,
+    platforms: briefData.platforms,
+    formats: briefData.formats,
+    toneOverride: briefData.tone,
+    constraints: briefData.constraints,
+    platformLimits: limitsFor(briefData.platforms),
+    count,
+  };
+
+  try {
+    const { output, usage } = await generateConcepts(input);
+
+    // Keep the model's format when it is one the brief asked for; otherwise round-robin
+    // across the requested formats so every format gets concepts.
+    const formats = briefData.formats.length ? briefData.formats : (["static"] as ConceptKind[]);
+    const rows = output.concepts.map((c, i) => {
+      const wanted = toKind(c.kind);
+      const kind = formats.includes(wanted) ? wanted : formats[i % formats.length]!;
+      const conceptData: ConceptData & { platformFit: string[] } = {
+        hook: c.hook,
+        angle: c.angle,
+        headline: c.headline,
+        primaryText: c.primaryText,
+        description: c.description || undefined,
+        cta: c.cta,
+        visualDirection: c.visualDirection,
+        script: kind === "static" ? undefined : c.script || undefined,
+        platformFit: c.platformFit.length ? c.platformFit : briefData.platforms,
+      };
+      return {
+        orgId,
+        briefId,
+        title: c.title,
+        kind,
+        status: "proposed" as const,
+        data: conceptData,
+        model: usage.model,
+      };
+    });
+    // Insert one at a time so created_at reflects generation order (a batch insert shares one timestamp).
+    for (const r of rows) await db.insert(concepts).values(r);
+
+    await db
+      .update(generationEvents)
+      .set({
+        status: "succeeded",
+        model: usage.model,
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        durationMs: Date.now() - startedAt,
+        costUsd: (usage.costUsd ?? 0).toFixed(6),
+        credits: CREDITS_PER_RUN,
+        meta: { ...(event!.meta ?? {}), concepts: rows.length },
+      })
+      .where(eq(generationEvents.id, eventId));
+
+    await db
+      .insert(creditLedger)
+      .values({
+        orgId,
+        delta: -CREDITS_PER_RUN,
+        reason: "generation",
+        referenceId: eventId,
+        meta: { briefId, capability: "text", model: usage.model },
+      })
+      .onConflictDoNothing();
+
+    return { briefId, eventId, count: rows.length, model: usage.model };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await db
+      .update(generationEvents)
+      .set({ status: "failed", error: message.slice(0, 2000), durationMs: Date.now() - startedAt })
+      .where(eq(generationEvents.id, eventId));
+    throw err;
+  }
+}
+
+registerJob("concepts.generate", runConceptsPipeline);
