@@ -19,9 +19,12 @@ export const authConfig = {
         pathname.startsWith("/api/") ||
         pathname.startsWith("/invite") ||
         pathname.startsWith("/share");
-      const isProtected = !isPublic;
-      if (isProtected) return isLoggedIn;
-      return true;
+      if (isPublic || isLoggedIn) return true;
+      // Send signed-out visitors to sign-in with only the callback (Auth.js would otherwise
+      // copy the original query string onto /sign-in as well).
+      const target = new URL("/sign-in", request.nextUrl.origin);
+      target.searchParams.set("callbackUrl", `${pathname}${request.nextUrl.search}`);
+      return Response.redirect(target);
     },
   },
 } satisfies NextAuthConfig;

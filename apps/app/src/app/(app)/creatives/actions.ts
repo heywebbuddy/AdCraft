@@ -22,12 +22,14 @@ export async function createCreativeFromConcept(formData: FormData) {
   const ctx = await requireOrg();
   const conceptId = String(formData.get("conceptId") ?? "");
   const model = String(formData.get("model") ?? "");
-  const template = String(formData.get("template") ?? "");
+  const templateChoice = String(formData.get("template") ?? "");
+  const templateId = templateChoice.startsWith("saved:") ? templateChoice.slice(6) : undefined;
+  const template = templateId ? "" : templateChoice;
   if (!conceptId) redirect("/creatives");
   if (ctx.credits.balance < STATIC_SCENE_CREDITS) redirect(`/creatives/new?conceptId=${conceptId}&error=credits`);
   let creativeId: string;
   try {
-    ({ creativeId } = await createCreative(ctx.org.id, conceptId, { model, template }));
+    ({ creativeId } = await createCreative(ctx.org.id, conceptId, { model, template, templateId }));
   } catch {
     redirect(`/creatives/new?conceptId=${conceptId}&error=concept`);
   }

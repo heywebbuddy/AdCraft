@@ -334,14 +334,25 @@ export function buildDocumentFromConcept(c: ConceptForCreative, opts: { template
 export async function createCreativeFromConcept(
   orgId: string,
   conceptId: string,
-  opts: { model?: string; template?: string },
+  opts: { model?: string; template?: string; templateId?: string },
 ): Promise<{ creativeId: string }> {
   await dbReady;
   const c = await getConceptForCreative(orgId, conceptId);
   if (!c) throw new Error("Concept not found");
   const model = imageModels.some((m) => m.id === opts.model) ? (opts.model as string) : defaultModel("image").id;
-  const template: StaticTemplate = opts.template && isTemplate(opts.template) ? opts.template : "hero";
+
+  // A saved template (Release 3) contributes its layout choices; copy and product come from the concept.
+  let saved: Partial<StaticAdDocument> | null = null;
+  if (opts.templateId) {
+    const { templates } = await import("@adcraft/db");
+    const t = await db.query.templates.findFirst({ where: and(eq(templates.id, opts.templateId), eq(templates.orgId, orgId)) });
+    if (t?.kind === "static") saved = t.document as Partial<StaticAdDocument>;
+  }
+  const template: StaticTemplate = opts.template && isTemplate(opts.template) ? opts.template : saved?.template && isTemplate(saved.template) ? saved.template : "hero";
   const document = buildDocumentFromConcept(c, { template, model });
+  if (saved?.layout) document.layout = { ...document.layout, ...saved.layout };
+  if (saved?.scene?.kind === "gradient") document.scene = saved.scene;
+  if (saved?.product && document.product) document.product = { ...document.product, scale: saved.product.scale, x: saved.product.x, y: saved.product.y };
 
   const [creative] = await db
     .insert(creatives)

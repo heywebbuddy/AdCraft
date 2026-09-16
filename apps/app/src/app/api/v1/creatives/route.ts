@@ -11,9 +11,14 @@ export async function GET(req: Request) {
   const principal = await authenticateApiKey(req);
   if (!principal) return unauthorized();
   const url = new URL(req.url);
+  const rawLimit = url.searchParams.get("limit");
+  const limit = rawLimit === null ? 50 : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
+    return Response.json({ error: { code: "invalid_limit", message: "limit must be an integer between 1 and 200" } }, { status: 400 });
+  }
   const result = await apiListCreatives(principal.orgId, {
     brandId: url.searchParams.get("brandId"),
-    limit: Number(url.searchParams.get("limit") ?? 50) || 50,
+    limit,
     cursor: url.searchParams.get("cursor"),
   });
   return Response.json({ data: result.data, next_cursor: result.nextCursor });

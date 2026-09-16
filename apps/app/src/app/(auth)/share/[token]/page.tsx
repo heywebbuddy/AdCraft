@@ -77,7 +77,7 @@ function Sizes({ token, item, compact = false }: { token: string; item: SharedCr
     return <div className="panel border-dashed p-6 text-[13px] text-muted">Still rendering. Check back in a minute.</div>;
   }
   return (
-    <div className={`grid items-start gap-4 ${compact ? "grid-cols-2 md:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+    <div className={`flex flex-wrap items-start gap-4 ${compact ? "[&>*]:w-[calc(50%-8px)] md:[&>*]:w-[calc(25%-12px)]" : "[&>*]:w-[calc(50%-8px)] lg:[&>*]:w-[calc(33.333%-11px)]"}`}>
       {ready.map((s) => (
         <a key={s.variantId} href={`/api/share/${token}/${s.outputKey}`} target="_blank" rel="noreferrer" className="tile flex flex-col">
           <div

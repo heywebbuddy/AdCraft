@@ -95,7 +95,7 @@ export default async function CreativeReviewPage({
             {sizes.length === 0 ? (
               <div className="panel border-dashed p-6 text-[13px] text-muted">No sizes yet. Renders show up here as they finish.</div>
             ) : (
-              <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-wrap items-start gap-4 [&>*]:w-[calc(50%-8px)] lg:[&>*]:w-[calc(33.333%-11px)]">
                 {sizes.map((s) => (
                   <div key={s.variantId} className="tile flex flex-col">
                     <div

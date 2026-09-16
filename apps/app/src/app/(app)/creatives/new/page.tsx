@@ -5,6 +5,7 @@ import { getConceptForCreative, imageModelChoices, STATIC_PLACEMENT_IDS, STATIC_
 import { getPlacement } from "@adcraft/specs";
 import { createCreativeFromConcept } from "../actions";
 import { TemplateThumb } from "../template-thumb";
+import { listTemplatesFor } from "@/server/collab-data";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function NewCreativePage({ searchParams }: { searchParams: 
   const concept = conceptId ? await getConceptForCreative(ctx.org.id, conceptId) : null;
   const models = imageModelChoices();
   const kit = concept?.brand.kit;
+  const saved = await listTemplatesFor(ctx.org.id, ctx.brand?.id ?? null, "static");
   const colors = { primary: kit?.colors.primary ?? "#242521", accent: kit?.colors.accent ?? "#e65c32" };
   const sizes = STATIC_PLACEMENT_IDS.map((id) => getPlacement(id));
 
@@ -104,6 +106,26 @@ export default async function NewCreativePage({ searchParams }: { searchParams: 
                 </label>
               ))}
             </div>
+            {saved.length ? (
+              <div className="flex flex-col gap-2">
+                <span className="text-[11px] text-muted">Saved layouts</span>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {saved.map((t) => {
+                    const base = (t.document as { template?: string }).template;
+                    return (
+                      <label key={t.id} className={optionClass}>
+                        <input type="radio" name="template" value={`saved:${t.id}`} className="sr-only" />
+                        <TemplateThumb template={(base === "split" || base === "minimal" || base === "bold" ? base : "hero") as "hero"} colors={colors} />
+                        <span className="flex flex-col gap-0.5">
+                          <span className="text-[13px] font-semibold">{t.name}</span>
+                          <span className="text-[11px] leading-snug text-muted">{t.isShared ? "Shared across brands" : (t.brandName ?? "This brand")}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-3">
