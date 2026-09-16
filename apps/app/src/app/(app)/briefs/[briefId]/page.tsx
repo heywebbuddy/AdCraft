@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MakeVideoLink } from "@/components/video-links";
 import { notFound } from "next/navigation";
 import type { ConceptData } from "@adcraft/db";
 import { requireOrg } from "@/server/org";
@@ -252,9 +253,17 @@ export default async function BriefPage({ params }: { params: Promise<{ briefId:
                   <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
                     {isSelected ? (
                       <>
-                        <Link href={`/creatives/new?conceptId=${c.id}`} className="btn btn-orange h-11">
-                          Make the ad <span aria-hidden="true">↗</span>
-                        </Link>
+                        {c.kind === "static" ? (
+                          <Link href={`/creatives/new?conceptId=${c.id}`} className="btn btn-orange h-11">
+                            Make the ad <span aria-hidden="true">↗</span>
+                          </Link>
+                        ) : null}
+                        <MakeVideoLink conceptId={c.id} kind={c.kind} />
+                        {c.kind !== "static" ? (
+                          <Link href={`/creatives/new?conceptId=${c.id}`} className="btn btn-outline h-11">
+                            Static version <span aria-hidden="true">↗</span>
+                          </Link>
+                        ) : null}
                         <form action={setConceptStatus.bind(null, c.id, "proposed")}>
                           <button type="submit" className="btn btn-outline h-11">
                             Unselect

@@ -159,6 +159,13 @@ export async function assembleVariants(orgId: string, creativeId: string, doc: V
     try {
       const mp4 = await renderVideo(doc, { ratio, loadAsset: loadVideoAsset });
       const key = await storeRender(orgId, mp4, "mp4", "video/mp4");
+      let posterKey: string | null = null;
+      try {
+        const { posterPng } = await import("@adcraft/ai");
+        posterKey = await storeRender(orgId, await posterPng(mp4), "png", "image/png");
+      } catch (err) {
+        console.warn("[video] poster frame failed", err);
+      }
       await db
         .update(renders)
         .set({
@@ -167,7 +174,7 @@ export async function assembleVariants(orgId: string, creativeId: string, doc: V
           mimeType: "video/mp4",
           fileBytes: mp4.byteLength,
           error: null,
-          meta: { placementId: v.placementId, ratio, kind: doc.kind, model: doc.model, durationMs: Date.now() - startedAt, width: v.width, height: v.height },
+          meta: { placementId: v.placementId, ratio, kind: doc.kind, model: doc.model, durationMs: Date.now() - startedAt, width: v.width, height: v.height, posterKey },
         })
         .where(eq(renders.id, row!.id));
       const r: AssembleResult = { variantId: v.id, ratio, status: "succeeded", renderId: row!.id, outputKey: key };

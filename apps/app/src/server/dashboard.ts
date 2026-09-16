@@ -89,7 +89,7 @@ async function loadWall(orgId: string, brandId: string | null): Promise<WallTile
       kind: creative.kind,
       ratio: first?.v.ratio ?? "4:5",
       status: done ? "rendered" : failed ? "failed" : "draft",
-      previewUrl: done?.r?.outputKey ? `/api/files/${done.r.outputKey}` : null,
+      previewUrl: previewKeyFor(done?.r ?? null),
       model: concept.model ?? doc?.model ?? null,
       updatedAt: creative.updatedAt,
       headline: concept.data.headline ?? doc?.headline ?? null,
@@ -118,4 +118,14 @@ async function loadCounts(orgId: string, brandId: string | null) {
     .from(renders)
     .where(and(eq(renders.orgId, orgId), eq(renders.status, "failed")));
   return { creatives: c?.creatives ?? 0, briefs: b?.n ?? 0, failedRenders: f?.n ?? 0 };
+}
+
+/** Image renders preview directly; video renders use the poster frame stored in meta. */
+function previewKeyFor(r: { outputKey: string | null; mimeType: string | null; meta: Record<string, unknown> | null } | null) {
+  if (!r?.outputKey) return null;
+  if (r.mimeType?.startsWith("video/")) {
+    const poster = r.meta?.posterKey;
+    return typeof poster === "string" ? `/api/files/${poster}` : null;
+  }
+  return `/api/files/${r.outputKey}`;
 }

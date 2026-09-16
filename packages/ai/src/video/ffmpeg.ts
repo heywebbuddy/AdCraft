@@ -187,3 +187,16 @@ export async function slideshowMp4(
     return fs.readFile(outFile);
   });
 }
+
+/** First-second poster frame of an mp4 as PNG (for thumbnails and tiles). */
+export async function posterPng(mp4: Buffer, atSec = 0.5): Promise<Buffer> {
+  return withTempDir(async (dir) => {
+    const fs = await import("node:fs/promises");
+    const path = await import("node:path");
+    const input = path.join(dir, "in.mp4");
+    const out = path.join(dir, "poster.png");
+    await fs.writeFile(input, mp4);
+    await runFfmpeg(["-y", "-ss", String(atSec), "-i", input, "-frames:v", "1", "-vf", "scale='min(1080,iw)':-2", out], { cwd: dir, timeoutMs: 60_000 });
+    return fs.readFile(out);
+  });
+}

@@ -152,7 +152,13 @@ export async function listCreatives(
       kind: creative.kind,
       status: statusOf(latestMine, generating, eventFailed),
       ratio: doneVariant?.ratio ?? mine[0]?.ratio ?? "4:5",
-      previewUrl: preview?.outputKey ? `/api/files/${preview.outputKey}` : null,
+      previewUrl: preview?.outputKey
+        ? preview.mimeType?.startsWith("video/")
+          ? typeof preview.meta?.posterKey === "string"
+            ? `/api/files/${preview.meta.posterKey}`
+            : null
+          : `/api/files/${preview.outputKey}`
+        : null,
       model: (doc.meta?.model as string | undefined) ?? concept.model ?? null,
       headline: doc.headline ?? concept.data.headline ?? null,
       sizes: { done: latestMine.filter((r) => r?.status === "succeeded").length, total: mine.length },
