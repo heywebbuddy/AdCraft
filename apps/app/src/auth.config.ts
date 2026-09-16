@@ -15,7 +15,8 @@ export const authConfig = {
       // Public: marketing, sign-in, API routes (they check auth themselves), invite acceptance
       // (redirects to sign-in with a callbackUrl when signed out) and client share links.
       const isPublic =
-        ["/", "/sign-in"].includes(pathname) ||
+        ["/", "/sign-in", "/showcase", "/pricing"].includes(pathname) ||
+        /\.[a-z0-9]+$/i.test(pathname) || // static files from public/ (marketing site assets)
         pathname.startsWith("/api/") ||
         pathname.startsWith("/invite") ||
         pathname.startsWith("/share");

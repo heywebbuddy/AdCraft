@@ -26,7 +26,7 @@ cp .env.example .env        # AUTH_SECRET is the only required value: openssl ra
 pnpm --filter @adcraft/app dev
 ```
 
-Open http://localhost:3000. With no email provider configured, sign-in accepts any address. With no `DATABASE_URL`, an embedded Postgres runs under `.data/pglite`. With no `ANTHROPIC_API_KEY` or `FAL_KEY`, generation returns labelled sample output so every flow can be exercised.
+Open http://localhost:3000 for the marketing site (served from `dist/` via `apps/app/public`) and /dashboard for the product. With no email provider configured, sign-in accepts any address. With no `DATABASE_URL`, an embedded Postgres runs under `.data/pglite`. With no `ANTHROPIC_API_KEY` or `FAL_KEY`, generation returns labelled sample output so every flow can be exercised.
 
 Add keys to `.env` to switch each piece on: `ANTHROPIC_API_KEY` (concepts and copy), `FAL_KEY` (scenes, cutouts, video), `RESEND_API_KEY` (magic links), `AUTH_GOOGLE_*`, `STRIPE_*` (billing), `R2_*` (storage), `INNGEST_*` (background jobs; otherwise they run inline).
 

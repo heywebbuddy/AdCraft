@@ -16,7 +16,7 @@ Two deployables: the marketing site (`dist/`, static, already hosted) and the pr
    - Video/UGC: `ELEVENLABS_API_KEY`, `HEYGEN_API_KEY`
    - Ads (leave unset to keep sandbox providers): `META_*`, `TIKTOK_*`, `GOOGLE_ADS_*`, `TOKEN_ENCRYPTION_KEY`
 3. Run migrations once against the production database: `DATABASE_URL=… pnpm --filter @adcraft/db db:migrate`.
-4. Point the marketing site at the app: set `window.ADCRAFT_APP_URL` (or edit `APP_URL` in `dist/app.js`).
+4. The app serves the marketing site itself at `/`, `/showcase` and `/pricing` (copied from `dist/` on every build). If you keep `dist/` on its own static host too, set `window.ADCRAFT_APP_URL` there so its buttons point at the app.
 
 ## What does not run on Vercel functions
 

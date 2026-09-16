@@ -1,5 +1,5 @@
-// Product app origin. Change once the app is deployed (e.g. https://app.adcraft.app).
-const APP_URL=(window.ADCRAFT_APP_URL||'https://app.adcraft.app');
+// Product app origin. Empty = same origin (the app serves this site at /). Set window.ADCRAFT_APP_URL when hosted apart.
+const APP_URL=(window.ADCRAFT_APP_URL||'');
 const arrow='<span aria-hidden="true">↗</span>';
 const logo='<span class="brand-symbol" aria-hidden="true">✳</span> adcraft<span class="brand-dot">.</span>';
 const pathname=location.pathname;const isPricing=pathname.includes('pricing');const isShowcase=pathname.includes('showcase');

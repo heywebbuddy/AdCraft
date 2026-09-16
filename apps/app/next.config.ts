@@ -9,6 +9,14 @@ for (const file of [".env", ".env.local"]) {
 }
 
 const nextConfig: NextConfig = {
+  // The marketing site (repo `dist/`) is copied into public/ by scripts/sync-site.mjs and served here.
+  async rewrites() {
+    return [
+      { source: "/", destination: "/index.html" },
+      { source: "/showcase", destination: "/showcase/index.html" },
+      { source: "/pricing", destination: "/pricing/index.html" },
+    ];
+  },
   transpilePackages: ["@adcraft/ui", "@adcraft/ads", "@adcraft/db", "@adcraft/ai", "@adcraft/storage", "@adcraft/specs", "@adcraft/render"],
   serverExternalPackages: ["postgres", "@electric-sql/pglite", "@resvg/resvg-js", "sharp", "@remotion/renderer", "@remotion/bundler", "ffmpeg-static", "fluent-ffmpeg"],
 };
