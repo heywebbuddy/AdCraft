@@ -185,12 +185,12 @@ export async function buildAdVideoProps(
     scenes.push({ src: presenterSrc, kind: "video", durationSec: total, muted: false });
 
     // Captions follow the script lines, proportionally to their length.
-    const lines = mainScenes.length ? mainScenes : doc.scenes;
-    const sum = lines.reduce((s, l) => s + weight(l.caption || l.line), 0) || 1;
+    const lines = (mainScenes.length ? mainScenes : doc.scenes).filter((l) => (l.line || l.caption).trim());
+    const sum = lines.reduce((s, l) => s + weight(l.line || l.caption), 0) || 1;
     let t = 0;
     for (const l of lines) {
-      const d = (weight(l.caption || l.line) / sum) * total;
-      captions.push({ text: l.caption || l.line, fromSec: t, toSec: t + d });
+      const d = (weight(l.line || l.caption) / sum) * total;
+      if (l.caption.trim()) captions.push({ text: l.caption, fromSec: t, toSec: t + d });
       if (!hook && l.hookText) hook = { text: l.hookText, fromSec: t, toSec: Math.min(total, t + Math.max(2, d)) };
       t += d;
     }
@@ -254,8 +254,11 @@ export class LocalRemotionRenderer implements VideoRenderer {
   async render(props: AdVideoProps, opts: { onProgress?: (f: number) => void; crf?: number; concurrency?: number; logLevel?: RenderVideoOptions["logLevel"] } = {}): Promise<Buffer> {
     const [{ ensureBrowser, renderMedia, selectComposition }, serveUrl] = await Promise.all([import("@remotion/renderer"), getBundle()]);
     const logLevel = opts.logLevel ?? "error";
-    await ensureBrowser({ logLevel });
-    const composition = await selectComposition({ serveUrl, id: "AdVideo", inputProps: props, logLevel });
+    // Chrome Headless Shell is downloaded on first use into `<cwd package>/node_modules/.remotion`;
+    // set REMOTION_BROWSER_EXECUTABLE to reuse an existing Chrome/Chromium instead.
+    const browserExecutable = process.env.REMOTION_BROWSER_EXECUTABLE || null;
+    await ensureBrowser({ logLevel, browserExecutable });
+    const composition = await selectComposition({ serveUrl, id: "AdVideo", inputProps: props, logLevel, browserExecutable });
     const outDir = await fs.mkdtemp(path.join(os.tmpdir(), "adcraft-video-"));
     const outputLocation = path.join(outDir, "out.mp4");
     try {
@@ -268,6 +271,7 @@ export class LocalRemotionRenderer implements VideoRenderer {
         crf: opts.crf ?? 20,
         concurrency: opts.concurrency ?? Math.max(1, Math.min(4, Math.floor(os.cpus().length / 2))),
         logLevel,
+        browserExecutable,
         onProgress: ({ progress }) => opts.onProgress?.(progress),
         // Cover-cropped stills and clips already match the frame; no need for expensive scaling.
         scale: 1,

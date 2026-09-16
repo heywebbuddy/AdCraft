@@ -140,13 +140,13 @@ const Caption = ({
   );
 };
 
-const Hook = ({ text, fonts, metrics }: { text: string; fonts: AdVideoProps["fonts"]; metrics: ReturnType<typeof captionMetrics> }) => {
+const Hook = ({ text, fonts, metrics, offset = 0, boxed = false }: { text: string; fonts: AdVideoProps["fonts"]; metrics: ReturnType<typeof captionMetrics>; offset?: number; boxed?: boolean }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const enter = spring({ frame, fps, config: { damping: 18, stiffness: 120 } });
   const exit = interpolate(frame, [durationInFrames - Math.round(fps * 0.25), durationInFrames], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
-    <AbsoluteFill style={{ alignItems: "center", paddingLeft: metrics.sideInset, paddingRight: metrics.sideInset, paddingTop: metrics.topInset }}>
+    <AbsoluteFill style={{ alignItems: "center", paddingLeft: metrics.sideInset, paddingRight: metrics.sideInset, paddingTop: metrics.topInset + offset }}>
       <div
         style={{
           fontFamily: `${HEADING_FAMILY}, ${fonts.heading}, "DM Sans", sans-serif`,
@@ -156,7 +156,10 @@ const Hook = ({ text, fonts, metrics }: { text: string; fonts: AdVideoProps["fon
           letterSpacing: -metrics.hookSize * 0.03,
           textAlign: "center",
           color: "#fff",
-          textShadow: "0 4px 30px rgba(0,0,0,0.55)",
+          textShadow: boxed ? "none" : "0 4px 30px rgba(0,0,0,0.55), 0 0 3px rgba(0,0,0,0.9)",
+          ...(boxed
+            ? { background: "rgba(20,20,18,0.78)", padding: `${metrics.hookSize * 0.3}px ${metrics.hookSize * 0.5}px`, borderRadius: metrics.hookSize * 0.25, display: "inline-block", maxWidth: "100%" }
+            : {}),
           opacity: enter * exit,
           transform: `translateY(${interpolate(enter, [0, 1], [-30, 0])}px) scale(${interpolate(enter, [0, 1], [0.96, 1])})`,
         }}
@@ -262,7 +265,7 @@ export const AdVideo = (props: AdVideoProps) => {
 
       {props.hook ? (
         <Sequence from={secToFrames(props.hook.fromSec, fps)} durationInFrames={secToFrames(props.hook.toSec - props.hook.fromSec, fps)}>
-          <Hook text={props.hook.text} fonts={props.fonts} metrics={metrics} />
+          <Hook text={props.hook.text} fonts={props.fonts} metrics={metrics} offset={props.aiLabel ? Math.round(metrics.hookSize * 0.9) : 0} boxed={props.captionStyle.style !== "clean"} />
         </Sequence>
       ) : null}
 

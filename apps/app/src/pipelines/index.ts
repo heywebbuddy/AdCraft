@@ -6,5 +6,10 @@ import "./concepts";
 import "./static";
 import "./render";
 import "./product-cutout";
+import "./video";
+import "./ugc";
+
+import "./publish";
+import "./insights";
 
 export {};
