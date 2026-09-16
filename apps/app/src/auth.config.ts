@@ -12,7 +12,14 @@ export const authConfig = {
     authorized({ auth, request }) {
       const isLoggedIn = Boolean(auth?.user);
       const { pathname } = request.nextUrl;
-      const isProtected = !["/", "/sign-in"].includes(pathname) && !pathname.startsWith("/api/");
+      // Public: marketing, sign-in, API routes (they check auth themselves), invite acceptance
+      // (redirects to sign-in with a callbackUrl when signed out) and client share links.
+      const isPublic =
+        ["/", "/sign-in"].includes(pathname) ||
+        pathname.startsWith("/api/") ||
+        pathname.startsWith("/invite") ||
+        pathname.startsWith("/share");
+      const isProtected = !isPublic;
       if (isProtected) return isLoggedIn;
       return true;
     },

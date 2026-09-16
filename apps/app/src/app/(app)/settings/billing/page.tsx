@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SettingsNav } from "@/components/settings-nav";
 import { requireOrg } from "@/server/org";
 import { PLANS, TOP_UP, CREDIT_COSTS, currentSubscription, ledgerHistory, stripeConfigured, type PlanId } from "@/server/billing";
 import { openPortal, startCheckout, startTopUp } from "@/server/billing-actions";
@@ -30,15 +30,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         </h1>
       </header>
 
-      <nav className="flex gap-1 self-start rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
-        <Link href="/settings" className="inline-flex min-h-9 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
-          Workspace
-        </Link>
-        <span className="inline-flex min-h-9 items-center rounded-[5px] bg-ink px-3 text-white">Plan and credits</span>
-        <Link href="/brands" className="inline-flex min-h-9 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
-          Brands
-        </Link>
-      </nav>
+      <SettingsNav active="billing" role={ctx.role} />
 
       {ok === "dev" ? (
         <p className="panel m-0 border-dashed px-4 py-3 text-[13px] text-muted">

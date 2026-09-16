@@ -3,6 +3,7 @@ import { db, memberships, users } from "@adcraft/db";
 import { requireOrg } from "@/server/org";
 import { updateOrgName } from "@/server/billing-actions";
 import Link from "next/link";
+import { SettingsNav } from "@/components/settings-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -26,15 +27,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         </h1>
       </header>
 
-      <nav className="flex gap-1 self-start rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
-        <span className="inline-flex min-h-9 items-center rounded-[5px] bg-ink px-3 text-white">Workspace</span>
-        <Link href="/settings/billing" className="inline-flex min-h-9 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
-          Plan and credits
-        </Link>
-        <Link href="/brands" className="inline-flex min-h-9 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
-          Brands
-        </Link>
-      </nav>
+      <SettingsNav active="workspace" role={ctx.role} />
 
       <div className="grid max-w-[900px] gap-4 md:grid-cols-2">
         <section className="panel flex flex-col gap-4 p-5">
@@ -69,7 +62,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               </li>
             ))}
           </ul>
-          <p className="m-0 text-[12px] text-muted">Invites and roles arrive with team review in Release 3.</p>
+          <Link href="/settings/team" className="text-[12px] font-semibold text-orange">
+            Invite people and manage roles ↗
+          </Link>
         </section>
       </div>
     </>
