@@ -9,9 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@adcraft/ads": "workspace:*",
     "@adcraft/ai": "workspace:*",
     "@adcraft/db": "workspace:*",
-    "@adcraft/render": "workspace:^",
+    "@adcraft/render": "workspace:*",
     "@adcraft/specs": "workspace:*",
     "@adcraft/storage": "workspace:*",
     "@adcraft/ui": "workspace:*",

@@ -1,5 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "baseUrl": ".", "paths": {} },
-  "include": ["src"]
+  "compilerOptions": { "baseUrl": ".", "paths": {}, "types": ["node"] },
+  "include": ["src", "scripts"],
+  "exclude": ["src/compositions", "src/remotion.ts", "src/Root.tsx", "src/static/Template.tsx"]
 }
