@@ -11,6 +11,8 @@
   "dependencies": {
     "@adcraft/ai": "workspace:*",
     "@adcraft/db": "workspace:*",
+    "@adcraft/specs": "workspace:*",
+    "@adcraft/storage": "workspace:*",
     "@adcraft/ui": "workspace:*",
     "@auth/drizzle-adapter": "^1.10.0",
     "drizzle-orm": "^0.44.5",
