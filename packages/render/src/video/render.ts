@@ -82,13 +82,28 @@ export const FONT_FILES = {
 
 // ---------- bundle (once per process; survives Next.js HMR via globalThis) ----------
 
-const g = globalThis as unknown as { __adcraftRemotionBundle?: Promise<string> };
+const g = globalThis as unknown as { __adcraftRemotionBundle?: Promise<string>; __adcraftRemotionSig?: string };
+
+/** Newest mtime of the composition sources, so edits during development trigger a rebundle. */
+async function sourceSignature(): Promise<string> {
+  if (process.env.NODE_ENV === "production") return "prod";
+  try {
+    const names = await fs.readdir(here);
+    const stats = await Promise.all(names.filter((n) => /\.(tsx?|css)$/.test(n)).map((n) => fs.stat(path.join(here, n))));
+    return String(Math.max(...stats.map((st) => st.mtimeMs)));
+  } catch {
+    return "unknown";
+  }
+}
 
 export async function getBundle(): Promise<string> {
+  const sig = await sourceSignature();
+  if (g.__adcraftRemotionBundle && g.__adcraftRemotionSig !== sig) g.__adcraftRemotionBundle = undefined;
   if (!g.__adcraftRemotionBundle) {
+    g.__adcraftRemotionSig = sig;
     g.__adcraftRemotionBundle = (async () => {
       const { bundle } = remotionBundler();
-      const outDir = path.join(BUNDLE_DIR, `p${process.pid}`);
+      const outDir = path.join(BUNDLE_DIR, `p${process.pid}-${sig.replace(/\D/g, "").slice(-8)}`);
       await fs.rm(outDir, { recursive: true, force: true });
       const serveUrl = await bundle({
         entryPoint: ENTRY,
@@ -187,8 +202,8 @@ export async function buildAdVideoProps(
 
   const sceneSrc = async (scene: VideoDocument["scenes"][number], i: number) => {
     const clip = await materialize(scene.clip, opts.assetsDir, `scene-${i}`, opts.loadAsset, "mp4");
-    if (clip) return { src: clip, kind: "video" as const };
     const still = await materialize(scene.still, opts.assetsDir, `still-${i}`, opts.loadAsset, "png");
+    if (clip) return { src: clip, kind: "video" as const, posterSrc: still ?? undefined };
     if (still) return { src: still, kind: "image" as const };
     return null;
   };

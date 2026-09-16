@@ -91,6 +91,8 @@ export interface AdVideoSceneProps {
   kind: "video" | "image";
   durationSec: number;
   muted?: boolean;
+  /** Still frame drawn beneath a clip so decode gaps at scene boundaries never show black. */
+  posterSrc?: string;
 }
 
 export interface AdVideoCaption {

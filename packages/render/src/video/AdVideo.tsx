@@ -61,16 +61,21 @@ const secToFrames = (sec: number, fps: number) => Math.max(1, Math.round(sec * f
 
 // ---------- scene track ----------
 
-const SceneLayer = ({ src, kind, muted, durationFrames }: { src: string; kind: "video" | "image"; muted?: boolean; durationFrames: number }) => {
+const SceneLayer = ({ src, kind, muted, durationFrames, posterSrc }: { src: string; kind: "video" | "image"; muted?: boolean; durationFrames: number; posterSrc?: string }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const fadeIn = interpolate(frame, [0, Math.round(fps * 0.3)], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // No fade from black: scenes cut directly, and the poster under the clip covers the
+  // one or two frames a video decoder can miss at a sequence boundary.
+  const fadeIn = frame === 0 && !posterSrc ? 0.999 : 1;
   // Stills get a slow push-in so they never read as a frozen frame.
   const scale = kind === "image" ? interpolate(frame, [0, durationFrames], [1, 1.12], { extrapolateRight: "clamp" }) : 1;
   return (
     <AbsoluteFill style={{ opacity: fadeIn, backgroundColor: "#000" }}>
+      {kind === "video" && posterSrc ? (
+        <Img src={posterSrc} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : null}
       {kind === "video" ? (
-        <OffthreadVideo src={src} muted={muted} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <OffthreadVideo src={src} muted={muted} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
         <Img src={src} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${scale})` }} />
       )}
@@ -180,7 +185,8 @@ const EndCard = ({ brand, endCard, fonts, width, height }: Pick<AdVideoProps, "b
   const short = Math.min(width, height);
   const headlineSize = Math.round(short / 11);
   return (
-    <AbsoluteFill style={{ backgroundColor: brand.colors.background, opacity: enter, justifyContent: "center", alignItems: "center", gap: short * 0.05, padding: short * 0.1 }}>
+    <AbsoluteFill style={{ backgroundColor: brand.colors.background }}>
+    <AbsoluteFill style={{ opacity: enter, justifyContent: "center", alignItems: "center", gap: short * 0.05, padding: short * 0.1 }}>
       {brand.logoSrc ? (
         <Img src={brand.logoSrc} style={{ maxWidth: short * 0.4, maxHeight: short * 0.18, objectFit: "contain" }} />
       ) : (
@@ -221,6 +227,7 @@ const EndCard = ({ brand, endCard, fonts, width, height }: Pick<AdVideoProps, "b
         {endCard.cta}
       </div>
     </AbsoluteFill>
+    </AbsoluteFill>
   );
 };
 
@@ -242,7 +249,7 @@ export const AdVideo = (props: AdVideoProps) => {
     cursor += frames;
     return (
       <Sequence key={`scene-${i}`} from={from} durationInFrames={frames} premountFor={fps}>
-        <SceneLayer src={scene.src} kind={scene.kind} muted={scene.muted ?? hasExternalAudio} durationFrames={frames} />
+        <SceneLayer src={scene.src} kind={scene.kind} muted={scene.muted ?? hasExternalAudio} durationFrames={frames} posterSrc={scene.posterSrc} />
       </Sequence>
     );
   });
