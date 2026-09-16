@@ -7,6 +7,7 @@ import type { PGlite as PGliteType } from "@electric-sql/pglite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
+import os from "node:os";
 import * as schema from "./schema";
 
 /**
@@ -28,7 +29,12 @@ function create(): { db: Db; ready: Promise<void> } {
     const sql = postgres(url, { prepare: false, max: 10 });
     return { db: drizzlePostgres(sql, { schema }) as unknown as Db, ready: Promise.resolve() };
   }
-  const dataDir = process.env.PGLITE_DATA_DIR ?? path.resolve(process.cwd(), "../../.data/pglite");
+  // `next build` prerenders in parallel workers; each gets a private throwaway directory so
+  // they never open the same PGlite files concurrently (which corrupts the store).
+  const building = process.env.NEXT_PHASE === "phase-production-build";
+  const dataDir = building
+    ? path.join(os.tmpdir(), `adcraft-pglite-build-${process.pid}`)
+    : (process.env.PGLITE_DATA_DIR ?? path.resolve(process.cwd(), "../../.data/pglite"));
   if (process.env.NODE_ENV === "production") {
     console.warn("[@adcraft/db] DATABASE_URL is not set in production; falling back to PGlite at", dataDir);
   }
@@ -67,8 +73,12 @@ function create(): { db: Db; ready: Promise<void> } {
 
   // Close cleanly so the next boot finds a consistent directory.
   const shutdown = () => {
-    void client.close().finally(() => process.exit(0));
+    void client.close().finally(() => {
+      if (building) fs.rmSync(dataDir, { recursive: true, force: true });
+      process.exit(0);
+    });
   };
+  if (building) process.once("exit", () => fs.rmSync(dataDir, { recursive: true, force: true }));
   for (const sig of ["SIGINT", "SIGTERM"] as const) {
     process.once(sig, shutdown);
   }

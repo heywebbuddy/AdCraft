@@ -34,6 +34,22 @@ import {
 
 export type AssetLoader = (asset: VideoAsset) => Promise<Buffer | null>;
 
+/**
+ * Remotion's bundler and renderer carry native bindings (rspack, the compositor) and
+ * must never be bundled by the app's webpack. `process.getBuiltinModule` is opaque to
+ * bundlers, so this resolves them with a real Node require from this package.
+ */
+function nodeRequireFromHere(): NodeRequire {
+  const nodeModule = process.getBuiltinModule("node:module") as typeof import("node:module");
+  return nodeModule.createRequire(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../package.json"));
+}
+function remotionBundler(): typeof import("@remotion/bundler") {
+  return nodeRequireFromHere()("@remotion/bundler");
+}
+function remotionRenderer(): typeof import("@remotion/renderer") {
+  return nodeRequireFromHere()("@remotion/renderer");
+}
+
 export interface RenderVideoOptions {
   ratio: VideoRatio;
   /** Reads private assets (storage keys) into bytes for the render server. */
@@ -71,7 +87,7 @@ const g = globalThis as unknown as { __adcraftRemotionBundle?: Promise<string> }
 export async function getBundle(): Promise<string> {
   if (!g.__adcraftRemotionBundle) {
     g.__adcraftRemotionBundle = (async () => {
-      const { bundle } = await import("@remotion/bundler");
+      const { bundle } = remotionBundler();
       const outDir = path.join(BUNDLE_DIR, `p${process.pid}`);
       await fs.rm(outDir, { recursive: true, force: true });
       const serveUrl = await bundle({
@@ -252,7 +268,8 @@ export class LocalRemotionRenderer implements VideoRenderer {
   readonly engine = "remotion-local" as const;
 
   async render(props: AdVideoProps, opts: { onProgress?: (f: number) => void; crf?: number; concurrency?: number; logLevel?: RenderVideoOptions["logLevel"] } = {}): Promise<Buffer> {
-    const [{ ensureBrowser, renderMedia, selectComposition }, serveUrl] = await Promise.all([import("@remotion/renderer"), getBundle()]);
+    const { ensureBrowser, renderMedia, selectComposition } = remotionRenderer();
+    const serveUrl = await getBundle();
     const logLevel = opts.logLevel ?? "error";
     // Chrome Headless Shell is downloaded on first use into `<cwd package>/node_modules/.remotion`;
     // set REMOTION_BROWSER_EXECUTABLE to reuse an existing Chrome/Chromium instead.
