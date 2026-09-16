@@ -1,0 +1,154 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { SearchIcon, ArrowIcon, BoltIcon } from "./icons";
+const destinations = [
+  { name: "Overview", href: "/dashboard", group: "Workspace" },
+  { name: "Creative briefs", href: "/briefs", group: "Create" },
+  { name: "All creatives", href: "/creatives", group: "Create" },
+  { name: "Product library", href: "/library", group: "Assets" },
+  { name: "Brand kits", href: "/brands", group: "Assets" },
+  { name: "Campaigns", href: "/campaigns", group: "Distribution" },
+  { name: "Performance", href: "/performance", group: "Distribution" },
+  { name: "Team members", href: "/settings/team", group: "Settings" },
+  { name: "Templates", href: "/settings/templates", group: "Settings" },
+  { name: "Billing & credits", href: "/settings/billing", group: "Settings" },
+  { name: "API access", href: "/settings/api", group: "Settings" },
+  { name: "Settings", href: "/settings", group: "Workspace" },
+];
+export function WorkspaceTopbar({
+  orgName,
+  credits,
+  role,
+}: {
+  orgName: string;
+  credits: number;
+  role: string;
+}) {
+  const path = usePathname();
+  const current =
+    destinations.find((d) => d.href === path) ??
+    destinations.find((d) => path.startsWith(d.href + "/"));
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [query, setQuery] = useState("");
+  const input = useRef<HTMLInputElement>(null);
+  const open = () => {
+    setQuery("");
+    dialog.current?.showModal();
+    input.current?.focus();
+  };
+  useEffect(() => {
+    const listener = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        open();
+      }
+    };
+    document.addEventListener("keydown", listener);
+    return () => document.removeEventListener("keydown", listener);
+  }, []);
+  useEffect(() => dialog.current?.close(), [path]);
+  const results = destinations.filter((d) =>
+    (d.name + " " + d.group).toLowerCase().includes(query.toLowerCase()),
+  );
+  return (
+    <>
+      <header className="workspace-topbar">
+        <nav aria-label="Breadcrumb" className="workspace-breadcrumb">
+          <span>{orgName}</span>
+          <span aria-hidden="true">/</span>
+          <Link href={current?.href ?? "/dashboard"}>
+            {current?.name ?? "Workspace"}
+          </Link>
+          {current && path !== current.href && (
+            <>
+              <span aria-hidden="true">/</span>
+              <span>{path.endsWith("/new") ? "Create new" : "Details"}</span>
+            </>
+          )}
+        </nav>
+        <div className="topbar-tools">
+          <button
+            onClick={open}
+            className="workspace-search-trigger"
+            aria-label="Search workspace"
+          >
+            <SearchIcon width={16} height={16} />
+            <span>Search workspace</span>
+            <kbd>⌘ K</kbd>
+          </button>
+          <Link
+            href="/settings/billing"
+            className="topbar-credits"
+            title="Manage generation credits"
+          >
+            <BoltIcon width={15} height={15} />
+            {credits.toLocaleString()}
+            <span>credits</span>
+          </Link>
+          <span className="role-badge">{role}</span>
+        </div>
+      </header>
+      <dialog
+        ref={dialog}
+        className="workspace-command"
+        aria-label="Search workspace"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) dialog.current?.close();
+        }}
+      >
+        <form action="/creatives">
+          <div className="command-input">
+            <SearchIcon />
+            <input
+              ref={input}
+              type="search"
+              name="q"
+              placeholder="Find a page or search creatives…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Find a page or search creatives"
+            />
+            <button
+              type="button"
+              onClick={() => dialog.current?.close()}
+              aria-label="Close search"
+            >
+              Esc
+            </button>
+          </div>
+          <div className="command-results">
+            <span className="workspace-nav-label">
+              {query ? "MATCHING PAGES" : "QUICK NAVIGATION"}
+            </span>
+            {results.map((d) => (
+              <Link
+                key={d.href}
+                href={d.href}
+                onClick={() => dialog.current?.close()}
+              >
+                <span>
+                  {d.name}
+                  <small>{d.group}</small>
+                </span>
+                <ArrowIcon width={16} height={16} />
+              </Link>
+            ))}
+            {query && (
+              <button type="submit" className="command-search-creatives">
+                <SearchIcon width={16} height={16} /> Search creatives for “
+                {query}” <ArrowIcon width={16} height={16} />
+              </button>
+            )}
+            {!results.length && !query && <p>No matching pages.</p>}
+          </div>
+        </form>
+        <div className="command-footer">
+          <span>Jump to a page or press Enter to search creatives.</span>
+          <span>ESC to close</span>
+        </div>
+      </dialog>
+    </>
+  );
+}

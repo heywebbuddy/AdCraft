@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/workspace-ui";
 import Link from "next/link";
 import { requireOrg } from "@/server/org";
 import { createBrand } from "@/server/brands";
@@ -14,17 +15,7 @@ export default async function NewBrandPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <header className="flex flex-col gap-1.5">
-        <div className="eyebrow">
-          <Link href="/brands" className="hover:text-ink">
-            Brands
-          </Link>{" "}
-          · New
-        </div>
-        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
-          {first ? "First brand." : "Another brand."} <span className="font-serif italic tracking-[-0.6px] text-orange">Who are we making ads for?</span>
-        </h1>
-      </header>
+      <PageHeader title="Add a brand" description="Set the foundation for a consistent creative identity."/>
 
       <form action={createBrand} className="panel flex w-full max-w-[520px] flex-col gap-4 p-5">
         <p className="m-0 text-[13px] text-muted">

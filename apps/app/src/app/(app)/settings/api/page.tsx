@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/workspace-ui";
 import { desc, eq } from "drizzle-orm";
 import { db, dbReady, apiKeys, webhooks } from "@adcraft/db";
 import { requireOrg } from "@/server/org";
@@ -41,12 +42,7 @@ export default async function ApiPage({
 
   return (
     <>
-      <header className="flex flex-col gap-1.5">
-        <div className="eyebrow">API and webhooks</div>
-        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
-          Export creative anywhere. <span className="font-serif italic text-muted">Keys, endpoints and signed webhooks.</span>
-        </h1>
-      </header>
+      <PageHeader title="API & integrations" description="Connect your creative workflow with API keys and webhooks."/>
 
       <SettingsNav active="api" role={ctx.role} />
 
