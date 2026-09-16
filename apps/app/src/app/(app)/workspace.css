@@ -1748,6 +1748,7 @@
 }
 .wall-headline {
   margin-top: auto;
+  padding-right: 8px;
   font-family: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
   font-size: 20px;
   line-height: 1;
@@ -1797,7 +1798,7 @@
 .wall-ratio {
   position: absolute;
   left: 10px;
-  bottom: 10px;
+  top: 10px;
   font-size: 10px;
   font-weight: 600;
   background: #242521cc;
@@ -2137,5 +2138,26 @@
   }
   .home-empty {
     grid-template-columns: 1fr;
+  }
+}
+.wall-badge.rendering {
+  color: #b7791f;
+}
+.wall-page {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+@media (max-width: 1500px) {
+  .wall-page {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1250px) {
+  .wall-page {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .wall-page {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

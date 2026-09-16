@@ -8,7 +8,8 @@ import {
   CollectionSearch,
   EmptyState,
 } from "@/components/workspace-ui";
-import { CreativeCard } from "@/components/creative-card";
+import { WallTile } from "@/components/wall-tile";
+import { loadPerformanceSummary } from "@/server/ads";
 export const dynamic = "force-dynamic";
 const KINDS = [
   { id: "", label: "All creatives" },
@@ -30,10 +31,10 @@ export default async function CreativesPage({
 }) {
   const ctx = await requireOrg();
   const { kind = "", status = "", q = "" } = await searchParams;
-  const all = await listCreatives(ctx.org.id, ctx.brand?.id ?? null, {
-    kind: kind || undefined,
-    status: status || undefined,
-  });
+  const [all, perf] = await Promise.all([
+    listCreatives(ctx.org.id, ctx.brand?.id ?? null, { kind: kind || undefined, status: status || undefined }),
+    loadPerformanceSummary(ctx.org.id, ctx.brand?.id ?? null, 7),
+  ]);
   const items = all.filter((item) =>
     item.name.toLowerCase().includes(q.trim().toLowerCase()),
   );
@@ -100,9 +101,9 @@ export default async function CreativesPage({
         </div>
       </div>
       {items.length ? (
-        <div className="creative-grid">
-          {items.map((item) => (
-            <CreativeCard key={item.id} {...item} />
+        <div className="wall wall-page">
+          {items.map((item, i) => (
+            <WallTile key={item.id} {...item} live={perf.byCreative[item.id] ?? null} index={i} />
           ))}
         </div>
       ) : filtered ? (

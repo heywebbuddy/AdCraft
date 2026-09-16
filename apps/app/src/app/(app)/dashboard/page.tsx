@@ -4,14 +4,12 @@ import { loadDashboard } from "@/server/dashboard";
 import { loadPerformanceSummary } from "@/server/ads";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeader } from "@/components/workspace-ui";
+import { WallTile, wallPlaceholders as placeholders } from "@/components/wall-tile";
 import {
   AlertIcon,
   ArrowIcon,
-  BriefIcon,
   CheckIcon,
-  CreativesIcon,
   LibraryIcon,
-  PlayIcon,
   PlusIcon,
   StarIcon,
   TextIcon,
@@ -20,28 +18,9 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const placeholders = [
-  "linear-gradient(160deg, #eef0e6 0%, #dfe3d3 100%)",
-  "linear-gradient(160deg, #f1ebe1 0%, #e3d9c9 100%)",
-  "linear-gradient(160deg, #e6ece6 0%, #d3ddd4 100%)",
-  "linear-gradient(160deg, #ece9e3 0%, #dad5cc 100%)",
-];
-
-const ratioValue: Record<string, string> = { "1:1": "1 / 1", "4:5": "4 / 5", "9:16": "9 / 16", "16:9": "16 / 9", "1.91:1": "1.91 / 1" };
-
-const platformLabel: Record<string, string> = { meta: "Meta", tiktok: "TikTok", google: "Google" };
-
 function greeting(d: Date) {
   const h = d.getHours();
   return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
-}
-
-function relative(d: Date) {
-  const s = Math.round((Date.now() - d.getTime()) / 1000);
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.round(s / 60)}m ago`;
-  if (s < 86400) return `${Math.round(s / 3600)}h ago`;
-  return `${Math.round(s / 86400)}d ago`;
 }
 
 export default async function DashboardPage() {
@@ -182,48 +161,9 @@ export default async function DashboardPage() {
 
             {data.tiles.length ? (
               <div className="wall">
-                {data.tiles.map((t, i) => {
-                  const live = perf.byCreative[t.id];
-                  return (
-                    <Link key={t.id} href={t.kind === "static" ? `/creatives/${t.id}` : `/videos/${t.id}`} className="wall-tile">
-                      <div
-                        className="wall-art"
-                        style={{
-                          aspectRatio: ratioValue[t.ratio] ?? "4 / 5",
-                          background: t.previewUrl ? `url(${t.previewUrl}) center/cover` : placeholders[i % placeholders.length],
-                        }}
-                      >
-                        {!t.previewUrl && t.headline ? <span className="wall-headline">{t.headline}</span> : null}
-                        {t.kind !== "static" ? (
-                          <span className="wall-play">
-                            <PlayIcon width={13} height={13} />
-                          </span>
-                        ) : null}
-                        <span className={`wall-badge ${t.status}`}>
-                          <i />
-                          {t.status === "rendered" ? (live ? "Live" : "Ready") : t.status === "failed" ? "Failed" : "Draft"}
-                        </span>
-                        <span className="wall-ratio">{t.ratio}</span>
-                      </div>
-                      <div className="wall-meta">
-                        <div className="wall-row">
-                          <strong>{t.name}</strong>
-                          <span className="tabular">{relative(t.updatedAt)}</span>
-                        </div>
-                        <div className="wall-row wall-sub">
-                          <span>{live ? platformLabel[live.platform] ?? live.platform : t.kind === "static" ? "Static ad" : t.kind === "ugc" ? "UGC video" : "Video"}</span>
-                          {live ? (
-                            <span className="tabular">
-                              <b>{(live.ctr * 100).toFixed(1)}%</b> CTR{live.roas != null ? <> · <b>{live.roas.toFixed(1)}×</b></> : null}
-                            </span>
-                          ) : (
-                            <span>{t.model ?? ""}</span>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+                {data.tiles.map((t, i) => (
+                  <WallTile key={t.id} {...t} live={perf.byCreative[t.id] ?? null} index={i} />
+                ))}
               </div>
             ) : (
               <div className="home-empty">
