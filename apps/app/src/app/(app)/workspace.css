@@ -72,11 +72,9 @@
   letter-spacing: -1.5px;
   line-height: 1;
 }
-.workspace-logo > span {
-  font-size: 32px;
-  font-weight: 400;
+.workspace-logo > .spark {
   color: var(--orange);
-  margin-right: 7px;
+  margin-right: 6px;
 }
 .workspace-logo > b {
   color: var(--orange);
@@ -1669,6 +1667,9 @@
   height: 68px;
   border-radius: 6px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .queue-body {
   display: flex;
@@ -2257,4 +2258,84 @@
 }
 .workspace-command:focus-within .command-input {
   box-shadow: inset 0 -1px 0 var(--orange);
+}
+
+/* ---------- The spark: brand mark as spinner ---------- */
+.spark {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transform-origin: 50% 50%;
+}
+.spark-spin {
+  animation: spark-spin 1.5s cubic-bezier(0.65, 0.05, 0.35, 0.95) infinite;
+}
+.spark-breathe {
+  animation: spark-breathe 2.6s ease-in-out infinite;
+}
+@keyframes spark-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(0.86); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes spark-breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.82); opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spark-spin,
+  .spark-breathe {
+    animation: spark-fade 1.4s ease-in-out infinite;
+  }
+  @keyframes spark-fade {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+}
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22em;
+  font-weight: 650;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: var(--ink);
+}
+.wordmark-spark {
+  color: var(--orange);
+}
+.wordmark b {
+  color: var(--orange);
+  font-weight: 600;
+  margin-left: -0.12em;
+}
+.workspace-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 50vh;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+.btn.is-pending {
+  opacity: 0.85;
+  cursor: progress;
+}
+.btn .spark {
+  color: currentColor;
+}
+/* Working badges and chips */
+.wall-badge.rendering i,
+.status-working i {
+  display: none;
+}
+.wall-badge .spark,
+.status-working .spark {
+  color: var(--orange);
+}
+.home-stat-live {
+  display: none;
 }

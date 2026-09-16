@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { PendingButton } from "@/components/pending-button";
+import { Wordmark } from "@/components/spark";
 import { auth, signIn, devLoginEnabled } from "@/auth";
 
 const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
@@ -20,9 +22,8 @@ export default async function SignInPage({
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-[400px]">
-        <div className="mb-8 flex items-center gap-1.5 text-[26px] font-semibold tracking-[-1.3px] leading-none">
-          <span className="text-[32px] font-normal leading-[.8] text-orange">✳</span>adcraft
-          <span className="-ml-1 text-orange">.</span>
+        <div className="mb-8">
+          <Wordmark size={26} />
         </div>
         <h1 className="text-[34px] font-medium leading-[1.05] tracking-[-1.6px]">
           Welcome back.
@@ -51,9 +52,9 @@ export default async function SignInPage({
                 Work email
               </label>
               <input id="email" name="email" type="email" required autoComplete="email" placeholder="you@brand.com" className={inputClass} />
-              <button type="submit" className="btn btn-dark h-11 justify-between">
+              <PendingButton className="btn btn-dark h-11 justify-between" pendingLabel="Sending…">
                 Email me a sign-in link <span aria-hidden="true">↗</span>
-              </button>
+              </PendingButton>
             </form>
           ) : null}
 
@@ -83,9 +84,9 @@ export default async function SignInPage({
                 No email provider is configured, so any address signs you straight in. Add <code className="rounded bg-paper px-1">RESEND_API_KEY</code> to switch to magic links.
               </p>
               <input name="email" type="email" required placeholder="you@brand.com" className={inputClass} />
-              <button type="submit" className="btn btn-orange h-11 justify-between">
+              <PendingButton className="btn btn-orange h-11 justify-between" pendingLabel="Signing in…">
                 Sign in <span aria-hidden="true">↗</span>
-              </button>
+              </PendingButton>
             </form>
           ) : null}
 

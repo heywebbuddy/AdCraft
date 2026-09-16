@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Wordmark } from "@/components/spark";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db, dbReady, organizations } from "@adcraft/db";
@@ -51,9 +52,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-[420px]">
-        <div className="mb-8 flex items-center gap-1.5 text-[26px] font-semibold leading-none tracking-[-1.3px]">
-          <span className="text-[32px] font-normal leading-[.8] text-orange">✳</span>adcraft<span className="-ml-1 text-orange">.</span>
-        </div>
+        <div className="mb-8"><Wordmark size={26} /></div>
         <div className="eyebrow">You’re invited</div>
         <h1 className="mt-3 text-[34px] font-medium leading-[1.05] tracking-[-1.6px]">
           Join {orgName} <span className="font-serif italic text-orange">as {invite.role}.</span>
@@ -73,9 +72,7 @@ function Shell({ title, body, cta }: { title: string; body: string; cta?: { href
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-[420px]">
-        <div className="mb-8 flex items-center gap-1.5 text-[26px] font-semibold leading-none tracking-[-1.3px]">
-          <span className="text-[32px] font-normal leading-[.8] text-orange">✳</span>adcraft<span className="-ml-1 text-orange">.</span>
-        </div>
+        <div className="mb-8"><Wordmark size={26} /></div>
         <h1 className="m-0 text-[34px] font-medium leading-[1.05] tracking-[-1.6px]">{title}</h1>
         <p className="mt-4 text-[15px] text-muted">{body}</p>
         {cta ? (

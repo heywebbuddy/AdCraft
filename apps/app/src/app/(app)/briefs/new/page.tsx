@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingButton } from "@/components/pending-button";
 import { requireOrg } from "@/server/org";
 import {
   FORMATS,
@@ -233,12 +234,12 @@ export default async function NewBriefPage({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
-            <button type="submit" className="btn btn-orange h-11">
+            <PendingButton className="btn btn-orange h-11" pendingLabel="Starting…">
               Generate concepts{" "}
               <span aria-hidden="true" className="text-lg leading-none">
                 ↗
               </span>
-            </button>
+            </PendingButton>
             <Link href="/briefs" className="btn btn-outline h-11">
               Cancel
             </Link>

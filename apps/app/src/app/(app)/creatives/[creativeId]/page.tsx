@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Spark } from "@/components/spark";
 import { notFound } from "next/navigation";
 import { STATIC_TEMPLATES } from "@adcraft/render";
 import { requireOrg } from "@/server/org";
@@ -183,13 +184,12 @@ export default async function CreativePage({
                       </>
                     ) : (
                       <>
+                        <Spark size={34} animate="spin" />
                         <span className="font-serif text-[22px] italic">{c.generating ? c.generating.label : "Rendering…"}</span>
                         <span className="text-[12px] opacity-80">
                           {c.generating ? c.generating.detail : `${selected.width}×${selected.height} · satori`}
                         </span>
-                        <span className="h-[5px] w-40 overflow-hidden rounded-full bg-white/30">
-                          <span className="block h-full w-1/2 animate-pulse rounded-full bg-white/90" />
-                        </span>
+
                       </>
                     )}
                   </div>
@@ -226,7 +226,9 @@ export default async function CreativePage({
                       Download ↓
                     </a>
                   ) : (
-                    <span className="text-[12px] text-muted">{v.render?.status === "failed" ? "Failed" : "Rendering…"}</span>
+                    <span className="inline-flex items-center gap-1.5 text-[12px] text-muted">
+                      {v.render?.status === "failed" ? "Failed" : <><Spark size={12} animate="spin" className="text-orange" /> Rendering…</>}
+                    </span>
                   )}
                 </div>
               );

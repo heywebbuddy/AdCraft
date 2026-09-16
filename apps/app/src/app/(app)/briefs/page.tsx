@@ -1,3 +1,4 @@
+import { Spark } from "@/components/spark";
 import {
   PageHeader,
   CollectionSearch,
@@ -103,7 +104,7 @@ export default async function BriefsPage({
                   <span className="flex items-center gap-2 text-[13px]">
                     {b.generating ? (
                       <>
-                        <span className="h-[7px] w-[7px] rounded-full bg-orange shadow-[0_0_0_3px_#fbe3d9]" />
+                        <Spark size={12} animate="spin" className="text-orange" />
                         <span className="font-semibold text-orange">
                           Generating
                         </span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Spark } from "@/components/spark";
 import { MakeVideoLink } from "@/components/video-links";
 import { notFound } from "next/navigation";
 import type { ConceptData } from "@adcraft/db";
@@ -93,7 +94,13 @@ export default async function BriefPage({
               disabled={generating}
               className="btn btn-outline h-11 disabled:opacity-50"
             >
-              {generating ? "Generating…" : "Generate more"}
+              {generating ? (
+                <>
+                  <Spark size={14} animate="spin" className="text-orange" /> Generating…
+                </>
+              ) : (
+                "Generate more"
+              )}
             </button>
           </form>
           <Link href="/briefs/new" className="btn btn-dark h-11">
@@ -201,6 +208,11 @@ export default async function BriefPage({
         ) : null}
 
         {waiting ? (
+          <div className="flex flex-col gap-4">
+          <div className="status-working flex items-center gap-2.5 text-[13px] text-muted">
+            <Spark size={18} animate="spin" className="text-orange" />
+            Claude is writing hooks, angles and scripts. About a minute.
+          </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
               <div key={i} className="panel flex flex-col gap-3 p-4">
@@ -221,6 +233,7 @@ export default async function BriefPage({
               Claude is reading the brand kit and the brief. This page updates
               on its own.
             </p>
+          </div>
           </div>
         ) : concepts.length === 0 && !failed ? (
           <div className="panel flex flex-col items-start gap-3 border-dashed p-6">

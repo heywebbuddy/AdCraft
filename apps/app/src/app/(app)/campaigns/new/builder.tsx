@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Spark } from "@/components/spark";
 import { useFormStatus } from "react-dom";
 import type { Platform, ValidationIssue } from "@adcraft/ads";
 import type { PublishableCreative } from "@/server/ads";
@@ -39,10 +40,10 @@ function SubmitButtons({ disabled, sandbox }: { disabled: boolean; sandbox: bool
   return (
     <div className="flex flex-col gap-2">
       <button type="submit" name="mode" value="paused" disabled={disabled || pending} className="btn btn-dark h-11 disabled:cursor-not-allowed disabled:opacity-40">
-        {pending ? "Publishing…" : "Publish as paused"}
+        {pending ? <><Spark size={14} animate="spin" /> Publishing…</> : "Publish as paused"}
       </button>
       <button type="submit" name="mode" value="active" disabled={disabled || pending} className="btn btn-orange h-11 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none">
-        {pending ? "Publishing…" : "Publish active"}
+        {pending ? <><Spark size={14} animate="spin" /> Publishing…</> : "Publish active"}
       </button>
       <span className="text-[11px] text-muted">
         {sandbox ? "Sandbox account: nothing leaves Adcraft, but every step runs for real." : "Paused campaigns are created on the platform without spend; switch them on from the campaign page."}

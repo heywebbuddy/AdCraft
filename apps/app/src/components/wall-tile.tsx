@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PlayIcon } from "./icons";
+import { Spark } from "./spark";
 
 /**
  * The creative "wall" tile: a creative shown at its real aspect ratio, with status,
@@ -69,7 +70,7 @@ export function WallTile({ id, name, kind, ratio, status, previewUrl, headline, 
           </span>
         ) : null}
         <span className={`wall-badge ${badgeClass}`}>
-          <i />
+          {status === "rendering" ? <Spark size={11} animate="spin" /> : <i />}
           {badge}
         </span>
         <span className="wall-ratio">{ratio}</span>

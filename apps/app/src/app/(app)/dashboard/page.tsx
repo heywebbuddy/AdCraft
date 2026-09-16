@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Spark } from "@/components/spark";
 import { requireOrg } from "@/server/org";
 import { loadDashboard } from "@/server/dashboard";
 import { loadPerformanceSummary } from "@/server/ads";
@@ -89,7 +90,7 @@ export default async function DashboardPage() {
           <dt>Generating</dt>
           <dd>
             {data.queue.length}
-            {data.queue.length ? <i className="home-stat-live" aria-hidden="true" /> : null}
+            {data.queue.length ? <Spark size={14} animate="spin" className="text-orange" /> : null}
           </dd>
         </Link>
         <Link href="/campaigns" className="home-stat">
@@ -117,7 +118,9 @@ export default async function DashboardPage() {
               <div className="queue-grid">
                 {data.queue.map((q, i) => (
                   <div key={q.id} className="queue-card">
-                    <div className="queue-thumb" style={{ background: placeholders[i % placeholders.length] }} />
+                    <div className="queue-thumb" style={{ background: placeholders[i % placeholders.length] }}>
+                      <Spark size={22} animate="spin" className="text-orange" />
+                    </div>
                     <div className="queue-body">
                       <div className="queue-title">
                         <strong>{q.label}</strong>

@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { PendingButton } from "@/components/pending-button";
+import { Wordmark } from "@/components/spark";
 import { eq } from "drizzle-orm";
 import { db, dbReady, memberships } from "@adcraft/db";
 import { requireViewer } from "@/server/org";
@@ -17,6 +19,9 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-[440px]">
+        <div className="mb-8">
+          <Wordmark size={26} />
+        </div>
         <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-muted">Step 1 of 1 · Your workspace</div>
         <h1 className="mt-3 text-[34px] font-medium leading-[1.05] tracking-[-1.6px]">
           Hi {viewer.name}.<br />
@@ -39,9 +44,9 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
             Brand website <span className="font-normal text-muted">(optional)</span>
             <input name="website" type="url" placeholder="https://eclatskin.com" className={inputClass} />
           </label>
-          <button type="submit" className="btn btn-orange h-12 justify-between text-[15px]">
+          <PendingButton className="btn btn-orange h-12 justify-between text-[15px]" pendingLabel="Setting up your studio…">
             Open my studio <span aria-hidden="true">↗</span>
-          </button>
+          </PendingButton>
           <p className="text-xs text-muted">Starts with 50 free credits. No card needed.</p>
         </form>
       </div>

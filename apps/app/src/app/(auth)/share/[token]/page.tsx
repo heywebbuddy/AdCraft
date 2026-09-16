@@ -1,3 +1,4 @@
+import { Wordmark } from "@/components/spark";
 import { loadShare, type SharedCreative } from "@/server/share";
 import { shareComment, shareDecide } from "@/server/share-actions";
 import { ApprovalChip } from "@/components/review-panel";
@@ -51,7 +52,7 @@ export default async function SharePage({
     <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-[26px] px-6 pb-16 pt-8">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 text-[22px] font-semibold leading-none tracking-[-1.1px]">
-          <span className="text-[28px] font-normal leading-[.8] text-orange">✳</span>adcraft<span className="-ml-1 text-orange">.</span>
+          <Wordmark size={26} />
         </div>
         <span className="text-[12px] text-muted">{view.ok ? `Shared by ${view.brandName}` : "Client review"}</span>
       </div>

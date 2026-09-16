@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingButton } from "@/components/pending-button";
 import { STATIC_TEMPLATES } from "@adcraft/render";
 import { requireOrg } from "@/server/org";
 import {
@@ -227,12 +228,12 @@ export default async function NewCreativePage({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
-            <button type="submit" className="btn btn-orange h-11">
+            <PendingButton className="btn btn-orange h-11" pendingLabel="Setting up…">
               Make the ad{" "}
               <span aria-hidden="true" className="text-lg leading-none">
                 ↗
               </span>
-            </button>
+            </PendingButton>
             <Link
               href={`/briefs/${concept.briefId}`}
               className="btn btn-outline h-11"

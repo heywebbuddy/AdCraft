@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Spark } from "@/components/spark";
 import type { StaticAdDocument, StaticTemplate } from "@adcraft/render";
 import { TemplateThumb } from "../template-thumb";
 
@@ -122,6 +123,7 @@ export function Editor({ creativeId, document: doc, templates, busy, onSave }: E
 
       <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
         <button type="submit" disabled={disabled} className="btn btn-dark h-11 disabled:cursor-not-allowed disabled:opacity-60">
+          {pending || busy ? <Spark size={14} animate="spin" /> : null}
           {pending ? "Saving…" : busy ? "Rendering…" : "Save & re-render"}
         </button>
         <span className="text-[12px] text-muted">Re-rendering is free. The scene stays as it is.</span>

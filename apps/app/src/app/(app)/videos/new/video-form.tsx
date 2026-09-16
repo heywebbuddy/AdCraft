@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Spark } from "@/components/spark";
 import { PlayIcon } from "@/components/icons";
 
 type Model = { id: string; label: string; notes: string; isDefault: boolean; audio: boolean; durations: number[]; creditsPerSec: number };
@@ -198,6 +199,7 @@ export function VideoForm(p: VideoFormProps) {
         </dl>
         {short ? <p className="m-0 rounded-[7px] bg-[#fbe3d9] px-3 py-2 text-[12px] text-[#b4382a]">Not enough credits for this run. Top up in Settings.</p> : null}
         <button type="submit" disabled={pending || short} className="btn btn-orange h-11 disabled:cursor-not-allowed disabled:opacity-60">
+          {pending ? <Spark size={14} animate="spin" /> : null}
           {pending ? "Starting…" : "Generate video"} <span aria-hidden="true">↗</span>
         </button>
         <p className="m-0 text-[11px] leading-relaxed text-muted">Takes a few minutes. You can leave the page; the storyboard fills in as each scene lands.</p>

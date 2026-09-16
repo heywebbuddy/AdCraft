@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingButton } from "@/components/pending-button";
 import { redirect } from "next/navigation";
 import { requireOrg } from "@/server/org";
 import { createProduct } from "@/server/library";
@@ -81,9 +82,9 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
             </label>
           </div>
           <div className="mt-1 flex items-center gap-3">
-            <button type="submit" className="btn btn-orange h-11">
+            <PendingButton className="btn btn-orange h-11" pendingLabel="Uploading…">
               Upload and cut out <span aria-hidden="true">↗</span>
-            </button>
+            </PendingButton>
             <Link href="/library" className="btn btn-outline h-11">
               Cancel
             </Link>

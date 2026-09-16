@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Spark } from "@/components/spark";
 import { notFound } from "next/navigation";
 import { requireOrg } from "@/server/org";
 import { STEPS, getVideo, videoModelChoices, type VideoEvent } from "@/server/videos";
@@ -110,7 +111,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
           <section className="flex flex-col gap-3">
             <div className="flex items-baseline justify-between">
               <div className="eyebrow flex items-center gap-2">
-                <span className={`h-[7px] w-[7px] rounded-full ${rendering ? "bg-orange shadow-[0_0_0_3px_#fbe3d9]" : "bg-line"}`} />
+                {rendering ? <Spark size={13} animate="spin" className="text-orange" /> : <span className="h-[7px] w-[7px] rounded-full bg-line" />}
                 Pipeline
               </div>
               <span className="text-[12px] text-muted">
@@ -140,8 +141,8 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                       {s.state === "running" ? v.running?.detail : s.state === "failed" ? failed?.error?.slice(0, 80) || "Failed" : s.events[0]?.detail || "—"}
                     </div>
                     {s.state === "running" ? (
-                      <div className="mt-0.5 h-[5px] overflow-hidden rounded-full bg-[#efeee8]">
-                        <div className="h-full w-1/2 animate-pulse rounded-full bg-orange" />
+                      <div className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-orange">
+                        <Spark size={12} animate="spin" /> Working
                       </div>
                     ) : null}
                   </li>
@@ -205,12 +206,15 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={still} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[12px] text-muted">{busy ? "Generating…" : "No still yet"}</div>
+                        <div className="flex h-full w-full items-center justify-center gap-2 text-[12px] text-muted">
+                          {busy ? <><Spark size={20} animate="spin" className="text-orange" /> Generating…</> : "No still yet"}
+                        </div>
                       )}
                       <span className="absolute left-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold text-ink">
                         {isBroll ? `B-roll ${i - scenes.length + 1}` : `Scene ${i + 1}`} · {s.durationSec} s
                       </span>
                       <span className={`absolute right-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold ${clip ? "text-[#3f7a55]" : busy ? "text-orange" : err ? "text-[#b4382a]" : "text-muted"}`}>
+                        {busy ? <Spark size={10} animate="spin" /> : null}
                         {clip ? "Clip" : busy ? "Working" : err ? "Failed" : still ? "Still" : "Queued"}
                       </span>
                       {s.hookText ? (
@@ -269,7 +273,8 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                       {r?.status === "succeeded" && r.url ? (
                         <video controls playsInline preload="metadata" src={r.url} className="h-full w-full object-contain" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[12px] text-white/70">
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[12px] text-white/70">
+                          {r?.status === "running" || (rendering && !r) ? <Spark size={26} animate={r?.status === "running" ? "spin" : "breathe"} /> : null}
                           {r?.status === "running" ? "Rendering…" : r?.status === "failed" ? "Render failed" : rendering ? "Waiting" : "Not rendered"}
                         </div>
                       )}

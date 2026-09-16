@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Spark } from "./spark";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
@@ -65,7 +66,7 @@ export function Sidebar(props: SidebarProps) {
     <>
       <div className="sidebar-logo-row">
         <Link href="/dashboard" className="workspace-logo">
-          <span>✳</span>adcraft<b>.</b>
+          <Spark size={26} className="wordmark-spark" />adcraft<b>.</b>
         </Link>
         <span className="workspace-beta">STUDIO</span>
       </div>
@@ -201,7 +202,7 @@ export function Sidebar(props: SidebarProps) {
     <>
       <div className="workspace-mobile-bar">
         <Link href="/dashboard" className="workspace-logo">
-          <span>✳</span>adcraft<b>.</b>
+          <Spark size={26} className="wordmark-spark" />adcraft<b>.</b>
         </Link>
         <button
           aria-label="Open navigation"
