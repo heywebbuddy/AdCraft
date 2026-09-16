@@ -75,7 +75,10 @@ async function loadWall(orgId: string, brandId: string | null): Promise<WallTile
     .orderBy(desc(renders.createdAt));
 
   return rows.map(({ creative, concept }) => {
-    const mine = vs.filter((x) => x.v.creativeId === creative.id);
+    const ratioRank: Record<string, number> = { "4:5": 0, "1:1": 1, "9:16": 2, "16:9": 3, "1.91:1": 4 };
+    const mine = vs
+      .filter((x) => x.v.creativeId === creative.id)
+      .sort((a, b) => (ratioRank[a.v.ratio] ?? 9) - (ratioRank[b.v.ratio] ?? 9));
     const done = mine.find((x) => x.r?.status === "succeeded" && x.r.outputKey);
     const failed = mine.some((x) => x.r?.status === "failed");
     const first = done ?? mine[0];
