@@ -302,3 +302,22 @@ Everything below is wiring and verification, not new product surface.
 | Jobs | Inline locally, Inngest via env | Create the Inngest app; hourly insights cron is registered |
 | Hosting | Not deployed | Vercel for the app; keep `dist/` on its current static host; set `ADCRAFT_APP_URL` on the site |
 | Compliance | Not started | Privacy policy, terms, DPA, data deletion flow |
+
+## 14. Admin panel (platform operations)
+
+An internal tool for the Adcraft team, separate from customer workspaces, at `/admin`. Access is limited to platform admins: a `users.is_platform_admin` flag, seeded from the `ADMIN_EMAILS` environment variable on sign-in. Every admin action is written to the audit log with the acting admin.
+
+| Area | What it shows | What you can do |
+|---|---|---|
+| Overview | Signups, active workspaces, creatives per day, generation cost vs credits consumed (gross margin), failure rate, queue depth, provider health | Jump to anything that needs attention |
+| Organisations | Search and list; per-org members, plan, credit balance and ledger, brands, products, usage, ad accounts | Grant or adjust credits, change plan, suspend or reinstate, open the workspace as support ("view as") |
+| Users | Search; memberships, last sign-in | Toggle platform admin, remove from an org |
+| Generation & costs | Every generation event across orgs, filter by provider, model, status, org; totals and cost per model | Retry failed jobs, see errors |
+| Models & pricing | The model registry with credits per unit and measured average cost | Override credits per unit, enable or disable a model |
+| Billing | Subscriptions, plan distribution, MRR, top-ups, Stripe links | Link to the Stripe customer |
+| Providers | Which integrations are configured, last success and failure per provider | Read-only status |
+| Campaigns | Ad accounts and campaigns across orgs, sandbox vs live, token expiry | Read-only in v1 |
+| Settings & flags | Maintenance banner, signups on/off, trial credits, per-plan feature flags (video, UGC, publishing) | Edit; stored in `platform_settings` |
+| Audit | All audit log entries across orgs, filterable | Read-only |
+
+Design: same tokens and components as the app, but an ink-dark rail so it can never be mistaken for a customer workspace.
