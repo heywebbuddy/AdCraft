@@ -143,6 +143,22 @@ export function Sidebar(props: SidebarProps) {
         ))}
       </div>
       <div className="sidebar-bottom">
+        <nav aria-label="Workspace administration">
+          <Link
+            href="/settings/team"
+            className={`workspace-nav-item ${pathname === "/settings/team" ? "active" : ""}`}
+          >
+            <TeamIcon />
+            Team members
+          </Link>
+          <Link
+            href="/settings"
+            className={`workspace-nav-item ${pathname.startsWith("/settings") && pathname !== "/settings/team" ? "active" : ""}`}
+          >
+            <SettingsIcon />
+            Settings
+          </Link>
+        </nav>
         <div className="sidebar-credit-card">
           <div>
             <span>
@@ -165,22 +181,6 @@ export function Sidebar(props: SidebarProps) {
             <Link href="/settings/billing">Manage plan ↗</Link>
           </div>
         </div>
-        <nav aria-label="Workspace administration">
-          <Link
-            href="/settings/team"
-            className={`workspace-nav-item ${pathname === "/settings/team" ? "active" : ""}`}
-          >
-            <TeamIcon />
-            Team members
-          </Link>
-          <Link
-            href="/settings"
-            className={`workspace-nav-item ${pathname.startsWith("/settings") && pathname !== "/settings/team" ? "active" : ""}`}
-          >
-            <SettingsIcon />
-            Settings
-          </Link>
-        </nav>
         <div className="sidebar-user">
           <span className="viewer-avatar">
             {props.viewer.name.slice(0, 1).toUpperCase()}

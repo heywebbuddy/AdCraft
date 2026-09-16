@@ -246,7 +246,15 @@
 }
 .sidebar-bottom {
   margin-top: auto;
-  padding-top: 40px;
+  padding-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sidebar-bottom > nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .sidebar-credit-card {
   padding: 12px;
@@ -342,6 +350,9 @@
   flex-direction: column;
 }
 .workspace-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
   height: 65px;
   flex-shrink: 0;
   padding: 0 36px;
@@ -350,7 +361,9 @@
   justify-content: space-between;
   gap: 20px;
   border-bottom: 1px solid var(--line);
-  background: #ffffffd9;
+  background: #fbfbf8f2;
+  backdrop-filter: saturate(1.2) blur(8px);
+  -webkit-backdrop-filter: saturate(1.2) blur(8px);
 }
 .workspace-breadcrumb {
   display: flex;
