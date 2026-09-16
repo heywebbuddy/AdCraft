@@ -1,0 +1,16 @@
+{
+  "name": "@adcraft/ads",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./meta": "./src/meta/index.ts",
+    "./tiktok": "./src/tiktok/index.ts",
+    "./google": "./src/google/index.ts"
+  },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "devDependencies": { "typescript": "^5.9.2" }
+}

@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import "@adcraft/ui/tokens.css";
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-orange: var(--orange);
+  --color-line: var(--line);
+  --font-sans: var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}

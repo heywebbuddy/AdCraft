@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
+    "declaration": false,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@adcraft/ai": ["packages/ai/src/index.ts"],
+      "@adcraft/ai/*": ["packages/ai/src/*"],
+      "@adcraft/ads": ["packages/ads/src/index.ts"],
+      "@adcraft/ads/*": ["packages/ads/src/*"],
+      "@adcraft/db": ["packages/db/src/index.ts"],
+      "@adcraft/db/*": ["packages/db/src/*"],
+      "@adcraft/render": ["packages/render/src/index.ts"],
+      "@adcraft/render/*": ["packages/render/src/*"],
+      "@adcraft/specs": ["packages/specs/src/index.ts"],
+      "@adcraft/ui": ["packages/ui/src/index.ts"],
+      "@adcraft/ui/*": ["packages/ui/src/*"]
+    }
+  }
+}
