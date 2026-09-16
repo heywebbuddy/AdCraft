@@ -2,400 +2,38 @@ import Link from "next/link";
 import { requireOrg } from "@/server/org";
 import { loadDashboard } from "@/server/dashboard";
 import { loadPerformanceSummary } from "@/server/ads";
-import { AlertIcon, PlayIcon, PlusIcon, SearchIcon, StarIcon, TextIcon, TrendDownIcon } from "@/components/icons";
+import { AutoRefresh } from "@/components/auto-refresh";
+import { SectionHeader } from "@/components/workspace-ui";
+import {
+  AlertIcon,
+  ArrowIcon,
+  BriefIcon,
+  CheckIcon,
+  CreativesIcon,
+  LibraryIcon,
+  PlayIcon,
+  PlusIcon,
+  StarIcon,
+  TextIcon,
+  TrendDownIcon,
+} from "@/components/icons";
 
 export const dynamic = "force-dynamic";
+
+const placeholders = [
+  "linear-gradient(160deg, #eef0e6 0%, #dfe3d3 100%)",
+  "linear-gradient(160deg, #f1ebe1 0%, #e3d9c9 100%)",
+  "linear-gradient(160deg, #e6ece6 0%, #d3ddd4 100%)",
+  "linear-gradient(160deg, #ece9e3 0%, #dad5cc 100%)",
+];
+
+const ratioValue: Record<string, string> = { "1:1": "1 / 1", "4:5": "4 / 5", "9:16": "9 / 16", "16:9": "16 / 9", "1.91:1": "1.91 / 1" };
+
+const platformLabel: Record<string, string> = { meta: "Meta", tiktok: "TikTok", google: "Google" };
 
 function greeting(d: Date) {
   const h = d.getHours();
   return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
-}
-
-const ratioClass: Record<string, string> = {
-  "1:1": "aspect-square",
-  "4:5": "aspect-[4/5]",
-  "9:16": "aspect-[9/16]",
-  "16:9": "aspect-video",
-  "1.91:1": "aspect-[1.91/1]",
-};
-
-const gradients = [
-  "radial-gradient(120% 90% at 20% 10%, #fbe7cf 0%, #f0b489 45%, #d9744a 100%)",
-  "linear-gradient(170deg, #e5ead9 0%, #b9c7a8 45%, #6f8064 100%)",
-  "linear-gradient(135deg, #1d2a4a 0%, #2f4a7a 55%, #e97b5a 130%)",
-  "linear-gradient(160deg, #2a5bd7 0%, #4f8bf7 50%, #d6f25a 130%)",
-];
-
-export default async function DashboardPage() {
-  const ctx = await requireOrg();
-  const [data, perf] = await Promise.all([
-    loadDashboard(ctx.org.id, ctx.brand?.id ?? null),
-    loadPerformanceSummary(ctx.org.id, ctx.brand?.id ?? null, 7),
-  ]);
-  // Summary amounts are in minor units (cents).
-  const money = (minor: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: perf.currency || "USD", maximumFractionDigits: minor < 10000 ? 2 : 0 }).format(minor / 100);
-  const now = new Date();
-  const dateLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase();
-  const firstName = ctx.viewer.name.split(/[\s@.]/)[0];
-  const readyCount = data.tiles.filter((t) => t.status === "rendered").length;
-  const headline =
-    data.queue.length > 0
-      ? `${data.queue.length} generating right now.`
-      : readyCount > 0
-        ? `${readyCount} ready to review.`
-        : data.counts.briefs === 0
-          ? "Let’s make your first one."
-          : "Pick up where you left off.";
-
-  return (
-    <>
-      <header className="flex flex-wrap items-end justify-between gap-6">
-        <div className="flex flex-col gap-1.5">
-          <div className="eyebrow">{dateLabel}</div>
-          <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
-            {greeting(now)}, {firstName}. <span className="font-serif italic tracking-[-0.6px] text-orange">{headline}</span>
-          </h1>
-        </div>
-        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-          <label className="flex h-11 w-full items-center gap-2 sm:w-[220px] rounded-[7px] border border-line bg-white px-3.5 text-[13px] text-muted">
-            <SearchIcon width={16} height={16} />
-            <input placeholder="Search creatives" className="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-muted" />
-            <span className="rounded border border-line px-1.5 text-[11px]">⌘K</span>
-          </label>
-          <Link href="/briefs/new" className="btn btn-orange h-11">
-            New brief <span aria-hidden="true" className="text-lg leading-none">↗</span>
-          </Link>
-        </div>
-      </header>
-
-      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
-        <div className="flex min-w-0 flex-col gap-[26px]">
-          {/* Generating now */}
-          <section className="flex flex-col gap-3">
-            <div className="flex items-baseline justify-between">
-              <div className="eyebrow flex items-center gap-2">
-                <span className={`h-[7px] w-[7px] rounded-full ${data.queue.length ? "bg-orange shadow-[0_0_0_3px_#fbe3d9]" : "bg-line"}`} />
-                Generating now
-              </div>
-              <span className="text-[12px] text-muted">
-                {data.queue.length ? `Queue · ${data.queue.length} running` : "Queue is empty"}
-              </span>
-            </div>
-            {data.queue.length ? (
-              <div className="grid gap-3 md:grid-cols-2">
-                {data.queue.map((q, i) => (
-                  <div key={q.id} className="panel flex gap-3.5 p-3.5">
-                    <div className="h-[72px] w-[54px] shrink-0 rounded-[5px]" style={{ background: gradients[i % gradients.length] }} />
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      <div className="flex justify-between gap-2 text-[13px]">
-                        <span className="truncate font-semibold">{q.label}</span>
-                        <span className="tabular whitespace-nowrap text-muted">{Math.max(1, Math.round((Date.now() - q.startedAt.getTime()) / 1000))} s</span>
-                      </div>
-                      <div className="text-[12px] text-muted">{q.detail}</div>
-                      <div className="mt-0.5 h-[5px] overflow-hidden rounded-full bg-[#efeee8]">
-                        <div className="h-full w-1/2 animate-pulse rounded-full bg-orange" />
-                      </div>
-                      <div className="mt-0.5 flex gap-1.5">
-                        <span className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]">{q.credits} credits</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="panel flex items-center justify-between gap-4 border-dashed p-4 text-[13px] text-muted">
-                Nothing in the queue. A new brief gives you ten concepts in about ten seconds.
-                <Link href="/briefs/new" className="font-semibold text-orange">
-                  Start one ↗
-                </Link>
-              </div>
-            )}
-          </section>
-
-          {/* The wall */}
-          <section className="flex flex-col gap-3.5">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <div className="eyebrow">The wall</div>
-                <h2 className="m-0 text-[24px] font-medium tracking-[-1px]">
-                  Recent creative. <span className="font-serif italic text-muted">Every size it needs to be.</span>
-                </h2>
-              </div>
-              <div className="flex gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
-                {["All", "Static", "Video", "UGC"].map((f, i) => (
-                  <Link
-                    key={f}
-                    href={i === 0 ? "/creatives" : `/creatives?kind=${f.toLowerCase()}`}
-                    className={`inline-flex min-h-9 items-center rounded-[5px] px-3 ${i === 0 ? "bg-ink text-white" : "text-[#4a4b44] hover:bg-paper"}`}
-                  >
-                    {f}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {data.tiles.length ? (
-              <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-                {data.tiles.map((t, i) => (
-                  <Link key={t.id} href={`/creatives/${t.id}`} className="tile flex flex-col">
-                    <div
-                      className={`relative flex flex-col p-3.5 text-white ${ratioClass[t.ratio] ?? "aspect-[4/5]"}`}
-                      style={{
-                        background: t.previewUrl ? `url(${t.previewUrl}) center/cover` : gradients[i % gradients.length],
-                      }}
-                    >
-                      {!t.previewUrl && t.headline ? (
-                        <span className="mt-auto font-serif text-[22px] leading-none tracking-[-0.4px]">{t.headline}</span>
-                      ) : null}
-                      {t.kind !== "static" ? (
-                        <span className="absolute left-1/2 top-[42%] flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-ink">
-                          <PlayIcon />
-                        </span>
-                      ) : null}
-                      <span
-                        className={`absolute right-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold ${
-                          t.status === "rendered" ? "text-[#3f7a55]" : t.status === "failed" ? "text-[#b4382a]" : "text-muted"
-                        }`}
-                      >
-                        {t.status === "rendered" ? "Ready" : t.status === "failed" ? "Failed" : "Draft"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1.5 px-[13px] pb-[13px] pt-3">
-                      <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
-                        <span className="min-w-0 truncate">{t.name}</span>
-                        <span className="text-[11px] font-medium text-muted">{t.ratio}</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-2 whitespace-nowrap text-[11px] text-muted">
-                        <span className="min-w-0 truncate">{t.model ?? t.kind}</span>
-                        <span>{relative(t.updatedAt)}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="panel flex flex-col items-start gap-3 border-dashed p-6">
-                <div className="font-serif text-[22px] italic">Your wall is empty. That never lasts long.</div>
-                <p className="m-0 max-w-[52ch] text-[13px] text-muted">
-                  Add a product photo to {ctx.brand?.name ?? "your brand"}, write a two-line brief, and the first static ads land here in every size.
-                </p>
-                <Link href="/briefs/new" className="btn btn-dark h-11">
-                  Write the first brief <span aria-hidden="true">↗</span>
-                </Link>
-              </div>
-            )}
-
-            <div className="mt-1 flex items-center gap-3">
-              <Link href="/creatives" className="btn btn-outline h-11">
-                All {data.counts.creatives} creative{data.counts.creatives === 1 ? "" : "s"} <span aria-hidden="true">↗</span>
-              </Link>
-              <span className="text-[12px] text-muted">
-                {readyCount} ready · {data.tiles.length - readyCount} in progress
-              </span>
-            </div>
-          </section>
-        </div>
-
-        {/* Right column */}
-        <div className="flex flex-col gap-4">
-          <section className="panel overflow-hidden">
-            <div className="flex items-baseline justify-between px-4 pb-2.5 pt-3.5">
-              <span className="eyebrow">This week</span>
-              <span className="text-[11px] text-muted">{perf.connected ? (data.sandboxOnly ? "sandbox data · vs last 7 days" : "vs last 7 days") : "not connected"}</span>
-            </div>
-            {perf.connected && perf.hasData ? (
-              <>
-                <div className="flex items-end justify-between px-4 pb-3">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[12px] text-muted">Return on ad spend</span>
-                    <span className="tabular text-[34px] font-medium leading-none tracking-[-1.5px]">
-                      {perf.roas != null ? perf.roas.toFixed(1) : "–"}
-                      <span className="text-[20px] text-muted">×</span>
-                    </span>
-                    {perf.roas != null && perf.roasPrev != null ? (
-                      <span className={`inline-flex items-center gap-1 text-[12px] font-semibold ${perf.roas >= perf.roasPrev ? "text-[#3f7a55]" : "text-[#b4382a]"}`}>
-                        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" className={perf.roas >= perf.roasPrev ? "" : "rotate-180"}>
-                          <path d="M5 1.5l4 6H1z" fill="currentColor" />
-                        </svg>
-                        {Math.abs(perf.roas - perf.roasPrev).toFixed(1)} from {perf.roasPrev.toFixed(1)}×
-                      </span>
-                    ) : null}
-                  </div>
-                  <Sparkline points={perf.series.map((d) => d.roas)} />
-                </div>
-                <div className="grid grid-cols-3 border-t border-line">
-                  {[
-                    { label: "Spend", value: money(perf.spend) },
-                    { label: "CTR", value: `${(perf.ctr * 100).toFixed(1)}%` },
-                    { label: "CPA", value: perf.cpa != null ? money(perf.cpa) : "–" },
-                  ].map((m, i) => (
-                    <div key={m.label} className={`flex flex-col gap-0.5 px-4 py-3 ${i < 2 ? "border-r border-line" : ""}`}>
-                      <span className="text-[11px] text-muted">{m.label}</span>
-                      <span className="tabular text-[16px] font-semibold tracking-[-0.4px]">{m.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : perf.connected ? (
-              <div className="px-4 pb-4 text-[13px] text-muted">Connected. Numbers appear after the first hourly sync.</div>
-            ) : (
-              <div className="flex flex-col gap-2.5 px-4 pb-4">
-                <p className="m-0 text-[13px] text-muted">
-                  Performance shows up here once an ad account is connected. Until then, export finished creative and upload it yourself.
-                </p>
-                <Link href="/campaigns" className="text-[12px] font-semibold text-orange">
-                  Connect an ad account ↗
-                </Link>
-              </div>
-            )}
-          </section>
-
-          {perf.winners.length ? (
-            <section className="panel flex flex-col gap-1 px-4 pb-3 pt-3.5">
-              <div className="mb-2 flex items-baseline justify-between">
-                <span className="eyebrow">Winning right now</span>
-                <span className="text-[11px] text-muted">by ROAS</span>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {perf.winners.map((w, i) => {
-                  const top = perf.winners[0].roas ?? 1;
-                  const pct = Math.max(8, Math.round(((w.roas ?? 0) / (top || 1)) * 100));
-                  return (
-                    <Link key={w.creativeId} href={`/creatives/${w.creativeId}`} className="flex items-center gap-2.5">
-                      <span
-                        className="h-[38px] w-[30px] shrink-0 rounded"
-                        style={{ background: w.previewUrl ? `url(${w.previewUrl}) center/cover` : gradients[i % gradients.length] }}
-                      />
-                      <span className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                        <span className="flex justify-between gap-2 text-[12px]">
-                          <span className="min-w-0 truncate font-semibold">{w.name}</span>
-                          <span className="tabular font-semibold">{w.roas != null ? `${w.roas.toFixed(1)}×` : `${(w.ctr * 100).toFixed(1)}%`}</span>
-                        </span>
-                        <span className="h-1 overflow-hidden rounded-full bg-[#efeee8]">
-                          <span className="block h-full bg-orange" style={{ width: `${pct}%` }} />
-                        </span>
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-              <Link href={`/briefs/new?from=${perf.winners[0].creativeId}`} className="btn btn-dark mt-3 h-11 w-full text-[12px]">
-                Make more like the winner <span aria-hidden="true">↗</span>
-              </Link>
-            </section>
-          ) : null}
-
-          <section className="panel flex flex-col gap-2.5 px-4 py-3.5">
-            <span className="eyebrow">Needs attention</span>
-            {data.counts.failedRenders === 0 && data.counts.failedPipelines.length === 0 && data.changeRequests.length === 0 && ctx.credits.balance > 10 && perf.alerts.length === 0 ? (
-              <p className="m-0 text-[13px] text-muted">All clear.</p>
-            ) : null}
-            {data.counts.failedPipelines.map((f, i) => (
-              <div key={`fp-${i}`} className="flex items-start gap-2.5">
-                <AlertIcon className="mt-px shrink-0 text-[#b4382a]" />
-                <span className="flex flex-col gap-0.5 text-[12px]">
-                  <span className="font-semibold">Generation failed{f.label && typeof f.label.label === "string" ? `: ${f.label.label}` : ""}</span>
-                  <span className="text-muted">
-                    {(f.error ?? "Unknown error").slice(0, 90)}. Credits were not charged.{" "}
-                    {f.creativeId ? (
-                      <Link href={`/creatives/${f.creativeId}`} className="font-semibold text-orange">
-                        Open and retry
-                      </Link>
-                    ) : null}
-                  </span>
-                </span>
-              </div>
-            ))}
-            {data.changeRequests.map((c) => (
-              <div key={`cr-${c.creativeId}`} className="flex items-start gap-2.5">
-                <AlertIcon className="mt-px shrink-0 text-[#b7791f]" />
-                <span className="flex flex-col gap-0.5 text-[12px]">
-                  <span className="font-semibold">Changes requested on “{c.name}”</span>
-                  <span className="text-muted">
-                    {(c.note ?? "See the review thread").slice(0, 90)}.{" "}
-                    <Link href={`/creatives/${c.creativeId}/review`} className="font-semibold text-orange">
-                      Open review
-                    </Link>
-                  </span>
-                </span>
-              </div>
-            ))}
-            {perf.alerts.map((a) => (
-              <div key={`${a.kind}-${a.creativeId ?? a.campaignId}`} className="flex items-start gap-2.5">
-                {a.kind === "fatigue" ? (
-                  <TrendDownIcon className="mt-px shrink-0 text-[#b7791f]" />
-                ) : (
-                  <AlertIcon className="mt-px shrink-0 text-[#b4382a]" />
-                )}
-                <span className="flex flex-col gap-0.5 text-[12px]">
-                  <span className="font-semibold">
-                    {a.kind === "fatigue" ? `“${a.name}” is fatiguing` : `Disapproved: ${a.name}`}
-                  </span>
-                  <span className="text-muted">
-                    {a.detail}.{" "}
-                    <Link href={a.kind === "fatigue" && a.creativeId ? `/briefs/new?from=${a.creativeId}` : a.href} className="font-semibold text-orange">
-                      {a.kind === "fatigue" ? "Spin 3 variations" : "Fix and resubmit"}
-                    </Link>
-                  </span>
-                </span>
-              </div>
-            ))}
-            {data.counts.failedRenders > 0 ? (
-              <div className="flex items-start gap-2.5">
-                <AlertIcon className="mt-px shrink-0 text-[#b4382a]" />
-                <span className="flex flex-col gap-0.5 text-[12px]">
-                  <span className="font-semibold">
-                    {data.counts.failedRenders} render{data.counts.failedRenders === 1 ? "" : "s"} failed
-                  </span>
-                  <span className="text-muted">
-                    Credits were not charged.{" "}
-                    <Link href="/creatives?status=failed" className="font-semibold text-orange">
-                      Retry
-                    </Link>
-                  </span>
-                </span>
-              </div>
-            ) : null}
-            {ctx.credits.balance <= 10 ? (
-              <div className="flex items-start gap-2.5">
-                <AlertIcon className="mt-px shrink-0 text-[#b7791f]" />
-                <span className="flex flex-col gap-0.5 text-[12px]">
-                  <span className="font-semibold">{ctx.credits.balance} credits left</span>
-                  <span className="text-muted">
-                    A UGC video needs 40.{" "}
-                    <Link href="/settings/billing" className="font-semibold text-orange">
-                      Top up
-                    </Link>
-                  </span>
-                </span>
-              </div>
-            ) : null}
-          </section>
-
-          <section className="flex flex-col gap-2 px-0.5 py-1">
-            <span className="eyebrow">Start from</span>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { href: "/library/new", label: "Product photo", Icon: PlusIcon },
-                { href: "/briefs/new", label: "Written brief", Icon: TextIcon },
-                { href: "/creatives", label: "A winner", Icon: StarIcon },
-              ].map(({ href, label, Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex flex-col items-center gap-1.5 rounded-[7px] border border-dashed border-[#d4d3ca] px-2.5 py-3 text-center text-[12px] font-semibold hover:border-ink"
-                >
-                  <Icon width={20} height={20} />
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    </>
-  );
 }
 
 function relative(d: Date) {
@@ -406,9 +44,433 @@ function relative(d: Date) {
   return `${Math.round(s / 86400)}d ago`;
 }
 
+export default async function DashboardPage() {
+  const ctx = await requireOrg();
+  const [data, perf] = await Promise.all([
+    loadDashboard(ctx.org.id, ctx.brand?.id ?? null),
+    loadPerformanceSummary(ctx.org.id, ctx.brand?.id ?? null, 7),
+  ]);
+  const money = (minor: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: perf.currency || "USD", maximumFractionDigits: minor < 10000 ? 2 : 0 }).format(minor / 100);
+
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const firstName = ctx.viewer.name.split(/[\s@.]/)[0];
+  const readyCount = data.tiles.filter((t) => t.status === "rendered").length;
+  const failedCount = data.tiles.filter((t) => t.status === "failed").length;
+  const attention =
+    data.counts.failedPipelines.length + data.changeRequests.length + perf.alerts.length + (data.counts.failedRenders > 0 ? 1 : 0) + (ctx.credits.balance <= 10 ? 1 : 0);
+
+  const headline =
+    data.queue.length > 0
+      ? `${data.queue.length} generating right now.`
+      : attention > 0
+        ? `${attention} thing${attention === 1 ? "" : "s"} need${attention === 1 ? "s" : ""} your attention.`
+        : readyCount > 0
+          ? `${readyCount} ready to review.`
+          : data.counts.briefs === 0
+            ? "Let’s make your first one."
+            : "Pick up where you left off.";
+
+  const setup = [
+    { title: "Add a product", description: "A photo is enough; we cut it out for you.", href: "/library/new", done: data.counts.products > 0 },
+    { title: "Write a brief", description: "Ten concepts in about a minute.", href: "/briefs/new", done: data.counts.briefs > 0 },
+    { title: "Make your first creative", description: "Every size, exact copy.", href: "/briefs", done: data.counts.creatives > 0 },
+    { title: "Connect an ad account", description: "Publish and track in one place.", href: "/campaigns", done: data.adAccountsConnected > 0 },
+  ];
+  const complete = setup.filter((s) => s.done).length;
+
+  return (
+    <>
+      <AutoRefresh active={data.queue.length > 0} />
+
+      <header className="home-header">
+        <div>
+          <span className="workspace-eyebrow">{dateLabel}</span>
+          <h1>
+            {greeting(now)}, {firstName}. <em>{headline}</em>
+          </h1>
+        </div>
+        <div className="workspace-page-actions">
+          <Link href="/library/new" className="btn btn-outline">
+            <PlusIcon width={15} height={15} /> Add product
+          </Link>
+          <Link href="/briefs/new" className="btn btn-orange">
+            New brief <ArrowIcon width={14} height={14} />
+          </Link>
+        </div>
+      </header>
+
+      <dl className="home-strip" aria-label="Workspace status">
+        <Link href="/creatives?status=ready" className="home-stat">
+          <dt>Ready to review</dt>
+          <dd>{readyCount}</dd>
+        </Link>
+        <Link href="/creatives?status=rendering" className="home-stat">
+          <dt>Generating</dt>
+          <dd>
+            {data.queue.length}
+            {data.queue.length ? <i className="home-stat-live" aria-hidden="true" /> : null}
+          </dd>
+        </Link>
+        <Link href="/campaigns" className="home-stat">
+          <dt>Live campaigns</dt>
+          <dd>{perf.liveCampaigns}</dd>
+        </Link>
+        <Link href="/performance" className="home-stat">
+          <dt>Spend · 7 days</dt>
+          <dd>{perf.connected && perf.hasData ? money(perf.spend) : "—"}</dd>
+        </Link>
+        <Link href="/settings/billing" className="home-stat">
+          <dt>Credits</dt>
+          <dd>
+            {ctx.credits.balance}
+            <small> / {ctx.credits.grant}</small>
+          </dd>
+        </Link>
+      </dl>
+
+      <div className="overview-columns">
+        <div className="overview-primary">
+          {data.queue.length ? (
+            <section className="home-section">
+              <SectionHeader title="Generating now" description={`${data.queue.length} in progress · this page refreshes on its own`} />
+              <div className="queue-grid">
+                {data.queue.map((q, i) => (
+                  <div key={q.id} className="queue-card">
+                    <div className="queue-thumb" style={{ background: placeholders[i % placeholders.length] }} />
+                    <div className="queue-body">
+                      <div className="queue-title">
+                        <strong>{q.label}</strong>
+                        <span className="tabular">{Math.max(1, Math.round((Date.now() - q.startedAt.getTime()) / 1000))} s</span>
+                      </div>
+                      <span className="queue-detail">{q.detail}</span>
+                      <div className="queue-track">
+                        <span />
+                      </div>
+                      <span className="queue-chip">{q.credits} credits</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <section className="home-section">
+            <SectionHeader
+              title="Recent creative"
+              description={
+                data.tiles.length
+                  ? `${readyCount} ready${failedCount ? ` · ${failedCount} failed` : ""} · live ones carry their numbers`
+                  : "Every size it needs to be, with exact copy and product."
+              }
+              action={
+                <div className="workspace-tabs" role="group" aria-label="Filter">
+                  {[
+                    ["All", "/creatives"],
+                    ["Static", "/creatives?kind=static"],
+                    ["Video", "/creatives?kind=video"],
+                    ["UGC", "/creatives?kind=ugc"],
+                  ].map(([label, href], i) => (
+                    <Link key={label} href={href} className={i === 0 ? "active" : ""}>
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              }
+            />
+
+            {data.tiles.length ? (
+              <div className="wall">
+                {data.tiles.map((t, i) => {
+                  const live = perf.byCreative[t.id];
+                  return (
+                    <Link key={t.id} href={t.kind === "static" ? `/creatives/${t.id}` : `/videos/${t.id}`} className="wall-tile">
+                      <div
+                        className="wall-art"
+                        style={{
+                          aspectRatio: ratioValue[t.ratio] ?? "4 / 5",
+                          background: t.previewUrl ? `url(${t.previewUrl}) center/cover` : placeholders[i % placeholders.length],
+                        }}
+                      >
+                        {!t.previewUrl && t.headline ? <span className="wall-headline">{t.headline}</span> : null}
+                        {t.kind !== "static" ? (
+                          <span className="wall-play">
+                            <PlayIcon width={13} height={13} />
+                          </span>
+                        ) : null}
+                        <span className={`wall-badge ${t.status}`}>
+                          <i />
+                          {t.status === "rendered" ? (live ? "Live" : "Ready") : t.status === "failed" ? "Failed" : "Draft"}
+                        </span>
+                        <span className="wall-ratio">{t.ratio}</span>
+                      </div>
+                      <div className="wall-meta">
+                        <div className="wall-row">
+                          <strong>{t.name}</strong>
+                          <span className="tabular">{relative(t.updatedAt)}</span>
+                        </div>
+                        <div className="wall-row wall-sub">
+                          <span>{live ? platformLabel[live.platform] ?? live.platform : t.kind === "static" ? "Static ad" : t.kind === "ugc" ? "UGC video" : "Video"}</span>
+                          {live ? (
+                            <span className="tabular">
+                              <b>{(live.ctr * 100).toFixed(1)}%</b> CTR{live.roas != null ? <> · <b>{live.roas.toFixed(1)}×</b></> : null}
+                            </span>
+                          ) : (
+                            <span>{t.model ?? ""}</span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="home-empty">
+                <div className="home-empty-art" aria-hidden="true">
+                  <span style={{ aspectRatio: "4 / 5", background: placeholders[1] }} />
+                  <span style={{ aspectRatio: "9 / 16", background: placeholders[2] }} />
+                  <span style={{ aspectRatio: "1 / 1", background: placeholders[0] }} />
+                </div>
+                <div>
+                  <h3>Your wall is empty. That never lasts long.</h3>
+                  <p>
+                    Add a product photo to {ctx.brand?.name ?? "your brand"}, write a two-line brief, and the first ads land here in every size.
+                  </p>
+                  <div className="workspace-page-actions">
+                    <Link href="/briefs/new" className="btn btn-orange">
+                      Write the first brief <ArrowIcon width={14} height={14} />
+                    </Link>
+                    <Link href="/library/new" className="btn btn-outline">
+                      <LibraryIcon width={15} height={15} /> Add a product
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {data.tiles.length ? (
+              <div className="home-more">
+                <Link href="/creatives" className="btn btn-outline">
+                  All {data.counts.creatives} creative{data.counts.creatives === 1 ? "" : "s"} <ArrowIcon width={14} height={14} />
+                </Link>
+              </div>
+            ) : null}
+          </section>
+
+          {complete < setup.length ? (
+            <section className="overview-onboarding">
+              <SectionHeader
+                title="Make this workspace yours"
+                description="Four steps from a product photo to a tracked campaign."
+                action={
+                  <span className="collection-count">
+                    {complete} of {setup.length} complete
+                  </span>
+                }
+              />
+              <div className="setup-progress">
+                <span style={{ width: `${(complete / setup.length) * 100}%` }} />
+              </div>
+              {setup.map((step, i) => (
+                <Link key={step.title} href={step.href} className={`setup-row ${step.done ? "done" : ""}`}>
+                  <span>{step.done ? <CheckIcon width={13} height={13} /> : String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>{step.title}</strong>
+                    <p>{step.description}</p>
+                  </div>
+                  <ArrowIcon />
+                </Link>
+              ))}
+            </section>
+          ) : null}
+        </div>
+
+        <aside className="overview-aside">
+          <section className="panel home-panel">
+            <div className="home-panel-head">
+              <span className="eyebrow">This week</span>
+              <span className="home-panel-note">{perf.connected ? (data.sandboxOnly ? "sandbox data · vs previous 7 days" : "vs previous 7 days") : "not connected"}</span>
+            </div>
+            {perf.connected && perf.hasData ? (
+              <>
+                <div className="home-roas">
+                  <div>
+                    <span className="home-panel-note">Return on ad spend</span>
+                    <span className="home-roas-value tabular">
+                      {perf.roas != null ? perf.roas.toFixed(1) : "–"}
+                      <small>×</small>
+                    </span>
+                    {perf.roas != null && perf.roasPrev != null ? (
+                      <span className={`home-delta ${perf.roas >= perf.roasPrev ? "up" : "down"}`}>
+                        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" className={perf.roas >= perf.roasPrev ? "" : "rotate-180"}>
+                          <path d="M5 1.5l4 6H1z" fill="currentColor" />
+                        </svg>
+                        {Math.abs(perf.roas - perf.roasPrev).toFixed(1)} from {perf.roasPrev.toFixed(1)}×
+                      </span>
+                    ) : null}
+                  </div>
+                  <Sparkline points={perf.series.map((d) => d.roas)} />
+                </div>
+                <div className="home-kpis">
+                  {[
+                    { label: "Spend", value: money(perf.spend) },
+                    { label: "CTR", value: `${(perf.ctr * 100).toFixed(1)}%` },
+                    { label: "CPA", value: perf.cpa != null ? money(perf.cpa) : "–" },
+                  ].map((m) => (
+                    <div key={m.label}>
+                      <span className="home-panel-note">{m.label}</span>
+                      <span className="tabular">{m.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/performance" className="home-panel-link">
+                  Full performance <ArrowIcon width={13} height={13} />
+                </Link>
+              </>
+            ) : perf.connected ? (
+              <p className="home-panel-text">Connected. Numbers appear after the first hourly sync.</p>
+            ) : (
+              <>
+                <p className="home-panel-text">Connect Meta, TikTok or Google and every creative shows its spend, CTR and return right here.</p>
+                <Link href="/campaigns" className="home-panel-link">
+                  Connect an ad account <ArrowIcon width={13} height={13} />
+                </Link>
+              </>
+            )}
+          </section>
+
+          {perf.winners.length ? (
+            <section className="panel home-panel">
+              <div className="home-panel-head">
+                <span className="eyebrow">Winning right now</span>
+                <span className="home-panel-note">by ROAS</span>
+              </div>
+              <div className="home-winners">
+                {perf.winners.map((w, i) => {
+                  const top = perf.winners[0].roas ?? 1;
+                  const pct = Math.max(8, Math.round(((w.roas ?? 0) / (top || 1)) * 100));
+                  return (
+                    <Link key={w.creativeId} href={`/creatives/${w.creativeId}`} className="home-winner">
+                      <span className="home-winner-thumb" style={{ background: w.previewUrl ? `url(${w.previewUrl}) center/cover` : placeholders[i % placeholders.length] }} />
+                      <span className="home-winner-body">
+                        <span className="home-winner-row">
+                          <strong>{w.name}</strong>
+                          <span className="tabular">{w.roas != null ? `${w.roas.toFixed(1)}×` : `${(w.ctr * 100).toFixed(1)}%`}</span>
+                        </span>
+                        <span className="home-winner-track">
+                          <span style={{ width: `${pct}%` }} />
+                        </span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <Link href={`/briefs/new?from=${perf.winners[0].creativeId}`} className="btn btn-dark home-panel-cta">
+                Make more like the winner <ArrowIcon width={14} height={14} />
+              </Link>
+            </section>
+          ) : null}
+
+          <section className="panel home-panel">
+            <div className="home-panel-head">
+              <span className="eyebrow">Needs attention</span>
+              {attention ? <span className="home-count">{attention}</span> : null}
+            </div>
+            {attention === 0 ? (
+              <p className="home-panel-text home-clear">
+                <CheckIcon width={14} height={14} /> All clear.
+              </p>
+            ) : null}
+            <div className="home-alerts">
+              {data.counts.failedPipelines.map((f, i) => (
+                <div key={`fp-${i}`} className="home-alert">
+                  <AlertIcon className="critical" />
+                  <span>
+                    <strong>Generation failed{f.label && typeof f.label.label === "string" ? `: ${f.label.label}` : ""}</strong>
+                    <span>
+                      {(f.error ?? "Unknown error").slice(0, 90)}. Credits were not charged.{" "}
+                      {f.creativeId ? <Link href={`/creatives/${f.creativeId}`}>Open and retry</Link> : null}
+                    </span>
+                  </span>
+                </div>
+              ))}
+              {data.changeRequests.map((c) => (
+                <div key={`cr-${c.creativeId}`} className="home-alert">
+                  <AlertIcon className="warning" />
+                  <span>
+                    <strong>Changes requested on “{c.name}”</strong>
+                    <span>
+                      {(c.note ?? "See the review thread").slice(0, 90)}. <Link href={`/creatives/${c.creativeId}/review`}>Open review</Link>
+                    </span>
+                  </span>
+                </div>
+              ))}
+              {perf.alerts.map((a) => (
+                <div key={`${a.kind}-${a.creativeId ?? a.campaignId}`} className="home-alert">
+                  {a.kind === "fatigue" ? <TrendDownIcon className="warning" /> : <AlertIcon className="critical" />}
+                  <span>
+                    <strong>{a.kind === "fatigue" ? `“${a.name}” is fatiguing` : `Disapproved: ${a.name}`}</strong>
+                    <span>
+                      {a.detail}.{" "}
+                      <Link href={a.kind === "fatigue" && a.creativeId ? `/briefs/new?from=${a.creativeId}` : a.href}>
+                        {a.kind === "fatigue" ? "Spin 3 variations" : "Fix and resubmit"}
+                      </Link>
+                    </span>
+                  </span>
+                </div>
+              ))}
+              {data.counts.failedRenders > 0 ? (
+                <div className="home-alert">
+                  <AlertIcon className="critical" />
+                  <span>
+                    <strong>
+                      {data.counts.failedRenders} render{data.counts.failedRenders === 1 ? "" : "s"} failed
+                    </strong>
+                    <span>
+                      Credits were not charged. <Link href="/creatives?status=failed">Retry</Link>
+                    </span>
+                  </span>
+                </div>
+              ) : null}
+              {ctx.credits.balance <= 10 ? (
+                <div className="home-alert">
+                  <AlertIcon className="warning" />
+                  <span>
+                    <strong>{ctx.credits.balance} credits left</strong>
+                    <span>
+                      A UGC video needs 40. <Link href="/settings/billing">Top up</Link>
+                    </span>
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="home-start">
+            <span className="eyebrow">Start from</span>
+            <div className="home-start-grid">
+              {[
+                { href: "/library/new", label: "Product photo", Icon: PlusIcon },
+                { href: "/briefs/new", label: "Written brief", Icon: TextIcon },
+                { href: perf.winners[0] ? `/briefs/new?from=${perf.winners[0].creativeId}` : "/creatives", label: "A winner", Icon: StarIcon },
+              ].map(({ href, label, Icon }) => (
+                <Link key={label} href={href}>
+                  <Icon width={18} height={18} />
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        </aside>
+      </div>
+    </>
+  );
+}
+
 function Sparkline({ points }: { points: number[] }) {
-  const w = 120;
-  const h = 44;
+  const w = 110;
+  const h = 40;
   if (points.length < 2) return <svg width={w} height={h} aria-hidden="true" />;
   const max = Math.max(...points, 0.0001);
   const min = Math.min(...points, 0);

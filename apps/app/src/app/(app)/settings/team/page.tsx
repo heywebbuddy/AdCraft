@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/workspace-ui";
 import { requireOrg } from "@/server/org";
 import { listMembers, listPendingInvites } from "@/server/team-data";
 import { changeMemberRole, inviteMember, removeMember, revokeInvite } from "@/server/team";
@@ -39,13 +40,7 @@ export default async function TeamPage({
 
   return (
     <>
-      <header className="flex flex-col gap-1.5">
-        <div className="eyebrow">Team</div>
-        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
-          {members.length} {members.length === 1 ? "person" : "people"} in {ctx.org.name}.{" "}
-          <span className="font-serif italic text-muted">Good work is a team sport.</span>
-        </h1>
-      </header>
+      <PageHeader title="Team members" description="Manage the people and permissions in your workspace."/>
 
       <SettingsNav active="team" role={ctx.role} />
 

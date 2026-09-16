@@ -693,13 +693,24 @@ export type PerformanceSummary = {
   series: Array<{ date: string; spend: number; roas: number; ctr: number }>;
   winners: Array<{ creativeId: string; name: string; previewUrl: string | null; platform: Platform; roas: number | null; ctr: number; spend: number }>;
   alerts: Array<{ kind: "fatigue" | "disapproved"; creativeId: string | null; campaignId: string | null; name: string; detail: string; href: string }>;
+  /** Per-creative rollup for the period, keyed by creative id (only creatives with delivery). */
+  byCreative: Record<string, { platform: Platform; roas: number | null; ctr: number; spend: number; impressions: number }>;
+  liveCampaigns: number;
 };
 
 /** Compact rollup for the dashboard's "This week" panel. */
 export async function loadPerformanceSummary(orgId: string, brandId: string | null, days = 7): Promise<PerformanceSummary> {
   const p = await loadPerformance(orgId, brandId, days);
   const ranked = [...p.creatives].filter((c) => c.impressions > 0).sort((a, b) => (b.roas ?? 0) - (a.roas ?? 0) || b.ctr - a.ctr);
+  const byCreative: PerformanceSummary["byCreative"] = {};
+  for (const c of ranked) byCreative[c.creativeId] = { platform: c.platform, roas: c.roas, ctr: c.ctr, spend: c.spend, impressions: c.impressions };
+  const [live] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(campaigns)
+    .where(and(eq(campaigns.orgId, orgId), eq(campaigns.status, "active")));
   return {
+    byCreative,
+    liveCampaigns: live?.n ?? 0,
     roas: p.totals.roas,
     roasPrev: p.previous.roas,
     spend: p.totals.spend,

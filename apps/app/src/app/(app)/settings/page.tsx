@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/workspace-ui";
 import { eq } from "drizzle-orm";
 import { db, memberships, users } from "@adcraft/db";
 import { requireOrg } from "@/server/org";
@@ -7,25 +8,33 @@ import { SettingsNav } from "@/components/settings-nav";
 
 export const dynamic = "force-dynamic";
 
-const inputClass = "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
+const inputClass =
+  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ ok?: string }> }) {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ok?: string }>;
+}) {
   const ctx = await requireOrg();
   const { ok } = await searchParams;
   const members = await db
-    .select({ id: memberships.id, role: memberships.role, name: users.name, email: users.email })
+    .select({
+      id: memberships.id,
+      role: memberships.role,
+      name: users.name,
+      email: users.email,
+    })
     .from(memberships)
     .innerJoin(users, eq(users.id, memberships.userId))
     .where(eq(memberships.orgId, ctx.org.id));
 
   return (
     <>
-      <header className="flex flex-col gap-1.5">
-        <div className="eyebrow">Settings</div>
-        <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
-          {ctx.org.name}. <span className="font-serif italic text-muted">The boring but important bits.</span>
-        </h1>
-      </header>
+      <PageHeader
+        title="Workspace settings"
+        description="Manage your workspace details and preferences."
+      />
 
       <SettingsNav active="workspace" role={ctx.role} />
 
@@ -36,12 +45,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <form action={updateOrgName} className="flex flex-col gap-3">
             <label className="flex flex-col gap-2 text-sm font-medium">
               Name
-              <input name="name" defaultValue={ctx.org.name} className={inputClass} disabled={ctx.role !== "owner"} />
+              <input
+                name="name"
+                defaultValue={ctx.org.name}
+                className={inputClass}
+                disabled={ctx.role !== "owner"}
+              />
             </label>
             {ctx.role === "owner" ? (
               <button className="btn btn-dark h-11 self-start">Save</button>
             ) : (
-              <p className="m-0 text-[12px] text-muted">Only owners can rename the workspace.</p>
+              <p className="m-0 text-[12px] text-muted">
+                Only owners can rename the workspace.
+              </p>
             )}
           </form>
         </section>
@@ -49,7 +65,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <section className="panel flex flex-col gap-3 p-5">
           <div className="flex items-baseline justify-between">
             <span className="eyebrow">Members</span>
-            <span className="text-[11px] text-muted">{members.length} in workspace</span>
+            <span className="text-[11px] text-muted">
+              {members.length} in workspace
+            </span>
           </div>
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {members.map((m) => (
@@ -57,12 +75,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-white">
                   {(m.name ?? m.email ?? "?").slice(0, 1).toUpperCase()}
                 </span>
-                <span className="min-w-0 flex-1 truncate">{m.name ?? m.email}</span>
-                <span className="rounded-full border border-line px-2 py-px text-[10px] font-semibold uppercase tracking-[.8px] text-muted">{m.role}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {m.name ?? m.email}
+                </span>
+                <span className="rounded-full border border-line px-2 py-px text-[10px] font-semibold uppercase tracking-[.8px] text-muted">
+                  {m.role}
+                </span>
               </li>
             ))}
           </ul>
-          <Link href="/settings/team" className="text-[12px] font-semibold text-orange">
+          <Link
+            href="/settings/team"
+            className="text-[12px] font-semibold text-orange"
+          >
             Invite people and manage roles ↗
           </Link>
         </section>

@@ -26,7 +26,10 @@ export default async function BrandKitPage({
   const { error, saved, created } = await searchParams;
   const brand = await getBrand(ctx.org.id, brandId);
   if (!brand) notFound();
-  const [active, versions] = await Promise.all([getActiveKit(ctx.org.id, brandId), listKitVersions(ctx.org.id, brandId)]);
+  const [active, versions] = await Promise.all([
+    getActiveKit(ctx.org.id, brandId),
+    listKitVersions(ctx.org.id, brandId),
+  ]);
   const kit = withDefaults(active?.data);
   const current = ctx.brand?.id === brand.id;
 
@@ -42,12 +45,14 @@ export default async function BrandKitPage({
             {versions.length > 1 ? ` of ${versions.length}` : ""}
           </div>
           <h1 className="m-0 text-[28px] font-medium leading-[1.05] tracking-[-1.4px] sm:text-[36px] sm:tracking-[-1.8px]">
-            {brand.name}. <span className="font-serif italic tracking-[-0.6px] text-orange">Every ad starts here.</span>
+            {brand.name}
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {current ? (
-            <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[11px] font-semibold text-[#3f7a55]">Current brand</span>
+            <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[11px] font-semibold text-[#3f7a55]">
+              Current brand
+            </span>
           ) : (
             <form action={selectBrand.bind(null, brand.id)}>
               <button type="submit" className="btn btn-outline h-11">
@@ -55,22 +60,44 @@ export default async function BrandKitPage({
               </button>
             </form>
           )}
-          <button type="submit" form="brand-kit-form" className="btn btn-orange h-11">
-            Save kit <span aria-hidden="true" className="text-lg leading-none">↗</span>
+          <button
+            type="submit"
+            form="brand-kit-form"
+            className="btn btn-orange h-11"
+          >
+            Save kit{" "}
+            <span aria-hidden="true" className="text-lg leading-none">
+              ↗
+            </span>
           </button>
         </div>
       </header>
 
       {created ? (
         <div className="panel px-4 py-3 text-[13px] text-muted">
-          <span className="font-semibold text-ink">{brand.name}</span> is ready. Add the logo and colours so generated ads match from the first one.
+          <span className="font-semibold text-ink">{brand.name}</span> is ready.
+          Add the logo and colours so generated ads match from the first one.
         </div>
       ) : null}
-      {saved ? <div className="panel px-4 py-3 text-[13px] text-muted">Saved as version {active?.version ?? 1}. Earlier versions are kept for creatives made with them.</div> : null}
-      {error ? <div className="rounded-[9px] bg-[#fbe3d9] px-4 py-3 text-[13px] text-[#b4382a]">{errors[error] ?? "Something went wrong."}</div> : null}
+      {saved ? (
+        <div className="panel px-4 py-3 text-[13px] text-muted">
+          Saved as version {active?.version ?? 1}. Earlier versions are kept for
+          creatives made with them.
+        </div>
+      ) : null}
+      {error ? (
+        <div className="rounded-[9px] bg-[#fbe3d9] px-4 py-3 text-[13px] text-[#b4382a]">
+          {errors[error] ?? "Something went wrong."}
+        </div>
+      ) : null}
 
       <BrandKitEditor
-        brand={{ id: brand.id, name: brand.name, website: brand.website, industry: brand.industry }}
+        brand={{
+          id: brand.id,
+          name: brand.name,
+          website: brand.website,
+          industry: brand.industry,
+        }}
         kit={kit}
         action={saveBrandKit.bind(null, brand.id)}
       />

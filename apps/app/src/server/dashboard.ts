@@ -1,6 +1,6 @@
 import "server-only";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { db, briefs, concepts, creatives, generationEvents, projects, renders, variants, adAccounts, approvals } from "@adcraft/db";
+import { db, briefs, concepts, creatives, generationEvents, projects, renders, variants, adAccounts, approvals, products } from "@adcraft/db";
 
 export type WallTile = {
   id: string;
@@ -112,7 +112,7 @@ async function loadWall(orgId: string, brandId: string | null): Promise<WallTile
       ratio: first?.v.ratio ?? "4:5",
       status: done ? "rendered" : failed ? "failed" : "draft",
       previewUrl: previewKeyFor(done?.r ?? null),
-      model: concept.model ?? doc?.model ?? null,
+      model: doc?.model ?? concept.model ?? null,
       updatedAt: creative.updatedAt,
       headline: concept.data.headline ?? doc?.headline ?? null,
       brand: null,
@@ -139,13 +139,17 @@ async function loadCounts(orgId: string, brandId: string | null) {
     .select({ n: sql<number>`count(*)::int` })
     .from(renders)
     .where(and(eq(renders.orgId, orgId), eq(renders.status, "failed")));
+  const [pr] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(products)
+    .where(brandId ? and(eq(products.orgId, orgId), eq(products.brandId, brandId)) : eq(products.orgId, orgId));
   const failedPipelines = await db
     .select({ creativeId: generationEvents.creativeId, error: generationEvents.error, label: generationEvents.meta })
     .from(generationEvents)
     .where(and(eq(generationEvents.orgId, orgId), eq(generationEvents.status, "failed")))
     .orderBy(desc(generationEvents.createdAt))
     .limit(3);
-  return { creatives: c?.creatives ?? 0, briefs: b?.n ?? 0, failedRenders: f?.n ?? 0, failedPipelines };
+  return { creatives: c?.creatives ?? 0, briefs: b?.n ?? 0, products: pr?.n ?? 0, failedRenders: f?.n ?? 0, failedPipelines };
 }
 
 /** Image renders preview directly; video renders use the poster frame stored in meta. */
