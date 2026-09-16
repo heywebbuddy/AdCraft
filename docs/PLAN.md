@@ -1,6 +1,8 @@
 # Adcraft — Product & Engineering Plan
 
-Status: v1.1 (decisions confirmed) · 2026-09-17 · Owner: Ratnesh
+Status: v1.2 · 2026-09-17 · Owner: Ratnesh
+
+> **Build status (17 Sep 2026):** all four releases are implemented in the monorepo and run end to end locally with sandbox providers wherever an API key is missing. See section 13 for what remains before go-live.
 
 Adcraft is a SaaS where a brand uploads its product, gets ad creative in every format (static, carousel, product video, UGC-style video), publishes it straight to Meta, Instagram, TikTok, Google and YouTube, and tracks what wins. This document is the plan to get from the current marketing site to a fully working product.
 
@@ -281,3 +283,22 @@ adcraft/
 - Set up Auth.js (magic link + Google) with organisations, memberships and roles in Drizzle.
 - Build the `packages/ai` interfaces and the first Claude concept generator with structured outputs.
 - Run a provider bake-off: 10 real product photos → static scenes with Nano Banana Pro, Seedream 4.5 and Flux 2 Max, and 5 s clips with Kling 3.0, Veo 3.1, Seedance 2.5 and Seedance 2.0; record cost and quality.
+
+## 13. What remains before go-live (as of 17 Sep 2026)
+
+Everything below is wiring and verification, not new product surface.
+
+| Area | Status | To do |
+|---|---|---|
+| Concepts (Claude Opus 5) | Built, sample mode without key | Add `ANTHROPIC_API_KEY`; review prompt output on 10 real briefs |
+| Image scenes and cutouts (fal.ai) | Built, gradient placeholder without key | Add `FAL_KEY`; verify the three endpoint ids and per-image costs; tune prompts per model |
+| Video (Kling / Veo / Seedance) | Built, Ken Burns fallback without key | Verify fal endpoint ids for Seedance 2.x; measure cost per second; Remotion Lambda for scale |
+| UGC (HeyGen + ElevenLabs) | Built, presenter card fallback | Add keys; refresh stock avatar and voice ids; consent flow for custom likeness |
+| Ad platforms | Built against documented APIs, sandbox without keys | File Meta / TikTok / Google developer apps; test each adapter against a real sandbox account; AI-disclosure fields |
+| Billing | Built | Create Stripe products and set `STRIPE_PRICE_*`; test webhook with the Stripe CLI |
+| Email | Built | `RESEND_API_KEY` for magic links and invites |
+| Database | PGlite locally, Postgres via `DATABASE_URL` | Provision Neon/Supabase; run `db:migrate` |
+| Storage | Local disk locally, R2 via env | Create the R2 bucket and public base |
+| Jobs | Inline locally, Inngest via env | Create the Inngest app; hourly insights cron is registered |
+| Hosting | Not deployed | Vercel for the app; keep `dist/` on its current static host; set `ADCRAFT_APP_URL` on the site |
+| Compliance | Not started | Privacy policy, terms, DPA, data deletion flow |
