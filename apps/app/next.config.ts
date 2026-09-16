@@ -10,7 +10,7 @@ for (const file of [".env", ".env.local"]) {
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@adcraft/ui", "@adcraft/db", "@adcraft/ai", "@adcraft/storage", "@adcraft/specs", "@adcraft/render"],
-  serverExternalPackages: ["postgres", "@electric-sql/pglite"],
+  serverExternalPackages: ["postgres", "@electric-sql/pglite", "@resvg/resvg-js", "sharp", "@remotion/renderer", "@remotion/bundler", "ffmpeg-static", "fluent-ffmpeg"],
 };
 
 export default nextConfig;

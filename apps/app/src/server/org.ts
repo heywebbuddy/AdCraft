@@ -3,7 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
-import { db, dbReady, organizations, memberships, brands, creditLedger } from "@adcraft/db";
+import { db, dbReady, organizations, memberships, brands, creditLedger, users } from "@adcraft/db";
 import { auth } from "@/auth";
 
 export const ORG_COOKIE = "adcraft_org";
@@ -28,6 +28,10 @@ export type OrgContext = {
 export const requireViewer = cache(async (): Promise<Viewer> => {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
+  await dbReady;
+  const exists = await db.query.users.findFirst({ where: eq(users.id, session.user.id), columns: { id: true } });
+  // A session can outlive its user row (database reset in development). Force a fresh sign-in.
+  if (!exists) redirect("/sign-in?stale=1");
   return {
     userId: session.user.id,
     email: session.user.email ?? "",

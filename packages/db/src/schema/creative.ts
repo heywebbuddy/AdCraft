@@ -25,6 +25,8 @@ export type BriefData = {
   formats: Array<"static" | "video" | "ugc">;
   ratios?: string[];
   constraints?: string[];
+  /** Optional tone override for this brief (otherwise the brand kit voice). */
+  tone?: string;
 };
 
 export const briefs = pgTable(

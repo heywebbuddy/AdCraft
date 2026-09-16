@@ -16,6 +16,8 @@
     "@adcraft/storage": "workspace:*",
     "@adcraft/ui": "workspace:*",
     "@auth/drizzle-adapter": "^1.10.0",
+    "@electric-sql/pglite": "^0.5.8",
+    "@resvg/resvg-js": "^2.6.2",
     "drizzle-orm": "^0.44.5",
     "inngest": "^3.40.1",
     "jszip": "^3.10.2",

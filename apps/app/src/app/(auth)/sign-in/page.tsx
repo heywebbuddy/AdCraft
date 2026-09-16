@@ -10,10 +10,11 @@ const inputClass =
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; error?: string; stale?: string }>;
 }) {
   const session = await auth();
-  const { callbackUrl = "/dashboard", error } = await searchParams;
+  const { callbackUrl = "/dashboard", error, stale } = await searchParams;
+  if (session?.user && stale) redirect("/api/auth/reset");
   if (session?.user) redirect(callbackUrl);
 
   return (
