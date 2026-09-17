@@ -103,3 +103,10 @@ export async function getPlatformSetting<T = unknown>(key: string): Promise<T | 
   const row = await db.query.platformSettings.findFirst({ where: eq(platformSettings.key, key) });
   return row?.value as T | undefined;
 }
+
+/** Whether a plan may use a feature, per admin flags. Trial follows Starter. */
+export async function planAllows(plan: string | null | undefined, feature: keyof PlanFeatures): Promise<boolean> {
+  const settings = await getPlatformSettings();
+  const key = (plan && plan in settings.planFeatures ? plan : "starter") as PlanId;
+  return settings.planFeatures[key]?.[feature] ?? true;
+}

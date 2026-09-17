@@ -2363,3 +2363,13 @@
 .home-stat-live {
   display: none;
 }
+
+/* Platform-wide notice set from the admin panel */
+.maintenance-banner {
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px 16px;
+  letter-spacing: 0.1px;
+}

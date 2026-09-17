@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireOrg } from "@/server/org";
+import { planAllows } from "@/server/platform-settings";
+import { currentSubscription } from "@/server/billing";
 import {
   CREDITS,
   VIDEO_RATIOS,
@@ -23,6 +25,8 @@ export default async function NewVideoPage({
   const ctx = await requireOrg();
   const { conceptId, kind } = await searchParams;
   if (!conceptId) redirect("/briefs");
+  const sub = await currentSubscription(ctx.org.id);
+  if (!(await planAllows(sub?.plan, kind === "ugc" ? "ugc" : "video"))) redirect(`/briefs?error=plan-${kind === "ugc" ? "ugc" : "video"}`);
   const concept = await getConceptForVideo(ctx.org.id, conceptId);
   if (!concept) notFound();
 

@@ -45,7 +45,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
                 </span>
                 <textarea name="maintenanceBanner" defaultValue={s.maintenanceBanner} maxLength={300} placeholder="Video generation is slower than usual while we upgrade the render farm." />
               </label>
-              <p>TODO: the customer app does not render this yet; the value is stored and available from getPlatformSettings().</p>
+              <p>Shown as a dark strip at the top of every customer workspace within a minute of saving.</p>
             </div>
           </Panel>
 
@@ -82,7 +82,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
                   </div>
                 </fieldset>
               ))}
-              <p>TODO: the studio does not read these flags yet; they are stored for the pickers and publish flow to consult.</p>
+              <p>Turning a feature off hides its entry points for workspaces on that plan (trial follows Starter) and refuses new jobs of that kind.</p>
             </div>
           </Panel>
 

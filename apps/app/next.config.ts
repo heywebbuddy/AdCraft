@@ -9,6 +9,8 @@ for (const file of [".env", ".env.local"]) {
 }
 
 const nextConfig: NextConfig = {
+  // No floating dev badge: it lands in every screenshot and covers the sidebar avatar.
+  devIndicators: false,
   // The marketing site (repo `dist/`) is copied into public/ by scripts/sync-site.mjs and served here.
   async rewrites() {
     return [

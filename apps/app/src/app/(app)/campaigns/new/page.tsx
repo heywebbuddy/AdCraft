@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { OBJECTIVES } from "@adcraft/ads";
 import { requireOrg } from "@/server/org";
+import { planAllows } from "@/server/platform-settings";
+import { currentSubscription } from "@/server/billing";
 import {
   listAdAccounts,
   listPublishableCreatives,
@@ -19,6 +21,8 @@ export default async function NewCampaignPage({
 }) {
   const ctx = await requireOrg();
   if (ctx.role === "viewer") redirect("/campaigns?error=forbidden");
+  const sub = await currentSubscription(ctx.org.id);
+  if (!(await planAllows(sub?.plan, "publishing"))) redirect("/campaigns?error=plan");
   const { error, account } = await searchParams;
   const [accounts, creatives] = await Promise.all([
     listAdAccounts(ctx.org.id, ctx.brand?.id ?? null),

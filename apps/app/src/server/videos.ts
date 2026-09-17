@@ -241,6 +241,12 @@ export async function createVideoFromConcept(orgId: string, conceptId: string, o
   const c = await getConceptForVideo(orgId, conceptId);
   if (!c) throw new Error("Concept not found");
   const kind: VideoKind = opts.kind === "ugc" ? "ugc" : "video";
+  {
+    const { planAllows } = await import("./platform-settings");
+    const { currentSubscription } = await import("./billing");
+    const sub = await currentSubscription(orgId);
+    if (!(await planAllows(sub?.plan, kind))) throw new Error(`${kind === "ugc" ? "UGC video" : "Product video"} is not enabled for this plan`);
+  }
   const model = videoModels.some((m) => m.id === opts.model) ? (opts.model as string) : defaultModel("video").id;
   const ratio: VideoRatio = VIDEO_RATIOS.some((r) => r.id === opts.ratio) ? (opts.ratio as VideoRatio) : "9:16";
   const document = buildVideoDocument(c, { kind, model, ratio, avatarId: opts.avatarId, voiceId: opts.voiceId });

@@ -6,6 +6,7 @@ import { currentSubscription, PLANS, type PlanId } from "@/server/billing";
 import "./workspace.css";
 import { Sidebar } from "@/components/sidebar";
 import { SupportBanner } from "@/components/admin/support-banner";
+import { getPlatformSettings } from "@/server/platform-settings";
 
 export default async function AppLayout({
   children,
@@ -13,7 +14,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const ctx = await requireOrg();
-  const subscription = await currentSubscription(ctx.org.id);
+  const [subscription, settings] = await Promise.all([currentSubscription(ctx.org.id), getPlatformSettings()]);
   const planName =
     subscription?.plan && subscription.plan in PLANS
       ? PLANS[subscription.plan as PlanId].name
@@ -22,6 +23,11 @@ export default async function AppLayout({
   return (
     <>
       {ctx.supportMode ? <SupportBanner orgName={ctx.org.name} /> : null}
+      {settings.maintenanceBanner.trim() ? (
+        <div className="maintenance-banner" role="status">
+          {settings.maintenanceBanner.trim()}
+        </div>
+      ) : null}
       <div className="app-shell">
         <a href="#workspace-main" className="workspace-skip">
           Skip to content
