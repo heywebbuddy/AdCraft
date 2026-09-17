@@ -13,7 +13,6 @@ import {
   PerformanceIcon,
   SettingsIcon,
   BrandIcon,
-  TeamIcon,
   BoltIcon,
   LogoutIcon,
   GridIcon,
@@ -148,28 +147,24 @@ export function Sidebar(props: SidebarProps) {
       <div className="sidebar-bottom">
         <nav aria-label="Workspace administration">
           <Link
-            href="/settings/team"
-            className={`workspace-nav-item ${pathname === "/settings/team" ? "active" : ""}`}
-          >
-            <TeamIcon />
-            Team members
-          </Link>
-          <Link
             href="/settings"
-            className={`workspace-nav-item ${pathname.startsWith("/settings") && pathname !== "/settings/team" ? "active" : ""}`}
+            className={`workspace-nav-item ${pathname.startsWith("/settings") ? "active" : ""}`}
           >
             <SettingsIcon />
             Settings
           </Link>
         </nav>
-        <div className="sidebar-credit-card">
-          <div>
-            <span>
-              <BoltIcon width={15} height={15} /> Generation credits
+        <Link href="/settings/billing" className="sidebar-credits" title={`${props.plan} plan · manage credits`}>
+          <span className="sidebar-credits-row">
+            <span className="sidebar-credits-label">
+              <BoltIcon width={13} height={13} /> Credits
             </span>
-            <strong>{props.credits.balance.toLocaleString()}</strong>
-          </div>
-          <div
+            <strong className="tabular">
+              {props.credits.balance.toLocaleString()}
+              <small> / {Math.max(props.credits.grant, props.credits.balance).toLocaleString()}</small>
+            </strong>
+          </span>
+          <span
             className="sidebar-credit-track"
             role="progressbar"
             aria-label="Remaining generation credits"
@@ -178,12 +173,8 @@ export function Sidebar(props: SidebarProps) {
             aria-valuemax={Math.max(props.credits.grant, props.credits.balance)}
           >
             <span style={{ width: `${pct}%` }} />
-          </div>
-          <div className="sidebar-credit-meta">
-            <span>{props.plan} plan</span>
-            <Link href="/settings/billing">Manage plan ↗</Link>
-          </div>
-        </div>
+          </span>
+        </Link>
         <div className="sidebar-user">
           <span className="viewer-avatar">
             {props.viewer.name.slice(0, 1).toUpperCase()}

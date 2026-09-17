@@ -2441,3 +2441,53 @@
   margin-top: 4px;
   font-size: 12px;
 }
+
+/* Compact credits strip above the account row; the nav above gets the room. */
+.sidebar-credits {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 10px 11px;
+  margin: 2px 0 6px;
+  border-radius: 8px;
+  color: inherit;
+  transition: background 0.15s;
+}
+.sidebar-credits:hover {
+  background: #f1f2ec;
+}
+.sidebar-credits-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.sidebar-credits-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.sidebar-credits strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.sidebar-credits strong small {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a3a69a;
+}
+.sidebar-credits .sidebar-credit-track {
+  display: block;
+  margin: 0;
+  height: 4px;
+}
+.sidebar-bottom {
+  padding-top: 16px;
+  gap: 8px;
+}
+.admin-shell .sidebar-credits:hover,
+.admin-drawer .sidebar-credits:hover {
+  background: #ffffff0f;
+}
