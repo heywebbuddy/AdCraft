@@ -1615,7 +1615,7 @@
 }
 
 /* Keep keyboard focus visible for radio and checkbox chip groups. */
-.app-shell label:has(> input:focus-visible) {
+.app-shell label:has(> input:is([type="radio"], [type="checkbox"]):focus-visible) {
   outline: 2px solid var(--orange);
   outline-offset: 3px;
 }
@@ -2625,4 +2625,52 @@
 .admin-shell .sidebar-credits:hover,
 .admin-drawer .sidebar-credits:hover {
   background: #ffffff0f;
+}
+
+/* Dropdown lists in our palette where the browser supports customizable <select> (Chromium 135+). */
+@supports (appearance: base-select) {
+  .workspace-main select:not([multiple]):not([size]),
+  .workspace-main select:not([multiple]):not([size])::picker(select) {
+    appearance: base-select;
+  }
+  .workspace-main select:not([multiple]):not([size])::picker-icon {
+    display: none;
+  }
+  .workspace-main select::picker(select) {
+    margin-top: 4px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fff;
+    padding: 5px;
+    box-shadow: 0 12px 32px #1f221a1f;
+    min-width: anchor-size(width);
+  }
+  .workspace-main select option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .workspace-main select option::checkmark {
+    order: 2;
+    margin-left: auto;
+    color: var(--orange);
+  }
+  .workspace-main select option:hover,
+  .workspace-main select option:focus-visible {
+    background: #f4f5f0;
+    outline: none;
+  }
+  .workspace-main select option:checked {
+    background: #fbeee8;
+    color: var(--orange-text);
+    font-weight: 600;
+  }
+  .workspace-main select option:disabled {
+    color: var(--muted);
+    opacity: 0.6;
+  }
 }
