@@ -123,7 +123,7 @@ export async function ReviewPanel({ creativeId, variantId = null, variantLabels 
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
           {[...open, ...resolved].map((c) => (
             <li key={c.id} className={`flex gap-2.5 ${c.resolvedAt ? "opacity-55" : ""}`}>
-              <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${c.authorId ? "bg-ink text-white" : "border border-dashed border-[#d4d3ca] text-muted"}`}>
+              <span className={`viewer-avatar viewer-avatar-sm mt-0.5 ${c.authorId ? "" : "viewer-avatar-guest"}`}>
                 {c.authorName.slice(0, 1).toUpperCase()}
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">

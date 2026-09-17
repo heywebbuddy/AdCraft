@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/workspace-ui";
 import Link from "next/link";
+import { PlusIcon } from "@/components/icons";
 import { PLATFORM_COVERS } from "@adcraft/ads";
 import { requireOrg } from "@/server/org";
 import { listCampaigns, platformCards } from "@/server/ads";
@@ -56,7 +57,7 @@ export default async function CampaignsPage({
         actions={
           connectedCount > 0 && canEdit ? (
             <Link href="/campaigns/new" className="btn btn-orange">
-              ＋ New campaign
+              <PlusIcon width={15} height={15} /> New campaign
             </Link>
           ) : undefined
         }

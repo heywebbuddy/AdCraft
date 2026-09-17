@@ -18,6 +18,12 @@ import { CHECKER_STYLE, CutoutStatusChip } from "@/components/cutout-status";
 
 export const dynamic = "force-dynamic";
 
+/** Prices show as entered ("€48", "48 USD"); a bare number gets a "$" so it still reads as money. */
+function displayPrice(price: string) {
+  const p = price.trim();
+  return /^\d+([.,]\d+)?$/.test(p) ? `$${p}` : p;
+}
+
 export default async function LibraryPage({
   searchParams,
 }: {
@@ -106,7 +112,7 @@ export default async function LibraryPage({
                     <span className="min-w-0 truncate">{p.name}</span>
                     {p.price ? (
                       <span className="tabular text-[11px] font-medium text-muted">
-                        {p.price}
+                        {displayPrice(p.price)}
                       </span>
                     ) : null}
                   </div>

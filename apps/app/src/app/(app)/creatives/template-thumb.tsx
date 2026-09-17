@@ -15,7 +15,9 @@ export function TemplateThumb({
 }) {
   const scene = "linear-gradient(160deg, #fbe7cf 0%, #f0b489 45%, #b9552f 100%)";
   const overlay = "linear-gradient(0deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 60%)";
-  const bar = (w: string, h = "6%") => ({ width: w, height: h, borderRadius: 2 });
+  // Percentage heights have no definite parent inside the absolute stacks, so bars take their height
+  // from padding (resolved against the 4:5 frame's width, hence the 1.25 factor).
+  const bar = (w: string, h = "6%") => ({ width: w, height: 0, paddingTop: `${parseFloat(h) * 1.25}%`, borderRadius: 2 });
   const bottle = (w: string, h: string) => (
     <span className="absolute rounded-[3px] bg-white/95 shadow-[0_2px_6px_rgba(0,0,0,.25)]" style={{ width: w, height: h, right: "10%", bottom: "30%" }}>
       <span className="absolute left-1/2 top-[-8%] h-[10%] w-[45%] -translate-x-1/2 rounded-[2px] bg-[#2b2a26]" />

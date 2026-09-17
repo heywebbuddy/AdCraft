@@ -22,19 +22,19 @@ export default async function NewBrandPage({ searchParams }: { searchParams: Pro
           Starts with a default kit in Adcraft colours. You can set the logo, palette, fonts and tone on the next screen.
         </p>
         {error ? <p className="m-0 rounded-[7px] bg-[#fbe3d9] px-3 py-2 text-[13px] text-[#b4382a]">The brand needs a name.</p> : null}
-        <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-          Brand name
+        <label className="flex flex-col gap-1.5">
+          <span className="field-label">Brand name</span>
           <input name="name" required autoFocus placeholder="Éclat Skin" className={inputClass} />
         </label>
-        <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-          <span>
-            Website <span className="font-normal text-muted">(optional)</span>
+        <label className="flex flex-col gap-1.5">
+          <span className="field-label">
+            Website <span className="field-hint">Optional</span>
           </span>
           <input name="website" placeholder="eclatskin.com" className={inputClass} />
         </label>
-        <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-          <span>
-            Industry <span className="font-normal text-muted">(optional)</span>
+        <label className="flex flex-col gap-1.5">
+          <span className="field-label">
+            Industry <span className="field-hint">Optional</span>
           </span>
           <input name="industry" placeholder="Skincare" className={inputClass} />
         </label>

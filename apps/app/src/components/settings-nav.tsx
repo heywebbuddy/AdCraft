@@ -13,7 +13,7 @@ const tabs: Array<{
   { id: "team", href: "/settings/team", label: "Team" },
   { id: "templates", href: "/settings/templates", label: "Templates" },
   { id: "billing", href: "/settings/billing", label: "Plan and credits" },
-  { id: "api", href: "/settings/api", label: "API" },
+  { id: "api", href: "/settings/api", label: "API access" },
   { id: "audit", href: "/settings/audit", label: "Audit log", ownerOnly: true },
   { id: "brands", href: "/brands", label: "Brands" },
 ];

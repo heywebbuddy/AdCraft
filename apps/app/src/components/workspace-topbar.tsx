@@ -3,18 +3,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SearchIcon, ArrowIcon, BoltIcon } from "./icons";
-const destinations = [
+import { useBreadcrumbTitle } from "./breadcrumb-title";
+const destinations: Array<{ name: string; href: string; match?: string; group: string }> = [
   { name: "Overview", href: "/dashboard", group: "Workspace" },
   { name: "Creative briefs", href: "/briefs", group: "Create" },
   { name: "All creatives", href: "/creatives", group: "Create" },
-  { name: "Videos", href: "/videos", group: "Create" },
+  { name: "Videos", href: "/creatives?kind=video", match: "/videos", group: "Create" },
   { name: "Product library", href: "/library", group: "Assets" },
   { name: "Brand kits", href: "/brands", group: "Assets" },
   { name: "Campaigns", href: "/campaigns", group: "Distribution" },
   { name: "Performance", href: "/performance", group: "Distribution" },
   { name: "Team members", href: "/settings/team", group: "Settings" },
   { name: "Templates", href: "/settings/templates", group: "Settings" },
-  { name: "Billing & credits", href: "/settings/billing", group: "Settings" },
+  { name: "Plan and credits", href: "/settings/billing", group: "Settings" },
   { name: "API access", href: "/settings/api", group: "Settings" },
   { name: "Settings", href: "/settings", group: "Workspace" },
 ];
@@ -28,9 +29,10 @@ export function WorkspaceTopbar({
   role: string;
 }) {
   const path = usePathname();
+  const detailTitle = useBreadcrumbTitle();
   const current =
     destinations.find((d) => d.href === path) ??
-    destinations.find((d) => path.startsWith(d.href + "/"));
+    destinations.find((d) => path.startsWith((d.match ?? d.href) + "/"));
   const dialog = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -65,7 +67,7 @@ export function WorkspaceTopbar({
           {current && path !== current.href && (
             <>
               <span aria-hidden="true">/</span>
-              <span>{path.endsWith("/new") ? "Create new" : "Details"}</span>
+              <span>{detailTitle ?? (path.endsWith("/new") ? "Create new" : "Details")}</span>
             </>
           )}
         </nav>

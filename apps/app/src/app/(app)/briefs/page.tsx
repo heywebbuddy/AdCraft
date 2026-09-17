@@ -6,13 +6,17 @@ import {
 } from "@/components/workspace-ui";
 import Link from "next/link";
 import { requireOrg } from "@/server/org";
-import { FORMATS, listBriefs } from "@/server/briefs";
+import { FORMATS, PLATFORMS, listBriefs } from "@/server/briefs";
+import { PlusIcon } from "@/components/icons";
 import { relative } from "./format";
 
 export const dynamic = "force-dynamic";
 
 const formatLabel = Object.fromEntries(
   FORMATS.map((f) => [f.id, f.label]),
+) as Record<string, string>;
+const platformLabel = Object.fromEntries(
+  PLATFORMS.map((p) => [p.id, p.label]),
 ) as Record<string, string>;
 
 export default async function BriefsPage({
@@ -35,7 +39,7 @@ export default async function BriefsPage({
         description="Give your next campaign a clear direction. Explore concepts, hooks, and formats."
         actions={
           <Link href="/briefs/new" className="btn btn-orange">
-            ＋ New brief
+            <PlusIcon width={15} height={15} /> New brief
           </Link>
         }
       />
@@ -65,11 +69,11 @@ export default async function BriefsPage({
         />
       ) : (
         <section className="panel overflow-hidden">
-          <div className="grid grid-cols-[minmax(0,1fr)_120px_150px_90px] items-center gap-4 border-b border-line px-4 py-2.5 max-md:hidden">
-            <span className="eyebrow">Brief</span>
-            <span className="eyebrow">Objective</span>
-            <span className="eyebrow">Status</span>
-            <span className="eyebrow text-right">Created</span>
+          <div className="collection-head grid grid-cols-[minmax(0,1fr)_120px_150px_90px] items-center gap-4 border-b border-line px-4 max-md:hidden">
+            <span>Brief</span>
+            <span>Objective</span>
+            <span>Status</span>
+            <span className="text-right">Created</span>
           </div>
           <ul className="m-0 list-none p-0">
             {items.map((b) => (
@@ -93,7 +97,7 @@ export default async function BriefsPage({
                       ))}
                       {b.platforms.length ? (
                         <span className="text-[11px] text-muted">
-                          · {b.platforms.join(", ")}
+                          · {b.platforms.map((p) => platformLabel[p] ?? p).join(" · ")}
                         </span>
                       ) : null}
                     </div>

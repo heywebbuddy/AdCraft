@@ -42,7 +42,7 @@ export default async function ApiPage({
 
   return (
     <>
-      <PageHeader title="API & integrations" description="Connect your creative workflow with API keys and webhooks."/>
+      <PageHeader title="API access" description="Connect your creative workflow with API keys and webhooks."/>
 
       <SettingsNav active="api" role={ctx.role} />
 
@@ -105,8 +105,8 @@ export default async function ApiPage({
           )}
           {isOwner ? (
             <form action={createApiKey} className="flex flex-wrap items-end gap-2 border-t border-line pt-4">
-              <label className="flex min-w-[200px] flex-1 flex-col gap-2 text-sm font-medium">
-                Key name
+              <label className="flex min-w-[200px] flex-1 flex-col gap-2">
+                <span className="field-label">Key name</span>
                 <input name="name" placeholder="Zapier, DAM sync…" className={inputClass} />
               </label>
               <button className="btn btn-dark h-11">Create key</button>
@@ -154,12 +154,12 @@ export default async function ApiPage({
           )}
           {isOwner ? (
             <form action={addWebhook} className="flex flex-col gap-3 border-t border-line pt-4">
-              <label className="flex flex-col gap-2 text-sm font-medium">
-                Endpoint URL
+              <label className="flex flex-col gap-2">
+                <span className="field-label">Endpoint URL</span>
                 <input name="url" type="url" required placeholder="https://hooks.zapier.com/…" className={inputClass} />
               </label>
               <fieldset className="m-0 flex flex-col gap-1.5 border-0 p-0">
-                <legend className="mb-1.5 text-sm font-medium">Events</legend>
+                <legend className="field-label mb-1.5">Events</legend>
                 {WEBHOOK_EVENTS.map((e) => (
                   <label key={e.id} className="flex items-center gap-2 text-[13px]">
                     <input type="checkbox" name="events" value={e.id} defaultChecked className="accent-[#e65c32]" />

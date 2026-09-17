@@ -43,8 +43,8 @@ export default async function SettingsPage({
           <span className="eyebrow">Workspace</span>
           {ok ? <p className="m-0 text-[13px] text-[#3f7a55]">Saved.</p> : null}
           <form action={updateOrgName} className="flex flex-col gap-3">
-            <label className="flex flex-col gap-2 text-sm font-medium">
-              Name
+            <label className="flex flex-col gap-2">
+              <span className="field-label">Name</span>
               <input
                 name="name"
                 defaultValue={ctx.org.name}

@@ -2,6 +2,7 @@ import { signOut } from "@/auth";
 import { requireOrg } from "@/server/org";
 import { switchBrand } from "@/server/onboarding";
 import { WorkspaceTopbar } from "@/components/workspace-topbar";
+import { BreadcrumbProvider } from "@/components/breadcrumb-title";
 import { currentSubscription, PLANS, type PlanId } from "@/server/billing";
 import "./workspace.css";
 import { Sidebar } from "@/components/sidebar";
@@ -50,14 +51,16 @@ export default async function AppLayout({
           }}
         />
         <div className="workspace-body">
-          <WorkspaceTopbar
-            orgName={ctx.org.name}
-            credits={ctx.credits.balance}
-            role={ctx.role}
-          />
-          <main id="workspace-main" className="workspace-main">
-            {children}
-          </main>
+          <BreadcrumbProvider>
+            <WorkspaceTopbar
+              orgName={ctx.org.name}
+              credits={ctx.credits.balance}
+              role={ctx.role}
+            />
+            <main id="workspace-main" className="workspace-main">
+              {children}
+            </main>
+          </BreadcrumbProvider>
           <footer className="workspace-footer">
             <span>Adcraft Studio</span>
             <span>{ctx.brand?.name ?? ctx.org.name} workspace</span>

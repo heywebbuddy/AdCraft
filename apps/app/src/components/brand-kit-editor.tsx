@@ -20,10 +20,14 @@ const textareaClass =
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="panel flex flex-col gap-4 p-5">
-      <div className="flex items-baseline justify-between gap-3">
+      {hint ? (
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="eyebrow">{title}</span>
+          <span className="text-[11px] text-muted">{hint}</span>
+        </div>
+      ) : (
         <span className="eyebrow">{title}</span>
-        {hint ? <span className="text-[11px] text-muted">{hint}</span> : null}
-      </div>
+      )}
       {children}
     </section>
   );
@@ -31,9 +35,9 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 
 function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-      <span>
-        {label} {optional ? <span className="font-normal text-muted">(optional)</span> : null}
+    <label className="flex flex-col gap-1.5">
+      <span className="field-label">
+        {label} {optional ? <span className="field-hint">Optional</span> : null}
       </span>
       {children}
     </label>
@@ -112,7 +116,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
           <div className="grid gap-3 sm:grid-cols-2">
             {COLOR_FIELDS.map(({ key, label, hint }) => (
               <div key={key} className="flex items-center gap-3 rounded-[7px] border border-line bg-white p-2.5">
-                <label className="relative h-11 w-11 shrink-0 cursor-pointer overflow-hidden rounded-[7px] border border-line" style={{ background: colors[key] }}>
+                <label className="swatch relative h-11 w-11 shrink-0 cursor-pointer overflow-hidden rounded-[7px]" style={{ background: colors[key] }}>
                   <input
                     type="color"
                     aria-label={`${label} colour`}
@@ -200,8 +204,8 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
           <Field label="Tagline" optional>
             <input name="tagline" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Skin that keeps up with you." className={inputClass} />
           </Field>
-          <div className="flex flex-col gap-1.5 text-[13px] font-medium">
-            <span>CTA style</span>
+          <div className="flex flex-col gap-1.5">
+            <span className="field-label">CTA style</span>
             <div className="flex w-fit gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
               {CTA_STYLES.map((c) => (
                 <button
@@ -237,7 +241,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
         />
         <div className="flex items-center gap-1.5 px-0.5">
           {COLOR_FIELDS.map(({ key, label }) => (
-            <span key={key} title={`${label} ${colors[key]}`} className="h-5 flex-1 rounded-[4px] border border-line" style={{ background: colors[key] }} />
+            <span key={key} title={`${label} ${colors[key]}`} className="swatch h-5 flex-1 rounded-[4px]" style={{ background: colors[key] }} />
           ))}
         </div>
         <p className="m-0 text-[12px] text-muted">

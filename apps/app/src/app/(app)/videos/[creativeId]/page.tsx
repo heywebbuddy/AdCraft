@@ -6,6 +6,7 @@ import { requireOrg } from "@/server/org";
 import { STEPS, getVideo, videoModelChoices, type VideoEvent } from "@/server/videos";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { PlayIcon } from "@/components/icons";
+import { BreadcrumbTitle } from "@/components/breadcrumb-title";
 import { regenerateSceneAction, rerunAction, saveScene } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,25 @@ function fileUrl(asset: { key?: string; url?: string } | undefined) {
 
 function seconds(ms: number | null) {
   return ms ? `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)} s` : "";
+}
+
+/** Consecutive activity rows with the same label + status inside the same minute collapse into one row ("×N"). */
+function groupEvents(events: VideoEvent[]) {
+  const groups: Array<{ event: VideoEvent; count: number }> = [];
+  for (const e of events) {
+    const last = groups[groups.length - 1];
+    if (
+      last &&
+      last.event.label === e.label &&
+      last.event.status === e.status &&
+      Math.floor(last.event.createdAt.getTime() / 60_000) === Math.floor(e.createdAt.getTime() / 60_000)
+    ) {
+      last.count += 1;
+      continue;
+    }
+    groups.push({ event: e, count: 1 });
+  }
+  return groups;
 }
 
 function stepState(steps: Array<{ id: string; label: string }>, running: VideoEvent | null, lastRoot: VideoEvent | null, events: VideoEvent[]) {
@@ -63,9 +83,10 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
   return (
     <>
       <AutoRefresh everyMs={3000} active={rendering} />
+      <BreadcrumbTitle title={v.name} />
 
-      <header className="flex flex-wrap items-end justify-between gap-6">
-        <div className="flex min-w-0 flex-col gap-1.5">
+      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="flex min-w-0 flex-1 basis-[420px] flex-col gap-1.5">
           <div className="eyebrow">
             <Link href="/briefs" className="hover:text-ink">
               Briefs
@@ -80,7 +101,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
             {v.name}. <span className="font-serif italic tracking-[-0.6px] text-orange">{headline}</span>
           </h1>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           <span className="rounded bg-[#efeee8] px-[7px] py-1 text-[11px] text-[#4a4b44]">
             {spent ? `${spent} credits spent` : `${v.credits} credits per run`} · ~{v.durationSec} s
           </span>
@@ -136,11 +157,21 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                         </span>
                         {s.label}
                       </span>
-                      <span className="text-[11px] text-muted">{ok ? `${ok} done` : ""}</span>
+                      <span className="whitespace-nowrap text-[11px] text-muted">{ok ? `${ok} done` : ""}</span>
                     </div>
-                    <div className="text-[12px] text-muted">
-                      {s.state === "running" ? v.running?.detail : s.state === "failed" ? failed?.error?.slice(0, 80) || "Failed" : s.events[0]?.detail || "—"}
-                    </div>
+                    {(() => {
+                      const detail =
+                        s.state === "running"
+                          ? v.running?.detail || "Working"
+                          : s.state === "failed"
+                            ? failed?.error || "Failed"
+                            : s.events[0]?.detail || (s.state === "done" ? "Done" : "Waiting");
+                      return (
+                        <div className="line-clamp-2 text-[12px] text-muted" title={detail}>
+                          {detail}
+                        </div>
+                      );
+                    })()}
                     {s.state === "running" ? (
                       <div className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-orange">
                         <Spark size={12} animate="spin" /> Working
@@ -225,18 +256,27 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                     <form action={saveScene} className="flex flex-col gap-2 px-[13px] pb-[13px] pt-3">
                       <input type="hidden" name="creativeId" value={v.id} />
                       <input type="hidden" name="sceneId" value={s.id} />
-                      {!isBroll ? (
-                        <label className="flex flex-col gap-1">
-                          <span className="eyebrow">Caption</span>
-                          <textarea name="caption" defaultValue={s.caption} rows={3} className="rounded-[7px] border border-line bg-white px-2.5 py-2 text-[13px] leading-snug outline-none focus:border-ink" />
-                        </label>
-                      ) : null}
-                      {i === 0 && !isBroll ? (
-                        <label className="flex flex-col gap-1">
-                          <span className="eyebrow">Hook text</span>
-                          <input name="hookText" defaultValue={s.hookText ?? ""} placeholder="Big text over the first scene" className="h-9 rounded-[7px] border border-line bg-white px-2.5 text-[13px] outline-none focus:border-ink" />
-                        </label>
-                      ) : null}
+                      <label className="flex flex-col gap-1">
+                        <span className="eyebrow">Caption</span>
+                        <textarea
+                          name="caption"
+                          defaultValue={isBroll ? "" : s.caption}
+                          rows={3}
+                          disabled={isBroll}
+                          placeholder={isBroll ? "B-roll carries no caption" : undefined}
+                          className="rounded-[7px] border border-line bg-white px-2.5 py-2 text-[13px] leading-snug outline-none focus:border-ink"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="eyebrow">Hook text</span>
+                        <input
+                          name="hookText"
+                          defaultValue={i === 0 && !isBroll ? (s.hookText ?? "") : ""}
+                          disabled={i !== 0 || isBroll}
+                          placeholder={i === 0 && !isBroll ? "Big text over the first scene" : "Only the first scene carries the hook"}
+                          className="h-9 rounded-[7px] border border-line bg-white px-2.5 text-[13px] outline-none focus:border-ink"
+                        />
+                      </label>
                       <details className="group">
                         <summary className="cursor-pointer select-none text-[11px] font-semibold text-muted hover:text-ink">Scene prompt</summary>
                         <textarea name="prompt" defaultValue={s.prompt} rows={4} className="mt-1.5 w-full rounded-[7px] border border-line bg-white px-2.5 py-2 text-[12px] leading-snug outline-none focus:border-ink" />
@@ -307,10 +347,13 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
           <div className="eyebrow">Activity</div>
           <div className="panel flex flex-col divide-y divide-line">
             {v.events.length === 0 ? <div className="p-3.5 text-[12px] text-muted">Nothing yet.</div> : null}
-            {v.events.slice(0, 24).map((e) => (
+            {groupEvents(v.events.slice(0, 24)).map(({ event: e, count }) => (
               <div key={e.id} className="flex flex-col gap-0.5 p-3">
                 <div className="flex items-center justify-between gap-2 text-[12px]">
-                  <span className="min-w-0 truncate font-semibold">{e.label}</span>
+                  <span className="min-w-0 truncate font-semibold">
+                    {e.label}
+                    {count > 1 ? <span className="ml-1.5 font-medium text-muted">×{count}</span> : null}
+                  </span>
                   <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide ${e.status === "succeeded" ? "text-[#3f7a55]" : e.status === "failed" ? "text-[#b4382a]" : "text-orange"}`}>{e.status}</span>
                 </div>
                 <div className="flex items-center justify-between gap-2 text-[11px] text-muted">

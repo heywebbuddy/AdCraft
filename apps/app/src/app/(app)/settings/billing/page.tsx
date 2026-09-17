@@ -15,6 +15,16 @@ const reasonLabel: Record<string, string> = {
   expiry: "Expired",
 };
 
+/** Ledger meta: a plan id ("trial", "studio") reads as a label, anything else as typed. */
+function ledgerNote(meta: Record<string, unknown> | null | undefined) {
+  const label = meta?.label as string | undefined;
+  if (label) return label;
+  const plan = meta?.plan as string | undefined;
+  if (!plan) return "";
+  if (plan === "trial") return "Trial credits";
+  return plan in PLANS ? `${PLANS[plan as PlanId].name} plan` : plan;
+}
+
 export default async function BillingPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const ctx = await requireOrg();
   const { ok, error } = await searchParams;
@@ -23,7 +33,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title="Billing & credits" description="Manage your subscription, generation credits, and billing history."/>
+      <PageHeader title="Plan and credits" description="Manage your subscription, generation credits, and billing history."/>
 
       <SettingsNav active="billing" role={ctx.role} />
 
@@ -87,7 +97,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   <tr key={h.id} className="border-t border-line">
                     <td className="py-2 pr-3 text-muted">{h.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</td>
                     <td className="py-2 pr-3">{reasonLabel[h.reason] ?? h.reason}</td>
-                    <td className="py-2 pr-3 text-muted">{(h.meta?.label as string | undefined) ?? (h.meta?.plan as string | undefined) ?? ""}</td>
+                    <td className="py-2 pr-3 text-muted">{ledgerNote(h.meta)}</td>
                     <td className={`tabular py-2 text-right font-semibold ${h.delta < 0 ? "" : "text-[#3f7a55]"}`}>
                       {h.delta > 0 ? "+" : ""}
                       {h.delta}

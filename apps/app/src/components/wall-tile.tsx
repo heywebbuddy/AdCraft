@@ -68,7 +68,7 @@ export function WallTile({ id, name, kind, ratio, status, previewUrl, headline, 
         ) : headline ? (
           <span className="wall-headline">{headline}</span>
         ) : null}
-        {kind !== "static" ? (
+        {kind !== "static" && done ? (
           <span className="wall-play">
             <PlayIcon width={13} height={13} />
           </span>

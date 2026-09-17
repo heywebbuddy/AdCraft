@@ -52,13 +52,13 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
         <section className="panel flex flex-col gap-4 p-5">
           <span className="eyebrow">Details · {ctx.brand.name}</span>
           {error ? <p className="m-0 rounded-[7px] bg-[#fbe3d9] px-3 py-2 text-[13px] text-[#b4382a]">{errors[error] ?? "Something went wrong."}</p> : null}
-          <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-            Name
+          <label className="flex flex-col gap-1.5">
+            <span className="field-label">Name</span>
             <input name="name" required placeholder="Everyday Serum 30ml" className={inputClass} />
           </label>
-          <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-            <span>
-              Description <span className="font-normal text-muted">(optional)</span>
+          <label className="flex flex-col gap-1.5">
+            <span className="field-label">
+              Description <span className="field-hint">Optional</span>
             </span>
             <textarea
               name="description"
@@ -68,15 +68,15 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
             />
           </label>
           <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
-            <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-              <span>
-                Price <span className="font-normal text-muted">(opt.)</span>
+            <label className="flex flex-col gap-1.5">
+              <span className="field-label">
+                Price <span className="field-hint">Optional</span>
               </span>
               <input name="price" placeholder="$48" className={inputClass} />
             </label>
-            <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-              <span>
-                Product URL <span className="font-normal text-muted">(optional)</span>
+            <label className="flex flex-col gap-1.5">
+              <span className="field-label">
+                Product URL <span className="field-hint">Optional</span>
               </span>
               <input name="url" type="url" placeholder="https://" className={inputClass} />
             </label>

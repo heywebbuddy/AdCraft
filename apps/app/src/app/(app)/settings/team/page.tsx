@@ -5,11 +5,11 @@ import { changeMemberRole, inviteMember, removeMember, revokeInvite } from "@/se
 import { baseUrl } from "@/server/url";
 import { SettingsNav } from "@/components/settings-nav";
 import { CopyButton } from "@/components/copy-button";
+import { MemberRoleForm } from "@/components/member-role-form";
 
 export const dynamic = "force-dynamic";
 
 const inputClass = "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
-const selectClass = "h-9 rounded-[7px] border border-line bg-white px-2 text-[12px] font-medium outline-none focus:border-ink";
 
 const errors: Record<string, string> = {
   owner: "Only workspace owners can manage the team.",
@@ -77,30 +77,26 @@ export default async function TeamPage({
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[12px] font-semibold text-white">
                     {(m.name ?? m.email ?? "?").slice(0, 1).toUpperCase()}
                   </span>
-                  <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                  <span className="flex min-w-0 flex-1 basis-[160px] flex-col leading-tight">
                     <span className="truncate font-semibold">
                       {m.name ?? m.email} {isMe ? <span className="font-normal text-muted">(you)</span> : null}
                     </span>
                     <span className="truncate text-[12px] text-muted">{m.email}</span>
                   </span>
                   {isOwner ? (
-                    <form action={changeMemberRole} className="flex items-center gap-2">
-                      <input type="hidden" name="membershipId" value={m.id} />
-                      <select name="role" defaultValue={m.role} className={selectClass} aria-label={`Role for ${m.name ?? m.email}`}>
-                        <option value="owner">Owner</option>
-                        <option value="editor">Editor</option>
-                        <option value="viewer">Viewer</option>
-                      </select>
-                      <button className="btn btn-outline h-9 px-3 text-[12px]">Save</button>
-                    </form>
+                    <MemberRoleForm membershipId={m.id} role={m.role} name={m.name ?? m.email ?? ""} action={changeMemberRole} />
                   ) : (
                     <span className="rounded-full border border-line px-2 py-px text-[10px] font-semibold uppercase tracking-[.8px] text-muted">{m.role}</span>
                   )}
-                  {isOwner && !isMe ? (
-                    <form action={removeMember}>
-                      <input type="hidden" name="membershipId" value={m.id} />
-                      <button className="text-[12px] text-muted hover:text-[#b4382a]">Remove</button>
-                    </form>
+                  {isOwner ? (
+                    <span className="flex w-[56px] shrink-0 justify-end">
+                      {!isMe ? (
+                        <form action={removeMember}>
+                          <input type="hidden" name="membershipId" value={m.id} />
+                          <button className="text-[12px] text-muted hover:text-[#b4382a]">Remove</button>
+                        </form>
+                      ) : null}
+                    </span>
                   ) : null}
                 </li>
               );
@@ -143,12 +139,12 @@ export default async function TeamPage({
           <span className="eyebrow">Invite someone</span>
           {isOwner ? (
             <form action={inviteMember} className="flex flex-col gap-3">
-              <label className="flex flex-col gap-2 text-sm font-medium">
-                Work email
+              <label className="flex flex-col gap-2">
+                <span className="field-label">Work email</span>
                 <input name="email" type="email" required placeholder="them@brand.com" className={inputClass} />
               </label>
               <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
-                <legend className="mb-2 text-sm font-medium">Role</legend>
+                <legend className="field-label mb-2">Role</legend>
                 {(["editor", "viewer", "owner"] as const).map((r) => (
                   <label key={r} className="flex cursor-pointer items-start gap-2.5 rounded-[7px] border border-line px-3 py-2.5 text-[13px] has-[:checked]:border-ink">
                     <input type="radio" name="role" value={r} defaultChecked={r === "editor"} className="mt-1 accent-[#e65c32]" />

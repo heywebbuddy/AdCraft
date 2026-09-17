@@ -118,7 +118,10 @@ export default async function CampaignPage({ params, searchParams }: { params: P
                     {set.placements.length} placement{set.placements.length === 1 ? "" : "s"} · {set.ads.length} ad{set.ads.length === 1 ? "" : "s"} · {isPending(set.externalId) ? "not on platform yet" : set.externalId}
                   </span>
                 </div>
-                <StatusChip status={set.status === "draft" ? "publishing" : set.status} label={set.status === "draft" ? "Publishing" : undefined} />
+                {/* The header chip already says it; only a set that differs from the campaign gets its own. */}
+                {(set.status === "draft" ? "publishing" : set.status) !== (publishing ? "publishing" : c.status) ? (
+                  <StatusChip status={set.status === "draft" ? "publishing" : set.status} label={set.status === "draft" ? "Publishing" : undefined} />
+                ) : null}
               </div>
               {set.ads.length ? (
                 <table className="w-full border-collapse text-[13px]">

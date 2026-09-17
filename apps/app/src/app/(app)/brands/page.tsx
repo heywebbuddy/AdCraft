@@ -130,7 +130,7 @@ export default async function BrandsPage() {
                       {[c?.primary, c?.accent, c?.background].map((col, i) => (
                         <span
                           key={i}
-                          className="h-4 w-4 rounded-[4px] border border-line"
+                          className="swatch h-4 w-4 rounded-[4px]"
                           style={{ background: col ?? "#fff" }}
                         />
                       ))}

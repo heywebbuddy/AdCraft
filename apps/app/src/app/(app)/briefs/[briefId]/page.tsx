@@ -7,10 +7,11 @@ import { requireOrg } from "@/server/org";
 import {
   FORMATS,
   OBJECTIVES,
+  PLATFORMS,
   loadBrief,
   type StoredBriefData,
 } from "@/server/briefs";
-import { PlayIcon } from "@/components/icons";
+import { PlayIcon, PlusIcon } from "@/components/icons";
 import { generateMoreConcepts, setConceptStatus } from "../actions";
 import { relative } from "../format";
 import { Poller } from "./poller";
@@ -23,6 +24,9 @@ const formatLabel = Object.fromEntries(
 const objectiveLabel = Object.fromEntries(
   OBJECTIVES.map((o) => [o.id, o.label]),
 ) as Record<string, string>;
+const platformLabel = Object.fromEntries(
+  PLATFORMS.map((p) => [p.id, p.label]),
+) as Record<string, string>;
 const kindLabel: Record<string, string> = {
   static: "Static",
   video: "Video",
@@ -30,6 +34,16 @@ const kindLabel: Record<string, string> = {
 };
 
 type StoredConceptData = ConceptData & { platformFit?: string[] };
+
+/** Concept angle slugs read as labels: "problem/solution" → "Problem/Solution", "social proof" → "Social Proof". */
+function angleLabel(angle: string | undefined) {
+  if (!angle) return "";
+  return angle
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .toLowerCase()
+    .replace(/(^|[\s/])([a-z])/g, (_, sep: string, ch: string) => sep + ch.toUpperCase());
+}
 
 function scriptExcerpt(script: string | undefined, maxLines = 3) {
   if (!script) return null;
@@ -103,8 +117,8 @@ export default async function BriefPage({
               )}
             </button>
           </form>
-          <Link href="/briefs/new" className="btn btn-dark h-11">
-            New brief <span aria-hidden="true">↗</span>
+          <Link href="/briefs/new" className="btn btn-orange h-11">
+            <PlusIcon width={15} height={15} /> New brief
           </Link>
         </div>
       </header>
@@ -133,9 +147,9 @@ export default async function BriefPage({
             {data.platforms.map((p) => (
               <span
                 key={p}
-                className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] capitalize text-[#4a4b44]"
+                className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]"
               >
-                {p}
+                {platformLabel[p] ?? p}
               </span>
             ))}
           </div>
@@ -257,11 +271,8 @@ export default async function BriefPage({
               return (
                 <article
                   key={c.id}
-                  className={`tile concept-card flex flex-col gap-3.5 p-5 ${
-                    isSelected
-                      ? "ring-2 ring-orange ring-offset-2 ring-offset-paper"
-                      : ""
-                  } ${isRejected ? "opacity-55" : ""}`}
+                  data-selected={isSelected ? "true" : undefined}
+                  className={`tile concept-card flex flex-col gap-3.5 p-5 ${isRejected ? "opacity-55" : ""}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#efeee8] px-2.5 py-1 text-[11px] font-semibold text-[#4a4b44]">
@@ -271,7 +282,7 @@ export default async function BriefPage({
                       {kindLabel[c.kind] ?? c.kind}
                     </span>
                     <span className="truncate text-[11px] text-muted">
-                      {d.angle}
+                      {angleLabel(d.angle)}
                     </span>
                   </div>
 
@@ -295,12 +306,13 @@ export default async function BriefPage({
                       </div>
                     ) : null}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="rounded-[5px] border border-line px-2.5 py-1 text-[12px] font-semibold">
+                      <span className="inline-flex items-center gap-1.5 rounded-[5px] border border-dashed border-[#d4d3ca] bg-paper px-2.5 py-1 text-[11px] font-medium text-[#4a4b44]">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.8px] text-muted">CTA</span>
                         {d.cta}
                       </span>
                       {d.platformFit?.length ? (
-                        <span className="truncate text-[11px] capitalize text-muted">
-                          {d.platformFit.join(" · ")}
+                        <span className="truncate text-[11px] text-muted">
+                          {d.platformFit.map((p) => platformLabel[p] ?? p).join(" · ")}
                         </span>
                       ) : null}
                     </div>

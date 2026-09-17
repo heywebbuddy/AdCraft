@@ -36,9 +36,9 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="eyebrow">{label}</span>
-        {hint ? <span className="text-[11px] text-muted">{hint}</span> : null}
+      <div className="field-label">
+        <span>{label}</span>
+        {hint ? <span className="field-hint">{hint}</span> : null}
       </div>
       {children}
     </div>

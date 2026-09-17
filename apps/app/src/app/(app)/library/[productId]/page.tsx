@@ -156,13 +156,13 @@ export default async function ProductPage({
         <div className="flex flex-col gap-4">
           <form action={updateProduct.bind(null, product.id)} className="panel flex flex-col gap-4 p-5">
             <span className="eyebrow">Details</span>
-            <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-              Name
+            <label className="flex flex-col gap-1.5">
+              <span className="field-label">Name</span>
               <input name="name" required defaultValue={product.name} className={inputClass} />
             </label>
-            <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-              <span>
-                Description <span className="font-normal text-muted">(optional)</span>
+            <label className="flex flex-col gap-1.5">
+              <span className="field-label">
+                Description <span className="field-hint">Optional</span>
               </span>
               <textarea
                 name="description"
@@ -172,18 +172,22 @@ export default async function ProductPage({
               />
             </label>
             <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
-              <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-                Price
+              <label className="flex flex-col gap-1.5">
+                <span className="field-label">
+                  Price <span className="field-hint">Optional</span>
+                </span>
                 <input name="price" defaultValue={product.price ?? ""} placeholder="$48" className={inputClass} />
               </label>
-              <label className="flex flex-col gap-1.5 text-[13px] font-medium">
-                Product URL
+              <label className="flex flex-col gap-1.5">
+                <span className="field-label">
+                  Product URL <span className="field-hint">Optional</span>
+                </span>
                 <input name="url" type="url" defaultValue={product.url ?? ""} placeholder="https://" className={inputClass} />
               </label>
             </div>
-            <div className="flex flex-col gap-1.5 text-[13px] font-medium">
-              <span>
-                Replace photo <span className="font-normal text-muted">(re-runs the cutout)</span>
+            <div className="flex flex-col gap-1.5">
+              <span className="field-label">
+                Replace photo <span className="field-hint">Re-runs the cutout</span>
               </span>
               <ImagePicker name="image" accept={IMAGE_ACCEPT} compact label="New photo" />
             </div>

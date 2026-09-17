@@ -332,6 +332,18 @@
   border-color: #dfe4d5;
   color: #657554;
 }
+/* Comment avatars share the viewer avatar; guests (share-link reviewers) get a dashed ring. */
+.viewer-avatar.viewer-avatar-sm {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+.viewer-avatar.viewer-avatar-guest {
+  background: #fff;
+  border-style: dashed;
+  border-color: #d4d3ca;
+  color: var(--muted);
+}
 .sidebar-user > div {
   display: flex;
   flex: 1;
@@ -455,7 +467,8 @@
 }
 .workspace-main {
   width: 100%;
-  max-width: 1660px;
+  /* 1440px of content plus the side padding: wide monitors get a centred column, not dead space. */
+  max-width: 1512px;
   margin: 0 auto;
   flex: 1;
   display: flex;
@@ -1516,7 +1529,8 @@
 .workspace-main tbody tr:hover {
   background: #fbfcf8;
 }
-.workspace-main .panel > div:has(> .eyebrow) {
+/* Panel head band: only a head row with a right-side meta/action gets the tint; a lone eyebrow stays plain. */
+.workspace-main .panel > div:not(.flex-col):has(> .eyebrow + *) {
   background: #fafbf7;
   padding-top: 13px;
   padding-bottom: 13px;
@@ -1584,6 +1598,15 @@
 }
 .concept-card:hover {
   box-shadow: 0 3px 12px #28331f07;
+}
+/* Selected concept: ink border and a faint tint, so the state reads before the buttons do. */
+.app-shell .concept-card[data-selected="true"] {
+  border-color: var(--ink);
+  background: #fbfbf8;
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.app-shell .concept-card[data-selected="true"] > div:last-child {
+  border-top-color: #dcded4;
 }
 @media (max-width: 767px) {
   .overview-shortcuts {
@@ -2220,12 +2243,7 @@
   color: #b7791f;
 }
 .wall-page {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-@media (max-width: 1500px) {
-  .wall-page {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 @media (max-width: 1250px) {
   .wall-page {
@@ -2269,11 +2287,6 @@
 .workspace-main {
   container-type: inline-size;
   container-name: main;
-}
-@container main (max-width: 1280px) {
-  .wall-page {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }
 @container main (max-width: 980px) {
   .wall-page {
@@ -2385,6 +2398,72 @@
   text-align: center;
   padding: 8px 16px;
   letter-spacing: 0.1px;
+}
+
+/* Grid-list header row: matches the table thead (sentence case, 10px, tinted). */
+.workspace-main .collection-head {
+  background: #f7f9f3;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  font-size: 10px;
+  font-weight: 550;
+  color: #7c876e;
+}
+
+/* Colour swatches: a 1px line keeps light colours visible on paper. */
+.app-shell .swatch {
+  border: 1px solid #d9dcd1;
+  box-shadow: inset 0 0 0 1px #ffffff33;
+}
+
+/* Form labels: sentence case, 12px/600 ink, with an optional muted hint on the right. */
+.field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.field-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  text-align: right;
+}
+/* Native selects and date fields match text inputs: same border, radius and height, custom chevron. */
+.workspace-main select:not([multiple]):not([size]) {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 40px;
+  padding-right: 34px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2366685f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 16px 16px;
+  border: 1px solid #dfe2d8;
+  border-radius: 7px;
+  color: var(--ink);
+}
+.workspace-main select:not([multiple]):not([size]):disabled {
+  background-color: #f0f1ed;
+}
+.workspace-main :is(input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"]) {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 40px;
+  border: 1px solid #dfe2d8;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+}
+.workspace-main :is(input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"])::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
 }
 
 /* One control height for every row: inputs, selects and buttons line up at 40px. */
