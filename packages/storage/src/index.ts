@@ -115,7 +115,7 @@ export function getStorage(): Storage {
   const s: Storage =
     R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_BUCKET
       ? new R2Storage({ accountId: R2_ACCOUNT_ID, accessKeyId: R2_ACCESS_KEY_ID, secretAccessKey: R2_SECRET_ACCESS_KEY, bucket: R2_BUCKET, publicBase: R2_PUBLIC_BASE }, fileRoute)
-      : new LocalStorage(process.env.LOCAL_STORAGE_DIR ?? path.resolve(process.cwd(), "../../.data/files"), fileRoute);
+      : new LocalStorage(process.env.LOCAL_STORAGE_DIR?.trim() || path.resolve(process.cwd(), "../../.data/files"), fileRoute);
   g.__adcraftStorage = s;
   return s;
 }

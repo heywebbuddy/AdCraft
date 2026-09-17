@@ -18,5 +18,9 @@ export function hookVariations(name: string, template: string) {
     default: return [`Meet ${name}, your next everyday possibility.`, `Make room for ${name}.`, `Here's an introduction to ${name}.`];
   }
 }
-export function studioScript(hook: string, body: string, cta: string) { return [hook, body, cta].map(s => s.trim()).filter(Boolean).join("\n"); }
+/** One sentence per line: each line becomes a scene with its own caption, so nothing is truncated on screen. */
+export function studioScript(hook: string, body: string, cta: string) {
+  const sentences = (s: string) => s.trim().split(/(?<=[.!?])\s+(?=[A-Z0-9"“])/).map(x => x.trim()).filter(Boolean);
+  return [hook.trim(), ...sentences(body), cta.trim()].filter(Boolean).join("\n");
+}
 export function estimatedStudioSeconds(script: string) { return Math.max(5, Math.ceil(script.trim().split(/\s+/).filter(Boolean).length / 2.5) + 3); }

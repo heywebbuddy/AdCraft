@@ -267,6 +267,7 @@ export async function buildAdVideoProps(
     captions,
     captionStyle: doc.captions,
     hook,
+    hookPlacement: doc.kind === "ugc" ? "lower" : "top",
     voiceover,
     music: musicSrc ? { src: musicSrc, volume: doc.music?.volume ?? 0.18 } : undefined,
     brand: { name: doc.brand.name, logoSrc: logoSrc ?? undefined, colors: doc.brand.colors, fonts: doc.brand.fonts },

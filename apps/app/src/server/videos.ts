@@ -131,8 +131,8 @@ export function brollScenes(visualDirection: string | undefined, productName: st
   const p = productName ?? "the product";
   const base = visualDirection ? `${visualDirection}. ` : "";
   return [
-    { id: "broll-1", line: "", caption: "", prompt: `${base}Close-up of ${p} in hand, natural window light, candid phone-camera look. No text.`, durationSec: 3, role: "broll" },
-    { id: "broll-2", line: "", caption: "", prompt: `${base}${p} in use on a real countertop, shallow depth of field, lifestyle. No text.`, durationSec: 3, role: "broll" },
+    { id: "broll-1", line: "", caption: "", prompt: `${base}Close-up of a single ${p} held in one hand, natural window light, candid phone-camera look. One continuous shot: no collage, no grid, no split screen, no duplicate products. No text.`, durationSec: 3, role: "broll" },
+    { id: "broll-2", line: "", caption: "", prompt: `${base}One ${p} in use on a real countertop, shallow depth of field, lifestyle. One continuous shot: no collage, no grid, no split screen. No text.`, durationSec: 3, role: "broll" },
   ];
 }
 

@@ -125,6 +125,8 @@ export interface AdVideoProps extends Record<string, unknown> {
   captions: AdVideoCaption[];
   captionStyle: CaptionStyle;
   hook?: AdVideoCaption;
+  /** Where the hook sits: "top" for product scenes, "lower" for talking-head clips so it never covers the face. */
+  hookPlacement?: "top" | "lower";
   voiceover?: { src: string; startSec?: number };
   music?: { src: string; volume: number };
   brand: { name: string; logoSrc?: string; colors: VideoBrand["colors"]; fonts: VideoBrand["fonts"] };
