@@ -1002,3 +1002,15 @@
 .admin-table td {
   vertical-align: middle;
 }
+.model-cell-logo {
+  display: grid !important;
+  grid-template-columns: 26px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+}
+.model-cell-logo .model-logo {
+  grid-row: 1 / span 2;
+  color: var(--ink);
+  opacity: 0.85;
+}

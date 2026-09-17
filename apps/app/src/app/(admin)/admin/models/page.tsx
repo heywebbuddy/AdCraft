@@ -7,6 +7,7 @@ import { deleteModel, setDefaultModel, toggleModel } from "@/server/admin-models
 import { Chip, Empty, Flash, Panel, Table, ago, int, money, pct } from "@/components/admin/ui";
 import { ModelEditor } from "./model-editor";
 import { ModelTestButton } from "./model-test-button";
+import { MakerLogo, inferMaker } from "@/components/maker-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -81,12 +82,13 @@ export default async function AdminModelsPage({ searchParams }: { searchParams: 
                   return (
                     <tr key={m.id} style={m.enabled ? undefined : { opacity: 0.55 }}>
                       <td>
-                        <span className="cell-primary model-cell-name">
+                        <span className="cell-primary model-cell-name model-cell-logo">
+                          <MakerLogo maker={m.maker ?? inferMaker(m.id, m.provider)} size={26} className="model-logo" />
                           <strong>
                             {m.label} {m.isDefault ? <Chip plain>default</Chip> : null} {m.custom ? <Chip tone="ink">custom</Chip> : null}
                           </strong>
                           <small>
-                            {m.id}
+                            {m.maker ?? inferMaker(m.id, m.provider)} · {m.id}
                             {m.notes ? ` · ${m.notes}` : ""}
                           </small>
                         </span>

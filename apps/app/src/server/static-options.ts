@@ -15,6 +15,7 @@ export async function staticModelChoices() {
     id: m.id,
     label: m.label,
     notes: m.notes ?? "",
+    maker: m.maker,
     isDefault: m.id === def,
     provider: m.provider,
     enabled: m.enabled !== false,

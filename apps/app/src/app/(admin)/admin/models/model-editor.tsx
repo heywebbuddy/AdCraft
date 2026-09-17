@@ -95,6 +95,17 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
         </label>
         <label>
           <span>
+            Maker <small>lab or company, for the card logo</small>
+          </span>
+          <input name="maker" defaultValue={model?.maker ?? ""} placeholder="Google, ByteDance, Black Forest Labs…" maxLength={40} list="maker-options" />
+          <datalist id="maker-options">
+            {["Google", "OpenAI", "Anthropic", "ByteDance", "Qwen", "Black Forest Labs", "Kuaishou", "Runway", "Recraft", "Replicate", "fal"].map((m) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+        </label>
+        <label>
+          <span>
             Credits per {kind === "video" ? "second" : kind === "image" ? "image" : "generation"} <small>what customers pay</small>
           </span>
           <input name="creditsPerUnit" type="number" step="0.5" min="0" defaultValue={model?.creditsPerUnit ?? (kind === "video" ? 8 : kind === "image" ? 2 : 0)} required />

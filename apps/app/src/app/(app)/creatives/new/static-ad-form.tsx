@@ -1,4 +1,5 @@
 "use client";
+import { MakerLogo, inferMaker } from "@/components/maker-logo";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import { createCreativeFromConcept } from "../actions";
 import type { StaticTemplate } from "@adcraft/render";
 import styles from "./static-ad-form.module.css";
 
-export type ModelChoice = { id: string; label: string; notes: string; provider: string; enabled: boolean; configured: boolean; credits: number; isDefault: boolean };
+export type ModelChoice = { id: string; label: string; notes: string; provider: string; maker?: string; enabled: boolean; configured: boolean; credits: number; isDefault: boolean };
 // Recommended models: the server marks its default; fall back to any connected model.
 const pickBest = (models: ModelChoice[]) => models.find((m) => m.isDefault && m.configured && m.enabled)?.id ?? models.find((m) => m.configured && m.enabled)?.id ?? models[0]?.id ?? "";
 /** "Fast draft" is the cheapest connected model; falls back to the default when nothing is cheaper. */
@@ -79,7 +80,7 @@ export function StaticAdForm({ concept, models, saved, sizes, balance, canEdit }
         <div className={styles.outputGrid}>
           <fieldset><legend>Generation quality</legend><div className={styles.quality}>
             {[["best", "Best quality", "For the final impression"], ["fast", "Fast draft", "Explore more ideas"]].map(([id, title, note]) => <label key={id} className={quality === id && !override ? styles.qualityActive : ""}><input type="radio" name="quality" value={id} checked={quality === id} onChange={() => { setQuality(id); setOverride(""); }} /><strong>{title}</strong><span>{note}</span></label>)}
-          </div><span className={styles.modelName}>{model?.label} · {model?.credits} {model?.credits === 1 ? "credit" : "credits"} / {mode === "ai" ? "size" : "background"}</span></fieldset>
+          </div><span className={styles.modelName}>{model ? <MakerLogo maker={model.maker ?? inferMaker(model.id, model.provider)} size={14} style={{ verticalAlign: "-3px", marginRight: 6 }} /> : null}{model?.label} · {model?.credits} {model?.credits === 1 ? "credit" : "credits"} / {mode === "ai" ? "size" : "background"}</span></fieldset>
           <fieldset><legend>Export sizes</legend><div className={styles.sizes}>{sizes.map((s) => <label key={s.id} className={placements.includes(s.id) ? styles.sizeSelected : ""}><input type="checkbox" name="placements" value={s.id} checked={placements.includes(s.id)} onChange={() => toggle(s.id)} /><strong>{s.ratio}</strong><span>{s.width} × {s.height}</span></label>)}</div></fieldset>
         </div>
         <details className={styles.advanced}><summary>Advanced model settings <span>{override ? "Custom selection" : "Automatic"}</span></summary><label className={styles.advancedLabel}>Image model<select value={override} onChange={(e) => setOverride(e.target.value)}><option value="">Recommended for selected quality</option>{models.map((m) => <option key={m.id} value={m.id} disabled={!m.enabled}>{m.label} · {m.credits} credits{!m.enabled ? " · disabled" : !m.configured ? " · not connected" : ""}</option>)}</select></label></details>

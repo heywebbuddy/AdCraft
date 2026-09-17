@@ -78,6 +78,7 @@ function parseSpec(f: FormData, existing?: { id: string; kind: Capability }): { 
 
   const spec: Partial<ModelSpec> = {
     label,
+    maker: str(f, "maker").slice(0, 40) || undefined,
     provider,
     preset: preset as ModelSpec["preset"],
     creditsPerUnit: credits,

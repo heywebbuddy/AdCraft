@@ -47,6 +47,8 @@ export interface ModelSpec {
   /** Stable id used in the DB and credit pricing (never rename). */
   id: string;
   label: string;
+  /** Lab or company behind the model, shown on cards ("Google", "ByteDance"…). */
+  maker?: string;
   kind: Capability;
   provider: ProviderName;
   /** Credits per unit: image = per image, video = per second, text = per generation. */
@@ -90,7 +92,7 @@ export interface ModelSpec {
 export const BUILT_IN_VIDEO_MODELS: ModelSpec[] = [
   {
     id: "kling-3.0",
-    label: "Kling 3.0",
+    label: "Kling 3.0", maker: "Kuaishou",
     kind: "video",
     provider: "fal",
     preset: "kling",
@@ -102,7 +104,7 @@ export const BUILT_IN_VIDEO_MODELS: ModelSpec[] = [
   },
   {
     id: "veo-3.1",
-    label: "Veo 3.1",
+    label: "Veo 3.1", maker: "Google",
     kind: "video",
     provider: "fal",
     preset: "veo",
@@ -113,7 +115,7 @@ export const BUILT_IN_VIDEO_MODELS: ModelSpec[] = [
   },
   {
     id: "seedance-2.5",
-    label: "Seedance 2.5",
+    label: "Seedance 2.5", maker: "ByteDance",
     kind: "video",
     provider: "fal",
     preset: "seedance",
@@ -125,7 +127,7 @@ export const BUILT_IN_VIDEO_MODELS: ModelSpec[] = [
   },
   {
     id: "seedance-2.0",
-    label: "Seedance 2.0",
+    label: "Seedance 2.0", maker: "ByteDance",
     kind: "video",
     provider: "fal",
     preset: "seedance",
@@ -140,7 +142,7 @@ export const BUILT_IN_VIDEO_MODELS: ModelSpec[] = [
 export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   {
     id: "nano-banana-pro",
-    label: "Nano Banana Pro",
+    label: "Nano Banana Pro", maker: "Google",
     kind: "image",
     provider: "fal",
     preset: "nano-banana",
@@ -152,7 +154,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "nano-banana-2",
-    label: "Nano Banana 2",
+    label: "Nano Banana 2", maker: "Google",
     kind: "image",
     provider: "fal",
     preset: "nano-banana",
@@ -162,7 +164,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "seedream-4.5",
-    label: "Seedream 4.5",
+    label: "Seedream 4.5", maker: "ByteDance",
     kind: "image",
     provider: "fal",
     preset: "seedream",
@@ -173,7 +175,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "seedream-5-lite",
-    label: "Seedream 5 Lite",
+    label: "Seedream 5 Lite", maker: "ByteDance",
     kind: "image",
     provider: "fal",
     preset: "seedream",
@@ -184,7 +186,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "flux-2-max",
-    label: "FLUX.2 Max",
+    label: "FLUX.2 Max", maker: "Black Forest Labs",
     kind: "image",
     provider: "fal",
     preset: "flux",
@@ -196,7 +198,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "flux-2-dev",
-    label: "FLUX.2 Dev",
+    label: "FLUX.2 Dev", maker: "Black Forest Labs",
     kind: "image",
     provider: "fal",
     preset: "flux",
@@ -206,7 +208,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "gpt-image-2",
-    label: "GPT Image 2",
+    label: "GPT Image 2", maker: "OpenAI",
     kind: "image",
     provider: "fal",
     preset: "gpt-image",
@@ -217,7 +219,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "qwen-image-2-pro",
-    label: "Qwen Image 2 Pro",
+    label: "Qwen Image 2 Pro", maker: "Qwen",
     kind: "image",
     provider: "fal",
     preset: "qwen",
@@ -227,7 +229,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "gpt-image-2.5-sunburst",
-    label: "GPT Image 2.5 Sunburst",
+    label: "GPT Image 2.5 Sunburst", maker: "OpenAI",
     kind: "image",
     provider: "openai",
     preset: "openai-images",
@@ -237,7 +239,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
   {
     id: "gpt-image-2.5-flare",
-    label: "GPT Image 2.5 Flare",
+    label: "GPT Image 2.5 Flare", maker: "OpenAI",
     kind: "image",
     provider: "openai",
     preset: "openai-images",
@@ -254,7 +256,7 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
 export const BUILT_IN_REPLICATE_MODELS: ModelSpec[] = [
   {
     id: "imagen-4-replicate",
-    label: "Imagen 4 (Replicate)",
+    label: "Imagen 4 (Replicate)", maker: "Google",
     kind: "image",
     provider: "replicate",
     preset: "replicate-generic",
@@ -267,7 +269,7 @@ export const BUILT_IN_REPLICATE_MODELS: ModelSpec[] = [
   },
   {
     id: "kling-2.1-replicate",
-    label: "Kling 2.1 (Replicate)",
+    label: "Kling 2.1 (Replicate)", maker: "Kuaishou",
     kind: "video",
     provider: "replicate",
     preset: "replicate-generic",
@@ -284,7 +286,7 @@ export const BUILT_IN_REPLICATE_MODELS: ModelSpec[] = [
 export const BUILT_IN_RUNWAY_MODELS: ModelSpec[] = [
   {
     id: "runway-gen4-image",
-    label: "Runway Gen-4 Image",
+    label: "Runway Gen-4 Image", maker: "Runway",
     kind: "image",
     provider: "runway",
     preset: "runway-image",
@@ -296,7 +298,7 @@ export const BUILT_IN_RUNWAY_MODELS: ModelSpec[] = [
   },
   {
     id: "runway-gen4-turbo",
-    label: "Runway Gen-4 Turbo",
+    label: "Runway Gen-4 Turbo", maker: "Runway",
     kind: "video",
     provider: "runway",
     preset: "runway-video",
@@ -310,10 +312,10 @@ export const BUILT_IN_RUNWAY_MODELS: ModelSpec[] = [
 ];
 
 export const BUILT_IN_TEXT_MODELS: ModelSpec[] = [
-  { id: "claude-opus-5", label: "Claude Opus 5", kind: "text", provider: "anthropic", preset: "anthropic-messages", creditsPerUnit: 0, default: true },
+  { id: "claude-opus-5", label: "Claude Opus 5", maker: "Anthropic", kind: "text", provider: "anthropic", preset: "anthropic-messages", creditsPerUnit: 0, default: true },
   {
     id: "claude-haiku-4-5",
-    label: "Claude Haiku 4.5",
+    label: "Claude Haiku 4.5", maker: "Anthropic",
     kind: "text",
     provider: "anthropic",
     preset: "anthropic-messages",
@@ -323,7 +325,7 @@ export const BUILT_IN_TEXT_MODELS: ModelSpec[] = [
   },
   {
     id: "gpt-5.5",
-    label: "GPT-5.5",
+    label: "GPT-5.5", maker: "OpenAI",
     kind: "text",
     provider: "openai",
     preset: "openai-chat",
