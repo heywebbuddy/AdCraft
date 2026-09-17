@@ -16,6 +16,7 @@ import {
   BoltIcon,
   LogoutIcon,
   GridIcon,
+  PlayIcon,
 } from "./icons";
 export type SidebarProps = {
   org: { id: string; name: string };
@@ -36,6 +37,7 @@ const groups = [
     items: [
       { href: "/dashboard", label: "Overview", Icon: HomeIcon },
       { href: "/briefs", label: "Creative briefs", Icon: BriefIcon },
+      { href: "/characters", label: "Character studio", Icon: PlayIcon },
       { href: "/creatives", label: "All creatives", Icon: CreativesIcon },
       { href: "/library", label: "Product library", Icon: LibraryIcon },
       { href: "/brands", label: "Brand kits", Icon: BrandIcon },

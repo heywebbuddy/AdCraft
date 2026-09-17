@@ -10,6 +10,7 @@ import { inngest } from "@/inngest/client";
  * Inngest function in `src/inngest/functions.ts` wraps the same function.
  */
 export type JobName =
+  | "character.generate"
   | "concepts.generate"
   | "static.generate"
   | "product.cutout"
@@ -20,6 +21,7 @@ export type JobName =
   | "insights.sync";
 
 export type JobPayloads = {
+  "character.generate": { orgId: string; characterId: string; eventId: string; model: string; prompt: string; lookName: string };
   "concepts.generate": { orgId: string; briefId: string; count?: number };
   "static.generate": { orgId: string; creativeId: string; model?: string; mode?: "editable" | "ai"; instructions?: string; onlyMissing?: boolean };
   "product.cutout": { orgId: string; productId: string };

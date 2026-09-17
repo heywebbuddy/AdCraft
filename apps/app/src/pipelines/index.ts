@@ -8,6 +8,7 @@ import "./render";
 import "./product-cutout";
 import "./video";
 import "./ugc";
+import "./character";
 
 import "./publish";
 import "./insights";

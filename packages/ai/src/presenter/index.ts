@@ -12,3 +12,4 @@ export {
   type PresenterClip,
   type HeyGenPresenterRequest,
 } from "./heygen";
+export { generatePhotoPresenter } from "./photo";

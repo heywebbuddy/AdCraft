@@ -321,3 +321,13 @@ An internal tool for the Adcraft team, separate from customer workspaces, at `/a
 | Audit | All audit log entries across orgs, filterable | Read-only |
 
 Design: same tokens and components as the app, but an ink-dark rail so it can never be mistaken for a customer workspace.
+
+## 15. Character studio (recurring AI presenters)
+
+`/characters` lets a brand build a small cast of fictional adult presenters and reuse them across UGC ads.
+
+- **Characters** (`characters` table, migration 0003): name, description, personality, ElevenLabs voice, image model, portrait, and a list of *looks* (outfit/setting variations). The first generation creates the portrait; later looks pass that portrait to the model's edit endpoint so the face stays the same.
+- **Generation** runs as the `character/generate` job (Inngest, `retries: 0`, the pipeline claims the row by status so a duplicate delivery never produces a second paid image). Credits are reserved up front with a per-org row lock (`server/generation-credits.ts`) and refunded on failure.
+- **Ads**: pick a character + look, a product (or service name), one of six story templates, edit hook/body/CTA (≤ 75 words ≈ 30 s), choose size, scene image model and video model. The action creates a project/brief/concept and a UGC creative whose presenter is the saved portrait (`presenter.image`), animated by HeyGen's photo-avatar API (`generatePhotoPresenter`) with the ElevenLabs voice track. Needs `HEYGEN_API_KEY` and `ELEVENLABS_API_KEY`; the button explains what is missing until then.
+- **Models**: five extra fal image models were added for portraits (Nano Banana 2, Seedream 5 Lite, GPT Image 2, Qwen Image 2 Pro, FLUX.2 Dev); endpoint/input mapping lives in `packages/ai/src/image/fal-input.ts` with tests in `packages/ai/tests`.
+- Gated by the plan's `ugc` feature flag; viewers can browse but not generate.
