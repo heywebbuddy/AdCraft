@@ -8,11 +8,11 @@ import { db, dbReady, users, accounts, sessions, verificationTokens } from "@adc
 import { authConfig } from "./auth.config";
 
 /**
- * Local development without an email provider or Google credentials:
- * when RESEND_API_KEY is absent (and we are not in production) a "dev sign-in"
- * provider accepts any email and creates the user on the fly.
+ * Local development: outside production a "dev sign-in" provider accepts any email
+ * and creates the user on the fly, so test accounts on fake domains keep working
+ * even once Resend magic links are configured. Set DEV_LOGIN=0 to hide it.
  */
-export const devLoginEnabled = process.env.NODE_ENV !== "production" && !process.env.RESEND_API_KEY;
+export const devLoginEnabled = process.env.NODE_ENV !== "production" && process.env.DEV_LOGIN !== "0";
 
 const providers = [
   ...(process.env.AUTH_GOOGLE_ID ? [Google] : []),

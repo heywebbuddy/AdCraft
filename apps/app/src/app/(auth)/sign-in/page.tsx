@@ -81,7 +81,9 @@ export default async function SignInPage({
             >
               <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-muted">Local development</div>
               <p className="text-sm text-muted">
-                No email provider is configured, so any address signs you straight in. Add <code className="rounded bg-paper px-1">RESEND_API_KEY</code> to switch to magic links.
+                {hasEmail
+                  ? "Any address signs you straight in, no email needed. Hidden in production."
+                  : <>No email provider is configured, so any address signs you straight in. Add <code className="rounded bg-paper px-1">RESEND_API_KEY</code> to switch to magic links.</>}
               </p>
               <input name="email" type="email" required placeholder="you@brand.com" className={inputClass} />
               <PendingButton className="btn btn-orange h-11 justify-between" pendingLabel="Signing in…">

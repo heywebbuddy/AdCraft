@@ -39,3 +39,15 @@ Two deployables: the marketing site (`dist/`, static, already hosted) and the pr
 - Meta: business verification, app review for `ads_management`, `ads_read`, `business_management`.
 - TikTok: Marketing API app with campaign management and reporting scopes.
 - Google Ads: developer token and Basic access; needs a working UI and design doc.
+
+## Local development with the real services
+
+- **Inngest**: `.env` sets `INNGEST_DEV=1` so events go to the Inngest Dev Server instead of Inngest Cloud
+  (Cloud cannot reach localhost). Run it with `pnpm inngest` (or the "inngest" launch config) next to the app;
+  the dashboard is at http://localhost:8288. Remove `INNGEST_DEV` in production.
+- **Stripe**: prices live in the test account (`STRIPE_PRICE_*` in `.env`, products carry tax code
+  `txcd_10103001` because Managed Payments is on by default). Webhooks reach localhost through
+  `stripe listen --api-key $STRIPE_SECRET_KEY --forward-to localhost:3000/api/stripe/webhook`; its `whsec_…`
+  is `STRIPE_WEBHOOK_SECRET`. Recreate the prices in live mode before launch.
+- **Resend**: `EMAIL_FROM` must use a domain verified in Resend. The dev sign-in stays available outside
+  production alongside magic links (`DEV_LOGIN=0` hides it).

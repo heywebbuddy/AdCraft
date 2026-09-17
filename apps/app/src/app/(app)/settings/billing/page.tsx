@@ -45,6 +45,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       {ok === "1" ? <p className="panel m-0 px-4 py-3 text-[13px] text-[#3f7a55]">Payment received. Credits land as soon as Stripe confirms.</p> : null}
       {error === "owner" ? <p className="m-0 text-[13px] text-orange">Only workspace owners can change the plan.</p> : null}
       {error === "price" ? <p className="m-0 text-[13px] text-orange">Stripe price ids are missing from the environment.</p> : null}
+      {error === "stripe" ? <p className="m-0 text-[13px] text-orange">Stripe rejected the request. Check the server log and your Stripe dashboard settings, then try again.</p> : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
         {(Object.keys(PLANS) as PlanId[]).map((id) => {

@@ -39,16 +39,31 @@ export async function startCheckout(formData: FormData) {
   if (!priceId) redirect("/settings/billing?error=price");
   const customer = await ensureStripeCustomer(ctx.org.id, ctx.viewer.email);
   const url = await baseUrl();
-  const session = await stripe().checkout.sessions.create({
-    mode: "subscription",
-    customer,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${url}/settings/billing?ok=1`,
-    cancel_url: `${url}/settings/billing`,
-    metadata: { orgId: ctx.org.id, plan },
-    subscription_data: { metadata: { orgId: ctx.org.id, plan } },
-  });
+  const session = await stripeCall(() =>
+    stripe().checkout.sessions.create({
+      mode: "subscription",
+      customer,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${url}/settings/billing?ok=1`,
+      cancel_url: `${url}/settings/billing`,
+      metadata: { orgId: ctx.org.id, plan },
+      subscription_data: { metadata: { orgId: ctx.org.id, plan } },
+    }),
+  );
   redirect(session.url!);
+}
+
+/**
+ * Runs a Stripe request; a Stripe-side rejection (misconfigured price, tax settings,
+ * portal not set up) is logged and sent back to the billing page instead of a 500.
+ */
+async function stripeCall<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.error("[billing] Stripe request failed", err);
+    redirect("/settings/billing?error=stripe");
+  }
 }
 
 export async function startTopUp() {
@@ -61,14 +76,16 @@ export async function startTopUp() {
   if (!priceId) redirect("/settings/billing?error=price");
   const customer = await ensureStripeCustomer(ctx.org.id, ctx.viewer.email);
   const url = await baseUrl();
-  const session = await stripe().checkout.sessions.create({
-    mode: "payment",
-    customer,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${url}/settings/billing?ok=1`,
-    cancel_url: `${url}/settings/billing`,
-    metadata: { orgId: ctx.org.id, topup: String(TOP_UP.credits) },
-  });
+  const session = await stripeCall(() =>
+    stripe().checkout.sessions.create({
+      mode: "payment",
+      customer,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${url}/settings/billing?ok=1`,
+      cancel_url: `${url}/settings/billing`,
+      metadata: { orgId: ctx.org.id, topup: String(TOP_UP.credits) },
+    }),
+  );
   redirect(session.url!);
 }
 
@@ -77,7 +94,7 @@ export async function openPortal() {
   if (!stripeConfigured) redirect("/settings/billing");
   const customer = await ensureStripeCustomer(ctx.org.id, ctx.viewer.email);
   const url = await baseUrl();
-  const session = await stripe().billingPortal.sessions.create({ customer, return_url: `${url}/settings/billing` });
+  const session = await stripeCall(() => stripe().billingPortal.sessions.create({ customer, return_url: `${url}/settings/billing` }));
   redirect(session.url);
 }
 
