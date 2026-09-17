@@ -1,9 +1,6 @@
 import "server-only";
-import { imageModels, isFalConfigured, isOpenAIConfigured } from "@adcraft/ai";
-import { getModelOverrides } from "./platform-settings";
+import { getCatalog } from "./model-catalog";
 
-export const BEST_IMAGE_MODEL = isOpenAIConfigured() ? "gpt-image-2.5-sunburst" : "nano-banana-pro";
-export const FAST_IMAGE_MODEL = isOpenAIConfigured() ? "gpt-image-2.5-flare" : "nano-banana-pro";
 export const STATIC_PLACEMENTS = [
   "meta.feed.1x1",
   "meta.feed.4x5",
@@ -12,16 +9,16 @@ export const STATIC_PLACEMENTS = [
 ] as const;
 
 export async function staticModelChoices() {
-  const overrides = await getModelOverrides();
-  return imageModels.map((m) => ({
+  const c = await getCatalog();
+  const def = c.default("image").id;
+  return c.list("image").map((m) => ({
     id: m.id,
     label: m.label,
     notes: m.notes ?? "",
-    isDefault: m.id === BEST_IMAGE_MODEL,
+    isDefault: m.id === def,
     provider: m.provider,
-    enabled: overrides[m.id]?.enabled !== false,
-    configured:
-      m.provider === "openai" ? isOpenAIConfigured() : isFalConfigured,
-    credits: Math.ceil(overrides[m.id]?.creditsPerUnit ?? m.creditsPerUnit),
+    enabled: m.enabled !== false,
+    configured: m.connected,
+    credits: m.credits,
   }));
 }

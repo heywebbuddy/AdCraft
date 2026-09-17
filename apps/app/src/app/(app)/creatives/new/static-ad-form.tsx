@@ -11,7 +11,12 @@ import styles from "./static-ad-form.module.css";
 export type ModelChoice = { id: string; label: string; notes: string; provider: string; enabled: boolean; configured: boolean; credits: number; isDefault: boolean };
 // Recommended models: the server marks its default; fall back to any connected model.
 const pickBest = (models: ModelChoice[]) => models.find((m) => m.isDefault && m.configured && m.enabled)?.id ?? models.find((m) => m.configured && m.enabled)?.id ?? models[0]?.id ?? "";
-const pickFast = (models: ModelChoice[], best: string) => models.find((m) => m.id === "gpt-image-2.5-flare" && m.configured && m.enabled)?.id ?? best;
+/** "Fast draft" is the cheapest connected model; falls back to the default when nothing is cheaper. */
+const pickFast = (models: ModelChoice[], best: string) => {
+  const bestCredits = models.find((m) => m.id === best)?.credits ?? Infinity;
+  const cheaper = models.filter((m) => m.configured && m.enabled && m.credits < bestCredits).sort((a, b) => a.credits - b.credits)[0];
+  return cheaper?.id ?? best;
+};
 const directions: Array<{ id: StaticTemplate; title: string; note: string }> = [
   { id: "hero", title: "Product spotlight", note: "Immersive. Warm. All eyes on you." },
   { id: "split", title: "Editorial split", note: "A story in two perfect halves." },
@@ -34,7 +39,6 @@ export function StaticAdForm({ concept, models, saved, sizes, balance, canEdit }
   const fast = pickFast(models, best);
   const modelId = override || (quality === "fast" ? fast : best);
   const model = models.find((m) => m.id === modelId);
-  // Generation remains disabled until the new composition pipeline is connected.
   const available = Boolean(model?.enabled && model?.configured);
   const credits = (model?.credits ?? 0) * (mode === "ai" ? placements.length : 1);
   const toggle = (id: string) => setPlacements((previous) => previous.includes(id) ? previous.filter((p) => p !== id) : [...previous, id]);

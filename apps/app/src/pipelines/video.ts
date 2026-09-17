@@ -1,4 +1,5 @@
-import { downloadVideo, generateVideo, getModel, supportedDuration, videoModels } from "@adcraft/ai";
+import { downloadVideo, generateVideo, getModel, supportedDuration } from "@adcraft/ai";
+import { hydrateModels } from "@/server/model-catalog";
 import type { VideoDocument } from "@adcraft/render/video";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import { CREDIT_COSTS } from "@/server/billing";
@@ -32,7 +33,8 @@ export async function runVideoPipeline(data: JobPayloads["video.generate"]) {
   const startedAt = Date.now();
   const { creative, doc: loaded } = await loadVideoCreative(orgId, creativeId);
   const doc: VideoDocument = { ...loaded };
-  if (data.model && videoModels.some((m) => m.id === data.model)) doc.model = data.model;
+  await hydrateModels();
+  if (data.model && getModel(data.model)?.kind === "video") doc.model = data.model;
   const modelSpec = getModel(doc.model);
   const productName = doc.product?.name ?? null;
 

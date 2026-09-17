@@ -10,7 +10,8 @@ import {
   projects,
   type BriefData,
 } from "@adcraft/db";
-import { ANTHROPIC_MODEL, SAMPLE_MODEL, isAnthropicConfigured } from "@adcraft/ai";
+import { SAMPLE_MODEL } from "@adcraft/ai";
+import { getCatalog } from "./model-catalog";
 import { dispatch } from "./jobs";
 import "@/pipelines";
 
@@ -156,8 +157,9 @@ export async function loadBrief(orgId: string, briefId: string): Promise<BriefDe
   };
 }
 
-export function conceptsModel() {
-  return isAnthropicConfigured() ? ANTHROPIC_MODEL : SAMPLE_MODEL;
+export async function conceptsModel() {
+  const m = (await getCatalog()).default("text");
+  return m.connected ? m.id : SAMPLE_MODEL;
 }
 
 /** Records the "started" generation_events row and kicks off the concepts job. */
@@ -177,7 +179,7 @@ export async function startConceptsRun(input: {
       briefId: input.briefId,
       capability: "text",
       provider: "anthropic",
-      model: conceptsModel(),
+      model: await conceptsModel(),
       status: "started",
       credits: 1,
       meta: { label: `${input.title} · concepts`, detail: `${input.count} hooks and angles` },

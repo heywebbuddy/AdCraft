@@ -1,4 +1,4 @@
-import { index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { id } from "./_shared";
 import { organizations } from "./orgs";
 import { users } from "./auth";
@@ -25,3 +25,19 @@ export const adminNotes = pgTable(
   },
   (t) => [index("admin_notes_org_created_idx").on(t.orgId, t.createdAt)],
 );
+
+/**
+ * The model catalog as edited from /admin/models. A row whose id matches a built-in model
+ * overrides that model's fields (credits, label, endpoints, options…); any other id is a
+ * custom model whose `spec` must be complete. See packages/ai/src/models.ts `mergeCatalog`.
+ */
+export const aiModels = pgTable("ai_models", {
+  id: text("id").primaryKey(),
+  kind: text("kind").$type<"text" | "image" | "video">().notNull(),
+  spec: jsonb("spec").$type<Record<string, unknown>>().notNull().default({}),
+  enabled: boolean("enabled").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false),
+  updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

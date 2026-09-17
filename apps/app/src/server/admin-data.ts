@@ -17,10 +17,10 @@ import {
   products,
   subscriptions,
   users,
+  aiModels,
 } from "@adcraft/db";
-import { models } from "@adcraft/ai";
+import { getCatalog } from "./model-catalog";
 import { PLANS, type PlanId } from "./billing";
-import { getModelOverrides } from "./platform-settings";
 
 /** Value of one credit at the top-up rate ($10 / 100 credits, PLAN.md section 5). Used for gross margin. */
 export const USD_PER_CREDIT = 0.1;
@@ -491,7 +491,7 @@ export type GenerationEventRow = Awaited<ReturnType<typeof listGenerations>>["ro
 
 export async function loadModels() {
   await dbReady;
-  const [measured, overrides] = await Promise.all([
+  const [measured, catalog, rows] = await Promise.all([
     db
       .select({
         model: generationEvents.model,
@@ -504,17 +504,20 @@ export async function loadModels() {
       })
       .from(generationEvents)
       .groupBy(generationEvents.model),
-    getModelOverrides(),
+    getCatalog(),
+    db.select({ id: aiModels.id }).from(aiModels),
   ]);
   const m = new Map(measured.map((r) => [r.model, r]));
+  const overridden = new Set(rows.map((r) => r.id));
+  const models = catalog.all();
   const registry = models.map((spec) => {
     const row = m.get(spec.id);
-    const o = overrides[spec.id] ?? {};
     return {
       ...spec,
-      effectiveCredits: o.creditsPerUnit ?? spec.creditsPerUnit,
-      enabled: o.enabled ?? true,
-      override: o,
+      effectiveCredits: spec.credits,
+      enabled: spec.enabled !== false,
+      isDefault: catalog.default(spec.kind).id === spec.id,
+      overridden: overridden.has(spec.id),
       measured: row
         ? {
             n: num(row.n),

@@ -1,5 +1,6 @@
 import "server-only";
 import { inngest } from "@/inngest/client";
+import { hydrateModels } from "./model-catalog";
 
 /**
  * Background work runs as Inngest functions in production. Locally, when no
@@ -48,6 +49,8 @@ export async function dispatch<N extends JobName>(name: N, data: JobPayloads[N])
   }
   const handler = registry.get(name);
   if (!handler) throw new Error(`No inline handler registered for job ${name}`);
+  // Jobs resolve models through the catalog (admin edits, custom models); load it first.
+  await hydrateModels();
   void Promise.resolve()
     .then(() => handler(data))
     .catch((err) => console.error(`[jobs] ${name} failed`, err));

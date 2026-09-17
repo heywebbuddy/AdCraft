@@ -30,7 +30,7 @@ export default async function NewVideoPage({
   const concept = await getConceptForVideo(ctx.org.id, conceptId);
   if (!concept) notFound();
 
-  const models = videoModelChoices();
+  const models = await videoModelChoices();
   const { avatars, voices } = await presenterChoices();
   const defaultModel = models.find((m) => m.isDefault)?.id ?? models[0]!.id;
   const preview = (k: "video" | "ugc") => {

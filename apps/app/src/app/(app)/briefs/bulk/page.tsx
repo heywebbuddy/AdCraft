@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { STATIC_TEMPLATES } from "@adcraft/render";
-import { defaultModel, imageModels } from "@adcraft/ai";
+import { getCatalog } from "@/server/model-catalog";
 import { requireOrg } from "@/server/org";
 import { listBriefsWithConcepts } from "@/server/bulk-data";
 import { bulkGenerate } from "@/server/bulk";
@@ -23,7 +23,8 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
   const { queued, failed, error } = await searchParams;
   const list = await listBriefsWithConcepts(ctx.org.id, ctx.brand?.id ?? null);
   const total = list.reduce((n, b) => n + b.concepts.length, 0);
-  const models = imageModels.map((m) => ({ id: m.id, label: m.label, isDefault: m.id === defaultModel("image").id }));
+  const catalog = await getCatalog();
+  const models = catalog.available("image").map((m) => ({ id: m.id, label: m.label, isDefault: m.id === catalog.default("image").id }));
 
   return (
     <>

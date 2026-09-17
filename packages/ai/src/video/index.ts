@@ -1,6 +1,5 @@
 export {
   isFalVideoConfigured,
-  FAL_VIDEO_ENDPOINTS,
   VIDEO_RATIO_SIZES,
   OFFLINE_CLIP_SECONDS,
   supportedDuration,

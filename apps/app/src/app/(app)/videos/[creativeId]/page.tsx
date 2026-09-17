@@ -62,7 +62,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
   if (!v) notFound();
 
   const doc = v.document;
-  const models = videoModelChoices();
+  const models = await videoModelChoices();
   const modelLabel = models.find((m) => m.id === doc.model)?.label ?? doc.model;
   const lastRoot = v.events.find((e) => e.root) ?? null;
   const steps = stepState(STEPS[v.kind], v.running, lastRoot, v.events);

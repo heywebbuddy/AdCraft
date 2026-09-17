@@ -13,15 +13,15 @@ import {
   type ConceptData,
 } from "@adcraft/db";
 import {
-  ANTHROPIC_MODEL,
   SAMPLE_MODEL,
-  generateConcepts,
-  isAnthropicConfigured,
+  generateConceptsWith,
+  isTextModelConfigured,
   type ConceptBrief,
   type ConceptKind,
   type PlatformTextLimits,
 } from "@adcraft/ai";
 import { placementsFor, type Platform } from "@adcraft/specs";
+import { getCatalog } from "@/server/model-catalog";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import type { StoredBriefData } from "@/server/briefs";
 
@@ -64,6 +64,7 @@ function toKind(kind: string): ConceptKind {
  */
 export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]) {
   await dbReady;
+  const textModel = (await getCatalog()).default("text");
   const { orgId, briefId } = data;
   const count = data.count ?? 8;
   const startedAt = Date.now();
@@ -106,8 +107,8 @@ export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]
         orgId,
         briefId,
         capability: "text",
-        provider: "anthropic",
-        model: isAnthropicConfigured() ? ANTHROPIC_MODEL : SAMPLE_MODEL,
+        provider: textModel.provider,
+        model: isTextModelConfigured(textModel) ? textModel.id : SAMPLE_MODEL,
         status: "started",
         credits: CREDITS_PER_RUN,
         meta: { label: `${row.brief.title} · concepts`, detail: `${count} hooks and angles` },
@@ -149,7 +150,7 @@ export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]
   };
 
   try {
-    const { output, usage } = await generateConcepts(input);
+    const { output, usage } = await generateConceptsWith(input, textModel.id);
 
     // Keep the model's format when it is one the brief asked for; otherwise round-robin
     // across the requested formats so every format gets concepts.

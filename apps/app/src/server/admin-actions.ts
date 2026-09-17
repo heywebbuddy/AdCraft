@@ -4,12 +4,11 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { db, dbReady, adminNotes, creatives, generationEvents, memberships, organizations, subscriptions, users } from "@adcraft/db";
-import { models } from "@adcraft/ai";
 import { ADMIN_ORG_COOKIE, requireAdmin } from "./admin";
 import { logAudit } from "./audit";
 import { PLANS, grantCredits, type PlanId } from "./billing";
 import { dispatch, type JobName, type JobPayloads } from "./jobs";
-import { setPlatformSetting, type ModelOverrides, type PlanFeatures } from "./platform-settings";
+import { setPlatformSetting, type PlanFeatures } from "./platform-settings";
 import "@/pipelines";
 
 /**
@@ -215,25 +214,6 @@ export async function markGeneration(formData: FormData) {
 }
 
 // ---- Models ------------------------------------------------------------------------------
-
-export async function saveModelOverrides(formData: FormData) {
-  const admin = await requireAdmin();
-  const next: ModelOverrides = {};
-  for (const m of models) {
-    const raw = str(formData, `credits:${m.id}`);
-    const enabled = formData.get(`enabled:${m.id}`) === "on";
-    const entry: ModelOverrides[string] = {};
-    if (raw !== "") {
-      const n = Number(raw);
-      if (Number.isFinite(n) && n >= 0 && n !== m.creditsPerUnit) entry.creditsPerUnit = n;
-    }
-    if (!enabled) entry.enabled = false;
-    if (Object.keys(entry).length) next[m.id] = entry;
-  }
-  await setPlatformSetting("models", next, admin.userId);
-  await logAudit(null, admin.userId, "admin.models_updated", "platform_settings", "models", { overrides: next });
-  redirect("/admin/models?ok=1");
-}
 
 // ---- Platform settings -------------------------------------------------------------------
 

@@ -4,7 +4,7 @@ import { getStorage, objectKey } from "@adcraft/storage";
 import { defaultModel, downloadImage, generateImage, getModel, type ReferenceImage } from "@adcraft/ai";
 import { normalizeDocument, type StaticAdDocument } from "@adcraft/render";
 import { runRenderPipeline } from "./render";
-import { getModelOverrides } from "@/server/platform-settings";
+import { hydrateModels } from "@/server/model-catalog";
 
 /**
  * AI-artwork mode: the image model designs the finished ad for each size, copy and
@@ -35,9 +35,9 @@ export async function runStaticAiPipeline({ orgId, creativeId, model, instructio
   if (!row) throw new Error(`Creative ${creativeId} not found in org ${orgId}`);
 
   let doc = normalizeDocument(row.creative.document as unknown as StaticAdDocument);
+  await hydrateModels();
   const spec = getModel(model ?? (doc.meta?.model as string | undefined) ?? "") ?? defaultModel("image");
-  const overrides = await getModelOverrides();
-  const creditsPerImage = Math.ceil(overrides[spec.id]?.creditsPerUnit ?? spec.creditsPerUnit ?? 2);
+  const creditsPerImage = Math.ceil(spec.creditsPerUnit ?? 2);
 
   const [kit] = await db
     .select()

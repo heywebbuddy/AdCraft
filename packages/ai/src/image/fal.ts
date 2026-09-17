@@ -1,6 +1,6 @@
 import { createFalClient, type FalClient } from "@fal-ai/client";
 import type { AspectRatio, GenerationResult, ImageProvider, ImageRequest, MediaRef, Usage } from "../types";
-import { defaultModel } from "../models";
+import { defaultModel, getModel } from "../models";
 
 /**
  * fal.ai image adapter: background removal + text/reference-to-image.
@@ -11,20 +11,13 @@ import { defaultModel } from "../models";
  */
 export const isFalConfigured = Boolean(process.env.FAL_KEY);
 
-import { FAL_IMAGE_ENDPOINTS, falImageInput } from "./fal-input";
-export { FAL_IMAGE_ENDPOINTS } from "./fal-input";
+import { falImageInput } from "./fal-input";
 
 /** Background removal. `fal-ai/bria/background/remove` is the licensed alternative. */
 export const FAL_BACKGROUND_REMOVAL_ENDPOINT = "fal-ai/birefnet/v2";
 export const BACKGROUND_REMOVAL_MODEL = "birefnet";
 
 /** Approximate USD per image. TODO: replace with measured costs from generation_events. */
-const APPROX_COST_USD: Record<string, number> = {
-  "nano-banana-pro": 0.15,
-  "seedream-4.5": 0.04,
-  "flux-2-max": 0.07,
-  [BACKGROUND_REMOVAL_MODEL]: 0.002,
-};
 
 /** Output pixel size per ratio (1K class). */
 export const RATIO_SIZES: Record<AspectRatio, { width: number; height: number }> = {
@@ -135,7 +128,7 @@ export async function removeBackground(input: string | Buffer | Uint8Array): Pro
       provider: "fal",
       model: BACKGROUND_REMOVAL_MODEL,
       durationMs: Date.now() - startedAt,
-      costUsd: APPROX_COST_USD[BACKGROUND_REMOVAL_MODEL],
+      costUsd: 0.01, // birefnet, approximate
       credits: 0,
       units: 1,
     },
@@ -205,6 +198,18 @@ export async function placeholderImage(req: ImageRequest, index = 0): Promise<Ge
   };
 }
 
+/** fal validation errors carry the offending field in `body.detail`; surface it. */
+export function describeFalError(modelId: string, endpoint: string, err: unknown): string {
+  const e = err as { status?: number; message?: string; body?: { detail?: unknown } };
+  const detail = e?.body?.detail;
+  const fields = Array.isArray(detail)
+    ? detail.map((d) => (d && typeof d === "object" && "msg" in d ? `${(d as { loc?: unknown[] }).loc?.slice(-1)[0] ?? ""}: ${(d as { msg: string }).msg}` : String(d))).join("; ")
+    : typeof detail === "string"
+      ? detail
+      : "";
+  return `${modelId} (${endpoint}) rejected the request${e?.status ? ` (${e.status})` : ""}${fields ? `: ${fields}` : e?.message ? `: ${e.message}` : ""}`;
+}
+
 /**
  * Generate images with the selected model. References (product cutout, style
  * images) route to the model's edit endpoint so the product is preserved.
@@ -222,8 +227,8 @@ export async function generateImage(req: FalImageRequest): Promise<GenerationRes
     };
   }
 
-  const endpoints = FAL_IMAGE_ENDPOINTS[modelId];
-  if (!endpoints) throw new Error(`No fal endpoint mapped for image model "${modelId}"`);
+  const spec = getModel(modelId);
+  if (!spec || spec.kind !== "image" || spec.provider !== "fal") throw new Error(`"${modelId}" is not a fal image model`);
   const refs = await Promise.all((req.references ?? []).map(resolveReferenceUrl));
   const hasRefs = refs.length > 0;
   const { width, height } = ratioSize(req);
@@ -231,11 +236,13 @@ export async function generateImage(req: FalImageRequest): Promise<GenerationRes
 
   let images: Array<{ url: string; width?: number; height?: number; content_type?: string }> = [];
 
-  const plan = falImageInput({ model: modelId, prompt, ratio: req.ratio, width, height, count, seed: req.seed }, refs);
+  const plan = falImageInput(spec, { prompt, ratio: req.ratio, width, height, count, seed: req.seed }, refs);
   for (let i = 0; i < plan.calls; i++) {
     const input = { ...plan.input, ...(plan.calls > 1 && req.seed !== undefined ? { seed: req.seed + i } : {}) };
     // New provider endpoints may precede the SDK's generated endpoint union.
-    const res = await fal().subscribe(plan.endpoint, { input });
+    const res = await fal().subscribe(plan.endpoint, { input }).catch((err: unknown) => {
+      throw new Error(describeFalError(spec.id, plan.endpoint, err));
+    });
     const data = res.data as { images?: Array<{ url: string; width?: number; height?: number; content_type?: string }> };
     if (!data.images?.length || data.images.some((im) => !im.url)) throw new Error(`Image model "${modelId}" returned no usable image`);
     images.push(...data.images);
@@ -253,7 +260,7 @@ export async function generateImage(req: FalImageRequest): Promise<GenerationRes
       provider: "fal",
       model: modelId,
       durationMs: Date.now() - startedAt,
-      costUsd: APPROX_COST_USD[modelId] === undefined ? undefined : APPROX_COST_USD[modelId]! * output.length,
+      costUsd: spec.approxCostUsd === undefined ? undefined : spec.approxCostUsd * output.length,
       units: output.length,
     },
   };

@@ -16,7 +16,7 @@ import {
   variants,
   type BrandKitData,
 } from "@adcraft/db";
-import { defaultModel, imageModels } from "@adcraft/ai";
+import { getCatalog } from "./model-catalog";
 import { getPlacement, type PlacementSpec } from "@adcraft/specs";
 import { normalizeDocument, STATIC_TEMPLATES, type StaticAdDocument, type StaticTemplate } from "@adcraft/render";
 import { withDefaults } from "@/lib/brand-kit";
@@ -337,7 +337,8 @@ export async function createCreativeFromConcept(
   await dbReady;
   const c = await getConceptForCreative(orgId, conceptId);
   if (!c) throw new Error("Concept not found");
-  const model = imageModels.some((m) => m.id === opts.model) ? (opts.model as string) : defaultModel("image").id;
+  const catalog = await getCatalog();
+  const model = opts.model && catalog.get(opts.model)?.enabled !== false && catalog.get(opts.model)?.kind === "image" ? (opts.model as string) : catalog.default("image").id;
   const mode: "editable" | "ai" = opts.mode === "ai" ? "ai" : "editable";
 
   // A saved template (Release 3) contributes its layout choices; copy and product come from the concept.
@@ -407,7 +408,8 @@ export async function regenerateScene(orgId: string, creativeId: string, model?:
   await dbReady;
   const [row] = await db.select().from(creatives).where(and(eq(creatives.id, creativeId), eq(creatives.orgId, orgId))).limit(1);
   if (!row) throw new Error("Creative not found");
-  const chosen = imageModels.some((m) => m.id === model) ? (model as string) : ((row.document as { meta?: { model?: string } }).meta?.model ?? defaultModel("image").id);
+  const catalog = await getCatalog();
+  const chosen = model && catalog.get(model)?.kind === "image" ? (model as string) : ((row.document as { meta?: { model?: string } }).meta?.model ?? catalog.default("image").id);
   const doc = normalizeDocument(row.document as unknown as StaticAdDocument);
   await db
     .update(creatives)

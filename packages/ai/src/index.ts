@@ -16,3 +16,4 @@ export * from "./image";
 export * from "./video";
 export * from "./voice";
 export * from "./presenter";
+export * from "./text";

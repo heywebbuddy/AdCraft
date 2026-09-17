@@ -12,31 +12,6 @@ import { kenBurnsMp4 } from "./ffmpeg";
  */
 export const isFalVideoConfigured = Boolean(process.env.FAL_KEY);
 
-/**
- * Model id (packages/ai/src/models.ts) → fal endpoint ids.
- *
- * Kling 3.0, Veo 3.1 and Seedance 1.5 ids come from the typed endpoint map in
- * @fal-ai/client 1.10.1. Seedance 2.5 / 2.0 were not in that map at the time of writing
- * and follow fal's naming convention.
- * TODO(verify): confirm every endpoint id, the accepted `duration` values and per-second
- * pricing against https://fal.ai/models before the provider bake-off (PLAN.md §12).
- */
-export const FAL_VIDEO_ENDPOINTS: Record<string, { imageToVideo: string; textToVideo: string }> = {
-  "kling-3.0": { imageToVideo: "fal-ai/kling-video/v3/standard/image-to-video", textToVideo: "fal-ai/kling-video/v3/standard/text-to-video" },
-  "veo-3.1": { imageToVideo: "fal-ai/veo3.1/image-to-video", textToVideo: "fal-ai/veo3.1" },
-  // Verified against fal.ai model pages (Sep 2026): Seedance 2.x live under "bytedance/…" without the "fal-ai/" prefix.
-  "seedance-2.5": { imageToVideo: "bytedance/seedance-2.5/image-to-video", textToVideo: "bytedance/seedance-2.5/text-to-video" },
-  "seedance-2.0": { imageToVideo: "bytedance/seedance-2.0/image-to-video", textToVideo: "bytedance/seedance-2.0/text-to-video" },
-};
-
-/** Approximate USD per second of output. TODO: replace with measured costs from generation_events. */
-const APPROX_COST_PER_SEC_USD: Record<string, number> = {
-  "kling-3.0": 0.07,
-  "veo-3.1": 0.4,
-  "seedance-2.5": 0.06,
-  "seedance-2.0": 0.03,
-};
-
 /** Output pixel size per ratio (1080p class). */
 export const VIDEO_RATIO_SIZES: Record<AspectRatio, { width: number; height: number }> = {
   "1:1": { width: 1080, height: 1080 },
@@ -85,21 +60,26 @@ export function supportedDuration(modelId: string, wanted: number): number {
   return options.reduce((best, d) => (Math.abs(d - wanted) < Math.abs(best - wanted) ? d : best), options[0]!);
 }
 
-/** Build the endpoint-specific input for a request. */
+/**
+ * Build the endpoint-specific input for a request from the model spec's preset.
+ * `spec.options` is merged last so an admin can add or override fields per model.
+ */
 export function buildFalVideoInput(modelId: string, req: FalVideoRequest, imageUrl?: string, endImageUrl?: string): Record<string, unknown> {
+  const spec = getModel(modelId);
   const duration = supportedDuration(modelId, req.durationSec);
-  const wantsAudio = req.audio ?? Boolean(getModel(modelId)?.video?.audio);
-  if (modelId === "kling-3.0") {
-    return {
+  const wantsAudio = req.audio ?? Boolean(spec?.video?.audio);
+  const preset = spec?.preset ?? "fal-generic";
+  let input: Record<string, unknown>;
+  if (preset === "kling") {
+    input = {
       prompt: req.prompt,
       duration: String(duration),
       generate_audio: wantsAudio,
       ...(imageUrl ? { start_image_url: imageUrl } : { aspect_ratio: req.ratio === "4:5" ? "9:16" : req.ratio }),
       ...(endImageUrl ? { end_image_url: endImageUrl } : {}),
     };
-  }
-  if (modelId === "veo-3.1") {
-    return {
+  } else if (preset === "veo") {
+    input = {
       prompt: req.prompt,
       duration: `${duration}s`,
       aspect_ratio: req.ratio === "9:16" || req.ratio === "4:5" ? "9:16" : "16:9",
@@ -108,26 +88,39 @@ export function buildFalVideoInput(modelId: string, req: FalVideoRequest, imageU
       ...(imageUrl ? { image_url: imageUrl } : {}),
       ...(req.seed !== undefined ? { seed: req.seed } : {}),
     };
+  } else if (preset === "seedance") {
+    // Seedance 2.x: duration is a whole number of seconds (4–15); image-to-video derives
+    // the aspect ratio from the start frame ("auto").
+    const seedanceRatio = req.ratio === "4:5" ? "3:4" : req.ratio === "1.91:1" ? "16:9" : req.ratio;
+    input = {
+      prompt: req.prompt,
+      duration: String(Math.min(15, Math.max(4, Math.round(duration)))),
+      aspect_ratio: imageUrl ? "auto" : seedanceRatio,
+      resolution: "1080p",
+      generate_audio: wantsAudio,
+      ...(imageUrl ? { image_url: imageUrl } : {}),
+      ...(endImageUrl ? { end_image_url: endImageUrl } : {}),
+      ...(req.seed !== undefined ? { seed: req.seed } : {}),
+    };
+  } else {
+    input = {
+      prompt: req.prompt,
+      duration: String(duration),
+      aspect_ratio: req.ratio === "1.91:1" ? "16:9" : req.ratio,
+      ...(imageUrl ? { image_url: imageUrl } : {}),
+      ...(endImageUrl ? { end_image_url: endImageUrl } : {}),
+      ...(req.seed !== undefined && !spec?.noSeed ? { seed: req.seed } : {}),
+    };
   }
-  // Seedance 2.x: duration is a whole number of seconds ("auto" or 4–15); 2.5 image-to-video
-  // derives the aspect ratio from the start frame ("auto"), 2.0 accepts explicit ratios.
-  const seedanceRatio = req.ratio === "4:5" ? "3:4" : req.ratio === "1.91:1" ? "16:9" : req.ratio;
-  return {
-    prompt: req.prompt,
-    duration: String(Math.min(15, Math.max(4, Math.round(duration)))),
-    aspect_ratio: modelId === "seedance-2.5" && imageUrl ? "auto" : seedanceRatio,
-    resolution: "1080p",
-    generate_audio: wantsAudio,
-    ...(imageUrl ? { image_url: imageUrl } : {}),
-    ...(endImageUrl ? { end_image_url: endImageUrl } : {}),
-    ...(req.seed !== undefined ? { seed: req.seed } : {}),
-  };
+  if (spec?.maxPromptChars && typeof input.prompt === "string" && input.prompt.length > spec.maxPromptChars) input.prompt = input.prompt.slice(0, spec.maxPromptChars);
+  return { ...input, ...(spec?.options ?? {}) };
 }
 
 function endpointFor(modelId: string, imageToVideo: boolean) {
-  const e = FAL_VIDEO_ENDPOINTS[modelId];
-  if (!e) throw new Error(`No fal endpoint mapped for video model "${modelId}"`);
-  return imageToVideo ? e.imageToVideo : e.textToVideo;
+  const e = getModel(modelId)?.endpoints;
+  const endpoint = imageToVideo ? e?.imageToVideo ?? e?.textToVideo : e?.textToVideo ?? e?.imageToVideo;
+  if (!endpoint) throw new Error(`No fal endpoint configured for video model "${modelId}"`);
+  return endpoint;
 }
 
 function usageFor(modelId: string, seconds: number, startedAt: number, offline: boolean): Usage {
@@ -135,7 +128,7 @@ function usageFor(modelId: string, seconds: number, startedAt: number, offline: 
     provider: "fal",
     model: modelId,
     durationMs: Date.now() - startedAt,
-    costUsd: offline ? 0 : (APPROX_COST_PER_SEC_USD[modelId] ?? 0) * seconds,
+    costUsd: offline ? 0 : (getModel(modelId)?.approxCostUsd ?? 0) * seconds,
     units: seconds,
   };
 }

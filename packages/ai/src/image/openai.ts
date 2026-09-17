@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import type { AspectRatio, GenerationResult } from "../types";
 import type { FalImageRequest, GeneratedImage } from "./fal";
+import { apiModelName, getModel } from "../models";
 
 export const isOpenAIConfigured = () =>
   Boolean(process.env.OPENAI_API_KEY?.trim());
@@ -17,24 +18,27 @@ export const OPENAI_IMAGE_SIZES: Record<AspectRatio, string> = {
 export async function generateOpenAIImage(
   req: FalImageRequest,
 ): Promise<GenerationResult<GeneratedImage[]>> {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  const spec = getModel(req.model);
+  if (!spec || spec.kind !== "image" || spec.provider !== "openai")
+    throw new Error("Unsupported OpenAI image model");
+  const apiKey = (spec.apiKeyEnv ? process.env[spec.apiKeyEnv] : process.env.OPENAI_API_KEY)?.trim();
   if (!apiKey)
     throw new Error(
-      "OpenAI image generation is not connected. Add OPENAI_API_KEY on the server.",
+      `OpenAI image generation is not connected. Add ${spec.apiKeyEnv ?? "OPENAI_API_KEY"} on the server.`,
     );
-  if (!["gpt-image-2.5-sunburst", "gpt-image-2.5-flare"].includes(req.model))
-    throw new Error("Unsupported OpenAI image model");
   if ((req.count ?? 1) !== 1)
     throw new Error("Generate one composition per request");
   const started = Date.now();
-  const fields = {
-    model: req.model,
+  const fields: Record<string, unknown> = {
+    model: apiModelName(spec),
     prompt: req.prompt,
     n: 1,
     size: OPENAI_IMAGE_SIZES[req.ratio],
     output_format: "png",
-    quality: req.model === "gpt-image-2.5-flare" ? "low" : "high",
+    quality: "high",
+    ...(spec.options ?? {}),
   };
+  const baseUrl = (spec.baseUrl ?? "https://api.openai.com/v1").replace(/\/$/, "");
   const refs = req.references ?? [];
   const headers: Record<string, string> = { Authorization: `Bearer ${apiKey}` };
   let body: string | FormData;
@@ -68,7 +72,7 @@ export async function generateOpenAIImage(
   }
   // No automatic retry: a timed-out image request may still incur provider usage.
   const response = await fetch(
-    `https://api.openai.com/v1/images/${refs.length ? "edits" : "generations"}`,
+    `${baseUrl}/images/${refs.length ? "edits" : "generations"}`,
     {
       method: "POST",
       headers,

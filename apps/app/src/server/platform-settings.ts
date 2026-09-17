@@ -62,24 +62,13 @@ export const getPlatformSettings = cache(async (): Promise<PlatformSettings> => 
 });
 
 /**
- * Per-model overrides saved from /admin/models under the key "models":
- * `{ [modelId]: { creditsPerUnit?: number; enabled?: boolean } }`.
- * Other code can call this to price generations or hide disabled models in pickers.
+ * Compatibility view of the catalog as `{ [modelId]: { creditsPerUnit, enabled } }`.
+ * New code should use `getCatalog()` from ./model-catalog directly.
  */
 export const getModelOverrides = cache(async (): Promise<ModelOverrides> => {
-  const all = await readAll();
-  const raw = all.get("models");
-  if (!raw || typeof raw !== "object") return {};
-  const out: ModelOverrides = {};
-  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
-    if (!v || typeof v !== "object") continue;
-    const o = v as Record<string, unknown>;
-    const entry: ModelOverride = {};
-    if (typeof o.creditsPerUnit === "number" && Number.isFinite(o.creditsPerUnit) && o.creditsPerUnit >= 0) entry.creditsPerUnit = o.creditsPerUnit;
-    if (typeof o.enabled === "boolean") entry.enabled = o.enabled;
-    if (Object.keys(entry).length) out[id] = entry;
-  }
-  return out;
+  const { getCatalog } = await import("./model-catalog");
+  const c = await getCatalog();
+  return Object.fromEntries(c.all().map((m) => [m.id, { creditsPerUnit: m.credits, enabled: m.enabled !== false }]));
 });
 
 /** Metadata (who/when) for the admin settings page. */

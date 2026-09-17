@@ -331,3 +331,29 @@ Design: same tokens and components as the app, but an ink-dark rail so it can ne
 - **Ads**: pick a character + look, a product (or service name), one of six story templates, edit hook/body/CTA (≤ 75 words ≈ 30 s), choose size, scene image model and video model. The action creates a project/brief/concept and a UGC creative whose presenter is the saved portrait (`presenter.image`), animated by HeyGen's photo-avatar API (`generatePhotoPresenter`) with the ElevenLabs voice track. Needs `HEYGEN_API_KEY` and `ELEVENLABS_API_KEY`; the button explains what is missing until then.
 - **Models**: five extra fal image models were added for portraits (Nano Banana 2, Seedream 5 Lite, GPT Image 2, Qwen Image 2 Pro, FLUX.2 Dev); endpoint/input mapping lives in `packages/ai/src/image/fal-input.ts` with tests in `packages/ai/tests`.
 - Gated by the plan's `ugc` feature flag; viewers can browse but not generate.
+
+## 16. Model-agnostic catalog
+
+Models are data, not code. `packages/ai/src/models.ts` defines a self-describing `ModelSpec`
+(provider, endpoint ids, an *input preset*, extra options, credits, cost, limits) and the
+adapters shape every request from the spec: `image/fal-input.ts` (presets nano-banana,
+seedream, flux, gpt-image, qwen, fal-generic), `image/openai.ts` (openai-images),
+`video/fal-video.ts` (kling, veo, seedance, fal-generic) and `text/` (anthropic-messages,
+openai-chat — any OpenAI-compatible endpoint with a base URL and key env var).
+
+- **Catalog**: built-in seed list merged with `ai_models` rows (migration 0004). A row for a
+  built-in id overrides fields; any other id is a custom model. `apps/app/src/server/model-catalog.ts`
+  hydrates the package registry per request and before every inline/Inngest job, so pickers,
+  pipelines and adapters agree. `getCatalog()` exposes `list/available/default/get`; a default
+  that is not connected falls back to the first connected model of that kind.
+- **Admin → Models**: add, edit, enable/disable, set default per kind, delete (custom) or reset
+  (built-in), and **Test** — one real, tiny generation (image → thumbnail; text → two concepts;
+  video → 5 s clip after confirmation) with latency and cost. Errors surface fal's validation
+  detail (e.g. "prompt: String should have at most 1000 characters") so the admin can fix the
+  spec (`maxPromptChars`, `noSeed`, `maxImagesPerCall`, options JSON) without a deploy.
+- **Behaviour**: models without an edit endpoint are prompt-only (references are dropped, not
+  sent to an endpoint that rejects them). "Fast draft" in the static studio is the cheapest
+  connected model; "Best" is the catalog default.
+- Adding a **new provider** is still code: implement the adapter behind `generateImage` /
+  `generateVideo` / `generateConceptsWith` routing and add a preset; everything above then
+  applies to it.

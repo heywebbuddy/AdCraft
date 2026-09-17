@@ -15,7 +15,8 @@ import {
   variants,
   type BrandKitData,
 } from "@adcraft/db";
-import { defaultModel, listAvatars, listVoices, videoModels } from "@adcraft/ai";
+import { listAvatars, listVoices } from "@adcraft/ai";
+import { getCatalog } from "./model-catalog";
 import { getPlacement } from "@adcraft/specs";
 import { documentDurationSec, normalizeVideoDocument, type VideoDocument, type VideoKind, type VideoRatio, type VideoScene } from "@adcraft/render/video";
 import { withDefaults } from "@/lib/brand-kit";
@@ -217,16 +218,18 @@ export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): Vide
   });
 }
 
-export function videoModelChoices() {
-  const def = defaultModel("video").id;
-  return videoModels.map((m) => ({
+export async function videoModelChoices() {
+  const c = await getCatalog();
+  const def = c.default("video").id;
+  return c.list("video").map((m) => ({
     id: m.id,
     label: m.label,
     notes: m.notes ?? "",
     isDefault: m.id === def,
     audio: Boolean(m.video?.audio),
     durations: m.video?.durationsSec ?? [],
-    creditsPerSec: m.creditsPerUnit,
+    creditsPerSec: m.credits,
+    connected: m.connected,
   }));
 }
 
@@ -248,7 +251,8 @@ export async function createVideoFromConcept(orgId: string, conceptId: string, o
     const sub = await currentSubscription(orgId);
     if (!(await planAllows(sub?.plan, kind))) throw new Error(`${kind === "ugc" ? "UGC video" : "Product video"} is not enabled for this plan`);
   }
-  const model = videoModels.some((m) => m.id === opts.model) ? (opts.model as string) : defaultModel("video").id;
+  const catalog = await getCatalog();
+  const model = opts.model && catalog.get(opts.model)?.kind === "video" && catalog.get(opts.model)?.enabled !== false ? (opts.model as string) : catalog.default("video").id;
   const ratio: VideoRatio = VIDEO_RATIOS.some((r) => r.id === opts.ratio) ? (opts.ratio as VideoRatio) : "9:16";
   const document = buildVideoDocument(c, { ...opts, kind, model, ratio });
 
@@ -332,7 +336,7 @@ export async function regenerateScene(orgId: string, creativeId: string, sceneId
 /** Re-run the pipeline: generates whatever is missing and re-assembles every size. */
 export async function rerunVideo(orgId: string, creativeId: string, opts: { model?: string; fresh?: boolean } = {}): Promise<void> {
   const { row, doc } = await loadOwned(orgId, creativeId);
-  if (opts.model && videoModels.some((m) => m.id === opts.model)) doc.model = opts.model;
+  if (opts.model && (await getCatalog()).get(opts.model)?.kind === "video") doc.model = opts.model;
   if (opts.fresh) {
     doc.scenes = doc.scenes.map((s) => ({ ...s, still: undefined, clip: undefined, error: undefined }));
     doc.presenter = doc.presenter ? { ...doc.presenter, clip: undefined } : undefined;

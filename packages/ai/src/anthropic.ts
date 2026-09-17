@@ -165,7 +165,7 @@ const FORMAT_LABELS: Record<ConceptKind, string> = {
  * Frozen instructions: identical for every request so the prefix caches.
  * Brand + product context follow in a second cached block; the brief itself is the user turn.
  */
-const SYSTEM_RULES = `You are Adcraft's creative director. You write paid-social ad concepts that are specific to the brand, honest about the product, and built to stop the scroll.
+export const SYSTEM_RULES = `You are Adcraft's creative director. You write paid-social ad concepts that are specific to the brand, honest about the product, and built to stop the scroll.
 
 How to work:
 - Every concept takes a different persuasion angle. Spread the set across these angles and name the one you used in "angle": ${CONCEPT_ANGLES.join(", ")}. Never repeat an angle until every angle has been used once.
@@ -178,7 +178,7 @@ How to work:
 - Never invent product claims, statistics, awards or testimonials that are not in the brief. Social-proof angles must use only what the brief provides, or use clearly generic framing ("customers tell us...").
 - No emojis in headlines. Sentence case. No ALL CAPS.`;
 
-function brandContext(brief: ConceptBrief): string {
+export function brandContext(brief: ConceptBrief): string {
   const b = brief.brand;
   const p = brief.product;
   return [
@@ -211,7 +211,7 @@ function limitsBlock(brief: ConceptBrief): string {
   return lines.length ? `COPY LIMITS (characters):\n${lines.join("\n")}` : "";
 }
 
-function briefToPrompt(brief: ConceptBrief): string {
+export function briefToPrompt(brief: ConceptBrief): string {
   const n = brief.count ?? 8;
   return [
     `Generate exactly ${n} distinct ad concepts.`,

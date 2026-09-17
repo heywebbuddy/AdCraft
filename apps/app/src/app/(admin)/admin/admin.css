@@ -871,3 +871,134 @@
     display: none;
   }
 }
+
+/* Models: inline actions and smoke-test results */
+.model-menu {
+  position: relative;
+}
+.model-menu summary {
+  list-style: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--ink);
+}
+.model-menu summary::-webkit-details-marker {
+  display: none;
+}
+.model-menu[open] summary {
+  border-color: var(--ink);
+}
+.model-menu > div {
+  position: absolute;
+  right: 0;
+  top: 34px;
+  z-index: 5;
+  min-width: 170px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px #1f221a1f;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
+.model-menu > div a,
+.model-menu > div button {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink);
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+.model-menu > div a:hover,
+.model-menu > div button:hover {
+  background: #f4f5f0;
+}
+.model-menu > div button.danger {
+  color: var(--bad);
+}
+.model-test {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.model-test-result {
+  position: absolute;
+  right: 8px;
+  top: 100%;
+  width: max-content;
+  min-width: 220px;
+  z-index: 4;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 10px 30px #1f221a1f;
+  margin-top: 4px;
+}
+.model-cell-name {
+  max-width: 250px;
+}
+.model-cell-name small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.model-test-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: 340px;
+}
+.model-test-result img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.model-test-result small {
+  display: block;
+  color: var(--muted);
+}
+.model-test-result.ok strong {
+  color: var(--good, #2f7a3a);
+}
+.model-test-result.bad strong {
+  color: var(--bad);
+}
+.model-route {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 230px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.model-route code {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+.admin-table td {
+  vertical-align: middle;
+}
