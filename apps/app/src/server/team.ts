@@ -1,4 +1,5 @@
 "use server";
+import { renderEmail } from "@/lib/email-template";
 
 import { randomBytes } from "node:crypto";
 import { and, eq, isNull, sql } from "drizzle-orm";
@@ -24,12 +25,21 @@ async function sendInviteEmail(to: string, orgName: string, inviter: string, url
   try {
     const { Resend } = await import("resend");
     const resend = new Resend(key);
+    const { html, text } = renderEmail({
+      preview: `${inviter} invited you to ${orgName} on Adcraft.`,
+      title: `Join ${orgName}`,
+      kicker: "You’ve been invited.",
+      paragraphs: [`${inviter} invited you to work on the ${orgName} workspace in Adcraft — briefs, creatives, campaigns and results, all in one place.`],
+      cta: { label: "Accept the invite", url },
+      note: `This invite expires in ${INVITE_TTL_DAYS} days. If you weren’t expecting it, you can ignore this email.`,
+      footer: orgName,
+    });
     await resend.emails.send({
       from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>",
       to,
       subject: `${inviter} invited you to ${orgName} on Adcraft`,
-      text: `${inviter} invited you to join the ${orgName} workspace on Adcraft.\n\nAccept the invite: ${url}\n\nThis link expires in ${INVITE_TTL_DAYS} days.`,
-      html: `<p>${inviter} invited you to join the <strong>${orgName}</strong> workspace on Adcraft.</p><p><a href="${url}">Accept the invite</a></p><p style="color:#75756d;font-size:12px">This link expires in ${INVITE_TTL_DAYS} days.</p>`,
+      text,
+      html,
     });
     return true;
   } catch (err) {

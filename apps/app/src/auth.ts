@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
+import { renderEmail } from "@/lib/email-template";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import { db, dbReady, users, accounts, sessions, verificationTokens } from "@adcraft/db";
@@ -21,6 +22,23 @@ const providers = [
         Resend({
           apiKey: process.env.RESEND_API_KEY,
           from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>",
+          // Branded magic-link email (default is Auth.js's grey "Sign in to host:port" card).
+          async sendVerificationRequest({ identifier, url, provider }) {
+            const { html, text } = renderEmail({
+              preview: "Your one-time sign-in link for Adcraft.",
+              title: "Your sign-in link",
+              kicker: "Let’s make something.",
+              paragraphs: [`Click the button to sign in to Adcraft as ${identifier}. The link works once and expires in 24 hours.`],
+              cta: { label: "Sign in to Adcraft", url },
+              note: "If you didn’t request this email, you can safely ignore it — nobody can sign in without the link.",
+            });
+            const res = await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${provider.apiKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ from: provider.from, to: identifier, subject: "Sign in to Adcraft", html, text }),
+            });
+            if (!res.ok) throw new Error(`Resend error: ${await res.text()}`);
+          },
         }),
       ]
     : []),
