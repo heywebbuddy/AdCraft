@@ -5,8 +5,7 @@ import { cookies } from "next/headers";
 import { db, dbReady, organizations, memberships, brands, brandKits, creditLedger } from "@adcraft/db";
 import { requireViewer } from "./org";
 import { ORG_COOKIE, BRAND_COOKIE } from "./org";
-
-const STARTER_TRIAL_CREDITS = 50;
+import { getPlatformSettings } from "./platform-settings";
 
 function slugify(s: string) {
   return (
@@ -26,6 +25,9 @@ export async function createWorkspace(formData: FormData) {
   const website = String(formData.get("website") ?? "").trim() || null;
   if (!orgName || !brandName) redirect("/welcome?error=missing");
 
+  const { trialCredits, signupsEnabled } = await getPlatformSettings();
+  if (!signupsEnabled) redirect("/welcome?error=closed");
+
   const base = slugify(orgName);
   const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
 
@@ -43,7 +45,7 @@ export async function createWorkspace(formData: FormData) {
   });
   await db.insert(creditLedger).values({
     orgId: org.id,
-    delta: STARTER_TRIAL_CREDITS,
+    delta: trialCredits,
     reason: "subscription_grant",
     referenceId: `trial:${org.id}`,
     meta: { plan: "trial" },

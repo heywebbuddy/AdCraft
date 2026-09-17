@@ -30,7 +30,11 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
         <p className="mt-4 text-[15px] text-muted">
           A workspace holds your team and billing. A brand holds products, colours and tone. You can add more brands later.
         </p>
-        {error ? <p className="mt-4 text-sm text-orange">Both names are needed.</p> : null}
+        {error === "closed" ? (
+          <p className="mt-4 text-sm text-orange">New workspaces are paused for the moment. Please try again a little later.</p>
+        ) : error ? (
+          <p className="mt-4 text-sm text-orange">Both names are needed.</p>
+        ) : null}
         <form action={createWorkspace} className="mt-8 flex flex-col gap-5">
           <label className="flex flex-col gap-2 text-sm font-medium">
             Workspace name

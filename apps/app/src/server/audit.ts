@@ -22,6 +22,7 @@ export type AuditAction =
   | "api_key.revoked"
   | "webhook.created"
   | "webhook.deleted"
+  | `admin.${string}`
   | (string & {});
 
 /**
@@ -29,7 +30,7 @@ export type AuditAction =
  * the action it describes.
  */
 export async function logAudit(
-  orgId: string,
+  orgId: string | null,
   actorId: string | null,
   action: AuditAction,
   targetType: string,

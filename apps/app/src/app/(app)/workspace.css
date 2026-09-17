@@ -343,6 +343,17 @@
   color: #909486;
   padding: 4px;
 }
+/* Platform staff only: a small door into /admin next to sign-out. */
+.sidebar-admin-link {
+  display: inline-flex;
+  padding: 4px;
+  color: #909486;
+  border-radius: 5px;
+}
+.sidebar-admin-link:hover {
+  color: var(--ink);
+  background: #eeefe9;
+}
 .workspace-body {
   flex: 1;
   min-width: 0;

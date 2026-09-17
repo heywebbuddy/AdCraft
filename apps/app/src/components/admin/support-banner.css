@@ -1,0 +1,42 @@
+/* Thin strip across the customer app while a platform admin views an org as support. */
+.support-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 32px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 12px;
+}
+.support-banner strong {
+  font-weight: 600;
+}
+.support-banner form {
+  margin: 0;
+}
+.support-banner button {
+  background: #ffffff2b;
+  border: 1px solid #ffffff59;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.support-banner button:hover {
+  background: #ffffff40;
+}
+
+/* Keep the sticky sidebar and topbar below the banner. */
+.support-banner + .app-shell .workspace-sidebar {
+  top: 32px;
+  height: calc(100dvh - 32px);
+}
+.support-banner + .app-shell .workspace-topbar {
+  top: 32px;
+}

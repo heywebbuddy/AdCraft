@@ -107,7 +107,8 @@ export const auditLog = pgTable(
   "audit_log",
   {
     id: id(),
-    orgId: uuid("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+    /** Null for platform-level admin actions that concern no single organisation. */
+    orgId: uuid("org_id").references(() => organizations.id, { onDelete: "cascade" }),
     actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
     /** Dotted verb, e.g. "member.invited", "approval.approved", "share_link.created". */
     action: text("action").notNull(),

@@ -1,0 +1,873 @@
+/* Admin panel. Layered on workspace.css: same tokens, primitives and tables, but an
+   ink-dark rail so it can never be read as a customer workspace. Orange is reserved
+   for exactly one meaning per screen (the primary action or the single data series). */
+
+.admin-shell {
+  --rail: #242521;
+  --rail-line: #ffffff1f;
+  --rail-text: #d9dad2;
+  --rail-muted: #9c9e94;
+  --good: #3f7a55;
+  --good-bg: #e9f3ec;
+  --bad: #b4382a;
+  --bad-bg: #fbe9e6;
+  --warn: #8a6d1f;
+  --warn-bg: #f7efd6;
+}
+
+/* ---- Rail ---------------------------------------------------------------------------- */
+.admin-shell .admin-sidebar,
+.admin-drawer {
+  background: var(--rail);
+  border-right: 0;
+  color: var(--rail-text);
+}
+.admin-shell .admin-sidebar .workspace-logo,
+.admin-drawer .workspace-logo,
+.admin-mobile-bar .workspace-logo {
+  color: #fff;
+}
+.admin-logo-row {
+  margin-bottom: 30px;
+}
+.admin-tag {
+  font-size: 8px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-radius: 3px;
+  background: #f7f8f5;
+  color: var(--rail);
+  line-height: 1;
+}
+.admin-mobile-bar .admin-tag {
+  margin-left: 10px;
+  vertical-align: middle;
+}
+.admin-shell .admin-sidebar .workspace-nav-label,
+.admin-drawer .workspace-nav-label {
+  color: var(--rail-muted);
+}
+.admin-shell .admin-sidebar .workspace-nav-item,
+.admin-drawer .workspace-nav-item {
+  color: var(--rail-text);
+}
+.admin-shell .admin-sidebar .workspace-nav-item svg,
+.admin-drawer .workspace-nav-item svg {
+  color: var(--rail-muted);
+}
+.admin-shell .admin-sidebar .workspace-nav-item:hover,
+.admin-drawer .workspace-nav-item:hover {
+  background: #ffffff0f;
+  color: #fff;
+}
+.admin-shell .admin-sidebar .workspace-nav-item.active,
+.admin-drawer .workspace-nav-item.active {
+  background: #ffffff1a;
+  color: #fff;
+}
+.admin-shell .admin-sidebar .workspace-nav-item.active svg,
+.admin-drawer .workspace-nav-item.active svg {
+  color: #fff;
+}
+.admin-env {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--rail-line);
+  border-radius: 9px;
+}
+.admin-shell .admin-env .eyebrow,
+.admin-drawer .admin-env .eyebrow {
+  color: var(--rail-muted);
+}
+.admin-env strong {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #fff;
+}
+.admin-shell .admin-sidebar .sidebar-user,
+.admin-drawer .sidebar-user {
+  border-top-color: var(--rail-line);
+}
+.admin-shell .admin-sidebar .sidebar-user strong,
+.admin-drawer .sidebar-user strong {
+  color: #fff;
+}
+.admin-shell .admin-sidebar .sidebar-user small,
+.admin-drawer .sidebar-user small {
+  color: var(--rail-muted);
+}
+.admin-shell .admin-sidebar .viewer-avatar,
+.admin-drawer .viewer-avatar {
+  background: #ffffff1f;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-shell .admin-sidebar .sidebar-user button,
+.admin-drawer .sidebar-user button {
+  color: var(--rail-muted);
+}
+.admin-shell .admin-sidebar .sidebar-user button:hover,
+.admin-drawer .sidebar-user button:hover {
+  color: #fff;
+}
+.admin-drawer .drawer-close {
+  color: var(--rail-muted);
+}
+.admin-shell :is(a, button, summary):focus-visible {
+  outline-color: #fff;
+}
+.admin-shell .workspace-main :is(a, button, summary):focus-visible {
+  outline-color: var(--ink);
+}
+.admin-mobile-bar {
+  background: var(--rail);
+  border-bottom: 0;
+}
+.admin-shell .admin-mobile-bar button {
+  background: transparent;
+  border-color: var(--rail-line);
+  color: #fff;
+}
+
+/* ---- Topbar --------------------------------------------------------------------------- */
+.admin-topbar-note {
+  font-size: 11px;
+  color: var(--muted);
+}
+.admin-support-chip {
+  font-size: 11px;
+  color: #fff;
+  background: var(--orange);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.admin-support-chip strong {
+  font-weight: 600;
+}
+
+/* ---- Page furniture ------------------------------------------------------------------- */
+.admin-main {
+  max-width: 1480px;
+}
+/* Serif italic keeps the emphasis; ink keeps orange free for the page's one accent. */
+.admin-shell .home-header h1 em {
+  color: var(--ink);
+}
+.admin-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 60px 0;
+  justify-content: center;
+}
+.admin-flash {
+  margin: 0;
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.admin-flash.ok {
+  color: var(--good);
+  border-color: #cfe3d5;
+  background: var(--good-bg);
+}
+.admin-flash.error {
+  color: var(--bad);
+  border-color: #efc9c3;
+  background: var(--bad-bg);
+}
+
+/* KPI strip: reuses .home-stat but adapts to any count. */
+.admin-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+.admin-kpis .home-stat {
+  border-right: 1px solid var(--line);
+  border-bottom: 0;
+}
+.admin-kpis .home-stat:last-child {
+  border-right: 1px solid var(--line);
+}
+.admin-kpis .home-stat dd small {
+  font-size: 11px;
+}
+.admin-kpi-delta {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.admin-kpi-delta.good {
+  color: var(--good);
+}
+.admin-kpi-delta.bad {
+  color: var(--bad);
+}
+
+/* Two-column page body (main + aside) */
+.admin-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
+  align-items: start;
+}
+.admin-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.admin-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.admin-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* Panels */
+.admin-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.admin-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fafbf7;
+  border-radius: 9px 9px 0 0;
+}
+.admin-panel-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.15px;
+}
+.admin-panel-head .eyebrow {
+  display: block;
+}
+.admin-panel-note {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.admin-panel-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.admin-panel-body p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* Tables: the settings pages' table styling, made full-bleed inside a panel. */
+.admin-table-wrap {
+  overflow-x: auto;
+  border-radius: 0 0 9px 9px;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: 640px;
+}
+.admin-table th {
+  text-align: left;
+  padding: 11px 16px;
+  font-size: 10px;
+  font-weight: 550;
+  color: #7c876e;
+  background: #f7f9f3;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.admin-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.admin-table tbody tr:hover {
+  background: #fbfcf8;
+}
+.admin-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.admin-table .muted {
+  color: var(--muted);
+}
+/* Secondary cells (dates, provider · model, references) stay on one line; the table scrolls instead. */
+.admin-table td.muted,
+.admin-table td[title] {
+  white-space: nowrap;
+}
+.admin-table .cell-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.admin-table .cell-primary strong {
+  font-weight: 600;
+}
+.admin-table .cell-primary small {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
+.admin-table a.row-link {
+  color: inherit;
+}
+.admin-table a.row-link:hover strong {
+  text-decoration: underline;
+}
+.admin-table .row-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  white-space: nowrap;
+}
+.admin-table .row-actions form {
+  margin: 0;
+}
+.admin-table code {
+  font-size: 11px;
+  background: #f4f5ef;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.admin-table .error-cell {
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bad);
+  font-size: 11px;
+}
+.admin-table tfoot td {
+  font-weight: 600;
+  background: #fafbf7;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+}
+
+/* Status chips. Colour carries state, not brand: green good, red bad, amber wait, grey neutral. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #f4f5ef;
+  color: #696e60;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+}
+.chip.good {
+  color: var(--good);
+  background: var(--good-bg);
+  border-color: #cfe3d5;
+}
+.chip.bad {
+  color: var(--bad);
+  background: var(--bad-bg);
+  border-color: #efc9c3;
+}
+.chip.warn {
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-color: #eadfb8;
+}
+.chip.ink {
+  color: #fff;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.chip.plain::before {
+  display: none;
+}
+/* Identifiers (audit actions, ids): keep their case. */
+.chip.code {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+/* Ghost / small buttons used in table rows */
+.admin-shell .btn-sm {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+.admin-shell .btn-danger {
+  background: #fff;
+  color: var(--bad);
+  border-color: #efc9c3;
+}
+.admin-shell .btn-danger:hover {
+  border-color: var(--bad);
+}
+.link-quiet {
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link-quiet:hover {
+  color: var(--ink);
+}
+
+/* Filters bar */
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+.admin-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.admin-filters select,
+.admin-filters input {
+  height: 36px;
+  border: 1px solid #dfe2d8;
+  border-radius: 7px;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--ink);
+  min-width: 140px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.admin-filters .admin-filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  height: 36px;
+}
+
+/* Forms inside panels */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.admin-form label > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.admin-form label small {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 11px;
+}
+.admin-form input:not([type="checkbox"]),
+.admin-form select,
+.admin-form textarea {
+  height: 38px;
+  border: 1px solid #dfe2d8;
+  border-radius: 7px;
+  background: #fff;
+  padding: 0 11px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--ink);
+}
+.admin-form textarea {
+  height: auto;
+  min-height: 84px;
+  padding: 9px 11px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.admin-form .check {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  font-weight: 500;
+}
+.admin-form .check input {
+  accent-color: var(--ink);
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+.admin-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Tabs on the org detail page reuse .workspace-tabs */
+.admin-tabs {
+  margin-top: -6px;
+}
+
+/* Overview chart */
+.admin-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.admin-chart-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 4px 2px 0;
+}
+
+/* Definition list used on detail pages */
+.admin-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px 18px;
+  margin: 0;
+}
+.admin-facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.admin-facts dt {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.admin-facts dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-facts dd small {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Simple lists (recent signups, failures, notes, providers) */
+.admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.admin-list > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.admin-list > li:last-child {
+  border-bottom: 0;
+}
+.admin-list .who {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.admin-list .body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.admin-list .body strong {
+  font-weight: 600;
+}
+.admin-list .body small {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-list .when {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.admin-list .body .err {
+  color: var(--bad);
+  white-space: normal;
+  line-height: 1.5;
+}
+
+/* Empty state inside a panel */
+.admin-empty {
+  padding: 34px 18px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.admin-empty strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-empty .spark {
+  color: #c9ccc1;
+  margin-bottom: 8px;
+}
+
+/* Note composer */
+.admin-note {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+/* Provider grid */
+.admin-providers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.admin-provider {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+}
+.admin-provider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.admin-provider-head strong {
+  font-size: 13px;
+  font-weight: 600;
+  display: block;
+}
+.admin-provider-head small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.admin-provider dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: 11px;
+}
+.admin-provider dt {
+  color: var(--muted);
+}
+.admin-provider dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-provider .env-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.admin-provider .env-list code {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f4f5ef;
+  color: var(--muted);
+}
+.admin-provider .env-list code.missing {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+/* Plan distribution bars */
+.admin-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-bar {
+  display: grid;
+  grid-template-columns: 70px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.admin-bar .track {
+  height: 8px;
+  background: #f0f1ea;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.admin-bar .track > span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  border-radius: 4px;
+}
+.admin-bar .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Model registry rows */
+.model-kind {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.admin-inline-input {
+  height: 32px;
+  width: 84px;
+  border: 1px solid #dfe2d8;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: #fff;
+}
+
+/* ---- Responsive ----------------------------------------------------------------------- */
+@media (max-width: 1250px) {
+  .admin-columns {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 16px;
+  }
+  .admin-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1023px) {
+  .admin-columns {
+    grid-template-columns: 1fr;
+  }
+  .admin-topbar-note {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .admin-grid-2,
+  .admin-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .admin-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-kpis .home-stat {
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-kpis .home-stat:nth-child(2n) {
+    border-right: 0;
+  }
+  .admin-kpis .home-stat:last-child {
+    border-right: 0;
+  }
+  .admin-filters select,
+  .admin-filters input {
+    min-width: 0;
+    width: 100%;
+  }
+  .admin-filters label {
+    flex: 1 1 45%;
+  }
+  .admin-panel-head {
+    flex-wrap: wrap;
+  }
+  .admin-table .cell-primary small {
+    max-width: 200px;
+  }
+  .admin-support-chip {
+    display: none;
+  }
+}

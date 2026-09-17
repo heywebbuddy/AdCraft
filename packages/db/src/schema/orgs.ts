@@ -8,6 +8,8 @@ export const organizations = pgTable("organizations", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   stripeCustomerId: text("stripe_customer_id").unique(),
+  /** Set by a platform admin; members are locked out of the workspace while set. */
+  suspendedAt: timestamp("suspended_at", { withTimezone: true }),
   ...timestamps,
 });
 

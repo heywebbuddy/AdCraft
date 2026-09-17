@@ -60,8 +60,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   callbacks: {
     ...authConfig.callbacks,
-    jwt({ token, user }) {
-      if (user?.id) token.sub = user.id;
+    async jwt({ token, user }) {
+      if (user?.id) {
+        token.sub = user.id;
+        // Platform admins: promote emails listed in ADMIN_EMAILS the moment they sign in.
+        const listed = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+        if (user.email && listed.includes(user.email.toLowerCase())) {
+          await dbReady;
+          await db.update(users).set({ isPlatformAdmin: true }).where(eq(users.id, user.id));
+        }
+      }
       return token;
     },
     session({ session, token }) {

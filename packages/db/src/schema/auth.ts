@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "@auth/core/adapters";
 import { timestamps } from "./_shared";
 
@@ -9,6 +9,8 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date", withTimezone: true }),
   image: text("image"),
+  /** Adcraft staff: can open /admin. Seeded from ADMIN_EMAILS on sign-in. */
+  isPlatformAdmin: boolean("is_platform_admin").notNull().default(false),
   ...timestamps,
 });
 

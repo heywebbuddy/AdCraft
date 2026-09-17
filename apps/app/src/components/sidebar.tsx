@@ -16,6 +16,7 @@ import {
   TeamIcon,
   BoltIcon,
   LogoutIcon,
+  GridIcon,
 } from "./icons";
 export type SidebarProps = {
   org: { id: string; name: string };
@@ -24,6 +25,8 @@ export type SidebarProps = {
   plan: string;
   credits: { balance: number; grant: number; renews?: string };
   viewer: { name: string; email: string };
+  /** Shows the Admin link in the user area (platform staff only). */
+  isPlatformAdmin?: boolean;
   counts?: { needsReview?: number };
   onSwitchBrand: (brandId: string) => Promise<void>;
   onSignOut: () => Promise<void>;
@@ -189,6 +192,11 @@ export function Sidebar(props: SidebarProps) {
             <strong>{props.viewer.name}</strong>
             <small>{props.viewer.email}</small>
           </div>
+          {props.isPlatformAdmin ? (
+            <Link href="/admin" className="sidebar-admin-link" aria-label="Admin panel" title="Admin panel">
+              <GridIcon width={17} height={17} />
+            </Link>
+          ) : null}
           <form action={props.onSignOut}>
             <button type="submit" aria-label="Sign out" title="Sign out">
               <LogoutIcon width={17} height={17} />
