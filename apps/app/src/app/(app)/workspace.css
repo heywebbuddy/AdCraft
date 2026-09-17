@@ -917,6 +917,8 @@
   min-width: 0;
 }
 .overview-aside > .panel {
+  --panel-px: 19px;
+  --panel-py: 19px;
   padding: 19px !important;
 }
 .overview-aside > .panel > div {
@@ -1549,11 +1551,33 @@
 .workspace-main tbody tr:hover {
   background: #fbfcf8;
 }
-/* Panel head band: only a head row with a right-side meta/action gets the tint; a lone eyebrow stays plain. */
+/*
+ * Panel head band: a head row with a right-side meta/action (eyebrow + something) becomes
+ * a tinted band that bleeds to the panel edges, with its text aligned to the panel's own
+ * padding. The panel's Tailwind padding classes set --panel-px/--panel-py so the band can
+ * cancel them exactly. A lone eyebrow stays plain.
+ */
+.app-shell .panel {
+  --panel-px: 0px;
+  --panel-py: 0px;
+}
+.app-shell .panel.p-3\.5 { --panel-px: 14px; --panel-py: 14px; }
+.app-shell .panel.p-4 { --panel-px: 16px; --panel-py: 16px; }
+.app-shell .panel.p-5 { --panel-px: 20px; --panel-py: 20px; }
+.app-shell .panel.p-6 { --panel-px: 24px; --panel-py: 24px; }
+.app-shell .panel.p-7 { --panel-px: 28px; --panel-py: 28px; }
+.app-shell .panel.px-4 { --panel-px: 16px; }
+.app-shell .panel.px-5 { --panel-px: 20px; }
+.app-shell .panel.py-3 { --panel-py: 12px; }
+.app-shell .panel.py-3\.5 { --panel-py: 14px; }
+.app-shell .panel.py-4 { --panel-py: 16px; }
 .workspace-main .panel > div:not(.flex-col):has(> .eyebrow + *) {
   background: #fafbf7;
-  padding-top: 13px;
-  padding-bottom: 13px;
+  border-bottom: 1px solid #eef0e8;
+  border-radius: 9px 9px 0 0;
+  margin: calc(-1 * var(--panel-py)) calc(-1 * var(--panel-px)) 0;
+  /* Unpadded panels (rows carry their own padding) still get a 16px inset. */
+  padding: 13px max(var(--panel-px), 16px);
 }
 .workspace-main .panel > ul > li > a {
   padding: 20px;
@@ -2011,6 +2035,8 @@
   max-width: 52ch;
 }
 .overview-aside > .panel.home-panel {
+  --panel-px: 18px;
+  --panel-py: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
