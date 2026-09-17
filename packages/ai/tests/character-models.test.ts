@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { falImageInput, trimPrompt } from "../src/image/fal-input";
+import { replicateImageInput, replicateVideoInput } from "../src/replicate";
 import { BUILT_IN_IMAGE_MODELS, BUILT_IN_MODELS, defaultModel, getModel, listModels, mergeCatalog, registerModels } from "../src/models";
 import { generatePhotoPresenter } from "../src/presenter/photo";
 
@@ -83,4 +84,22 @@ test("prompts are trimmed to a model's limit at a sentence boundary", () => {
   assert.equal(trimPrompt(long, 70), "First sentence about the scene. Second sentence with more detail.");
   assert.equal(trimPrompt("short", 70), "short");
   assert.equal(trimPrompt(long), long);
+});
+
+test("Replicate specs shape generic image and video inputs from the spec", () => {
+  const img = { id: "r-img", label: "R", kind: "image" as const, provider: "replicate" as const, preset: "replicate-generic" as const, endpoints: { text: "owner/model" }, creditsPerUnit: 1, options: { guidance: 3 }, maxPromptChars: 20 };
+  const input = replicateImageInput(img, { prompt: "A very long prompt that exceeds twenty characters", ratio: "4:5", count: 2, seed: 9 }, ["https://files.replicate.delivery/ref.png"]);
+  assert.equal(input.aspect_ratio, "4:5");
+  assert.equal(input.num_outputs, 2);
+  assert.deepEqual(input.image_input, ["https://files.replicate.delivery/ref.png"]);
+  assert.equal(input.seed, 9);
+  assert.equal(input.guidance, 3, "options merge over the preset");
+  assert.equal((input.prompt as string).length, 20, "prompt trimmed to maxPromptChars");
+  const vid = { id: "r-vid", label: "RV", kind: "video" as const, provider: "replicate" as const, preset: "replicate-generic" as const, endpoints: { imageToVideo: "owner/video" }, creditsPerUnit: 1, video: { durationsSec: [5, 10], ratios: ["9:16" as const], audio: false, imageToVideo: true } };
+  registerModels([...BUILT_IN_MODELS, vid]);
+  const v = replicateVideoInput(vid, { model: "r-vid", prompt: "p", ratio: "1.91:1", durationSec: 7 }, "https://x/start.png");
+  assert.equal(v.aspect_ratio, "16:9");
+  assert.equal(v.duration, 5, "snapped to the nearest supported duration");
+  assert.equal(v.start_image, "https://x/start.png");
+  registerModels(BUILT_IN_MODELS);
 });

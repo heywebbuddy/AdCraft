@@ -27,7 +27,7 @@ import { getCatalog, hydrateModels, providerConnected } from "./model-catalog";
  * for them only stores the fields the admin changed.
  */
 
-const PROVIDERS: ProviderName[] = ["fal", "openai", "anthropic"];
+const PROVIDERS: ProviderName[] = ["fal", "replicate", "openai", "anthropic"];
 const KINDS: Capability[] = ["image", "video", "text"];
 const RATIOS: AspectRatio[] = ["1:1", "4:5", "9:16", "16:9", "1.91:1"];
 
@@ -58,6 +58,8 @@ function parseSpec(f: FormData, existing?: { id: string; kind: Capability }): { 
     if (v) endpoints[k] = v;
   }
   if (kind === "image" && provider === "fal" && !endpoints.text) return { id, kind, spec: {}, error: "fal image models need a text-to-image endpoint id." };
+  if (kind === "image" && provider === "replicate" && !endpoints.text) return { id, kind, spec: {}, error: "Replicate image models need a model ref (owner/name or owner/name:version)." };
+  if (provider === "replicate" && f.get("promptOnly") === "on") endpoints.edit = "none";
   if (kind === "video" && !endpoints.textToVideo && !endpoints.imageToVideo) return { id, kind, spec: {}, error: "Video models need at least one endpoint id." };
 
   let options: Record<string, unknown> | undefined;

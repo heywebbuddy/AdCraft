@@ -3,7 +3,7 @@
  * ElevenLabs, ...) implements one of these; the app never imports a vendor SDK directly.
  */
 
-export type ProviderName = "anthropic" | "openai" | "fal" | "heygen" | "hedra" | "elevenlabs";
+export type ProviderName = "anthropic" | "openai" | "fal" | "replicate" | "heygen" | "hedra" | "elevenlabs";
 export type Capability = "text" | "image" | "video" | "presenter" | "voice";
 export type AspectRatio = "1:1" | "4:5" | "9:16" | "16:9" | "1.91:1";
 

@@ -354,6 +354,8 @@ openai-chat — any OpenAI-compatible endpoint with a base URL and key env var).
 - **Behaviour**: models without an edit endpoint are prompt-only (references are dropped, not
   sent to an endpoint that rejects them). "Fast draft" in the static studio is the cheapest
   connected model; "Best" is the catalog default.
-- Adding a **new provider** is still code: implement the adapter behind `generateImage` /
-  `generateVideo` / `generateConceptsWith` routing and add a preset; everything above then
-  applies to it.
+- **Providers**: fal.ai (images, video), Replicate (`packages/ai/src/replicate.ts` — any
+  `owner/name[:version]` image or video model via the Files API for private references and
+  polling for predictions; two examples ship disabled), OpenAI (images + text) and any
+  OpenAI-compatible text endpoint, Anthropic (text). Adding another provider is one adapter
+  file plus a preset; `.env` lists every key with a note on what it unlocks.

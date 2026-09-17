@@ -18,10 +18,18 @@ export { generateOpenAIImage, isOpenAIConfigured, OPENAI_IMAGE_SIZES } from "./o
 import { getModel } from "../models";
 import { generateImage as falGenerate, type FalImageRequest } from "./fal";
 import { generateOpenAIImage } from "./openai";
+import { generateReplicateImage } from "../replicate";
 
-/** Route explicitly: a provider error never silently becomes a placeholder. */
+/** Route by the spec's provider: a provider error never silently becomes a placeholder. */
 export function generateImage(req: FalImageRequest) {
   const model = getModel(req.model);
   if (!model || model.kind !== "image") throw new Error("Unknown image model");
-  return model.provider === "openai" ? generateOpenAIImage(req) : falGenerate(req);
+  switch (model.provider) {
+    case "openai":
+      return generateOpenAIImage(req);
+    case "replicate":
+      return generateReplicateImage(req);
+    default:
+      return falGenerate(req);
+  }
 }

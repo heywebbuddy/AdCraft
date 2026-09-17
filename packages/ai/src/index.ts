@@ -17,3 +17,4 @@ export * from "./video";
 export * from "./voice";
 export * from "./presenter";
 export * from "./text";
+export { isReplicateConfigured, uploadReplicateFile } from "./replicate";

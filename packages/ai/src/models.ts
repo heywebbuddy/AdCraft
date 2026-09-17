@@ -14,8 +14,8 @@ import type { AspectRatio, Capability, ProviderName } from "./types";
  */
 
 /** How to shape provider input. Adapters know these; specs pick one. */
-export type ImagePreset = "nano-banana" | "seedream" | "flux" | "gpt-image" | "qwen" | "fal-generic" | "openai-images";
-export type VideoPreset = "kling" | "veo" | "seedance" | "fal-generic";
+export type ImagePreset = "nano-banana" | "seedream" | "flux" | "gpt-image" | "qwen" | "fal-generic" | "openai-images" | "replicate-generic";
+export type VideoPreset = "kling" | "veo" | "seedance" | "fal-generic" | "replicate-generic";
 export type TextPreset = "anthropic-messages" | "openai-chat";
 export type ModelPreset = ImagePreset | VideoPreset | TextPreset;
 
@@ -27,12 +27,14 @@ export const IMAGE_PRESETS: Array<{ id: ImagePreset; label: string; provider: Pr
   { id: "qwen", label: "Qwen Image", provider: "fal", hint: "image_size, num_images" },
   { id: "fal-generic", label: "Generic fal endpoint", provider: "fal", hint: "prompt, image_size {width,height}, num_images, seed" },
   { id: "openai-images", label: "OpenAI Images API", provider: "openai", hint: "size per ratio, quality from options" },
+  { id: "replicate-generic", label: "Replicate model", provider: "replicate", hint: "prompt, aspect_ratio, width/height, num_outputs, image_input for references; ref = owner/name[:version]" },
 ];
 export const VIDEO_PRESETS: Array<{ id: VideoPreset; label: string; provider: ProviderName; hint: string }> = [
   { id: "kling", label: "Kling", provider: "fal", hint: "duration string, start_image_url, generate_audio" },
   { id: "veo", label: "Veo", provider: "fal", hint: "duration \"Ns\", aspect_ratio 16:9 | 9:16, resolution 1080p" },
   { id: "seedance", label: "Seedance", provider: "fal", hint: "duration 4–15, aspect_ratio, image_url" },
   { id: "fal-generic", label: "Generic fal endpoint", provider: "fal", hint: "prompt, duration, aspect_ratio, image_url" },
+  { id: "replicate-generic", label: "Replicate model", provider: "replicate", hint: "prompt, aspect_ratio, duration, image / start_image; ref = owner/name[:version]" },
 ];
 export const TEXT_PRESETS: Array<{ id: TextPreset; label: string; provider: ProviderName; hint: string }> = [
   { id: "anthropic-messages", label: "Anthropic Messages API", provider: "anthropic", hint: "structured outputs, prompt caching, adaptive thinking" },
@@ -243,6 +245,39 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
   },
 ];
 
+/**
+ * Replicate examples, shipped disabled: the refs are the models' public names on
+ * replicate.com; enable after a successful Test in Admin → Models.
+ */
+export const BUILT_IN_REPLICATE_MODELS: ModelSpec[] = [
+  {
+    id: "imagen-4-replicate",
+    label: "Imagen 4 (Replicate)",
+    kind: "image",
+    provider: "replicate",
+    preset: "replicate-generic",
+    endpoints: { text: "google/imagen-4", edit: "none" },
+    creditsPerUnit: 2,
+    approxCostUsd: 0.04,
+    enabled: false,
+    noSeed: true,
+    notes: "Google Imagen 4 on Replicate. Prompt-only (no reference edits).",
+  },
+  {
+    id: "kling-2.1-replicate",
+    label: "Kling 2.1 (Replicate)",
+    kind: "video",
+    provider: "replicate",
+    preset: "replicate-generic",
+    endpoints: { imageToVideo: "kwaivgi/kling-v2.1", textToVideo: "kwaivgi/kling-v2.1" },
+    creditsPerUnit: 8,
+    approxCostUsd: 0.05,
+    enabled: false,
+    video: { durationsSec: [5, 10], ratios: ["16:9", "9:16", "1:1"], audio: false, imageToVideo: true },
+    notes: "Kling 2.1 on Replicate; start_image drives image-to-video.",
+  },
+];
+
 export const BUILT_IN_TEXT_MODELS: ModelSpec[] = [
   { id: "claude-opus-5", label: "Claude Opus 5", kind: "text", provider: "anthropic", preset: "anthropic-messages", creditsPerUnit: 0, default: true },
   {
@@ -266,7 +301,7 @@ export const BUILT_IN_TEXT_MODELS: ModelSpec[] = [
   },
 ];
 
-export const BUILT_IN_MODELS: ModelSpec[] = [...BUILT_IN_TEXT_MODELS, ...BUILT_IN_IMAGE_MODELS, ...BUILT_IN_VIDEO_MODELS];
+export const BUILT_IN_MODELS: ModelSpec[] = [...BUILT_IN_TEXT_MODELS, ...BUILT_IN_IMAGE_MODELS, ...BUILT_IN_VIDEO_MODELS, ...BUILT_IN_REPLICATE_MODELS];
 
 // ---------------------------------------------------------------------------
 // Registry

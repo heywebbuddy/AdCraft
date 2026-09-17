@@ -9,6 +9,7 @@ import {
   isAnthropicConfigured,
   isFalConfigured,
   isOpenAIConfigured,
+  isReplicateConfigured,
   listModels,
   mergeCatalog,
   registerModels,
@@ -40,6 +41,8 @@ export function providerConnected(spec: ModelSpec): boolean {
       return isFalConfigured;
     case "openai":
       return isOpenAIConfigured();
+    case "replicate":
+      return isReplicateConfigured();
     case "anthropic":
       return isAnthropicConfigured();
     case "elevenlabs":
