@@ -74,6 +74,14 @@ async function resolveAsset(ref: AssetRef | undefined, opts: RenderOptions): Pro
  */
 export async function renderStatic(input: StaticAdDocument, size: RenderSize, opts: RenderOptions = {}): Promise<Buffer> {
   const doc = normalizeDocument(input);
+  if (doc.mode === "ai") {
+    const ref = doc.artwork?.[size.ratio];
+    const src = ref ? await resolveAsset(ref, opts) : undefined;
+    if (!src) throw new Error(`The ${size.ratio} composition has not been generated yet.`);
+    const bytes = Buffer.from(src.split(",")[1]!, "base64");
+    // Never crop generated typography or add a second set of product/copy layers.
+    return sharp(bytes).resize(size.width, size.height, { fit: "contain", background: doc.brand.colors.background }).png().toBuffer();
+  }
   const [{ fonts, resolved }, sceneSrc, productSrc, logoSrc] = await Promise.all([
     loadFonts(doc.brand.fonts),
     doc.scene.kind === "image" ? resolveAsset({ key: doc.scene.key, url: doc.scene.url }, opts) : Promise.resolve(undefined),

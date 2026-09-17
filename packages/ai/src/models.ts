@@ -57,6 +57,8 @@ export const videoModels: ModelSpec[] = [
 ];
 
 export const imageModels: ModelSpec[] = [
+  { id: "gpt-image-2.5-sunburst", label: "GPT Image 2.5 Sunburst", kind: "image", provider: "openai", creditsPerUnit: 2, notes: "Detailed compositions and precise image editing." },
+  { id: "gpt-image-2.5-flare", label: "GPT Image 2.5 Flare", kind: "image", provider: "openai", creditsPerUnit: 1, notes: "Faster creative exploration and drafts." },
   {
     id: "nano-banana-pro",
     label: "Nano Banana Pro",
