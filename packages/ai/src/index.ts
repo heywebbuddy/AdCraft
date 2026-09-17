@@ -18,3 +18,4 @@ export * from "./voice";
 export * from "./presenter";
 export * from "./text";
 export { isReplicateConfigured, uploadReplicateFile } from "./replicate";
+export { isRunwayConfigured } from "./runway";

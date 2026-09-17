@@ -16,17 +16,26 @@ import { getModel } from "../models";
 import type { GenerationResult, VideoJob } from "../types";
 import { generateVideo as falGenerateVideo, submitVideo as falSubmitVideo, videoStatus as falVideoStatus, type FalVideoRequest, type GeneratedVideo } from "./fal-video";
 import { generateReplicateVideo, replicateVideoStatus, submitReplicateVideo } from "../replicate";
+import { generateRunwayVideo, runwayVideoStatus, submitRunwayVideo } from "../runway";
 
 /** Route by the spec's provider; fal also serves the offline placeholder when no key is set. */
 export function submitVideo(req: FalVideoRequest): Promise<VideoJob> {
-  return getModel(req.model)?.provider === "replicate" ? submitReplicateVideo(req) : falSubmitVideo(req);
+  const provider = getModel(req.model)?.provider;
+  if (provider === "replicate") return submitReplicateVideo(req);
+  if (provider === "runway") return submitRunwayVideo(req);
+  return falSubmitVideo(req);
 }
 export function videoStatus(jobId: string): Promise<VideoJob> {
-  return jobId.startsWith("replicate::") ? replicateVideoStatus(jobId) : falVideoStatus(jobId);
+  if (jobId.startsWith("replicate::")) return replicateVideoStatus(jobId);
+  if (jobId.startsWith("runway::")) return runwayVideoStatus(jobId);
+  return falVideoStatus(jobId);
 }
 export function generateVideo(
   req: FalVideoRequest,
   opts: { pollMs?: number; timeoutMs?: number; onStatus?: (job: VideoJob) => void } = {},
 ): Promise<GenerationResult<GeneratedVideo>> {
-  return getModel(req.model)?.provider === "replicate" ? generateReplicateVideo(req, opts) : falGenerateVideo(req, opts);
+  const provider = getModel(req.model)?.provider;
+  if (provider === "replicate") return generateReplicateVideo(req, opts);
+  if (provider === "runway") return generateRunwayVideo(req, opts);
+  return falGenerateVideo(req, opts);
 }

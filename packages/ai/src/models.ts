@@ -14,8 +14,8 @@ import type { AspectRatio, Capability, ProviderName } from "./types";
  */
 
 /** How to shape provider input. Adapters know these; specs pick one. */
-export type ImagePreset = "nano-banana" | "seedream" | "flux" | "gpt-image" | "qwen" | "fal-generic" | "openai-images" | "replicate-generic";
-export type VideoPreset = "kling" | "veo" | "seedance" | "fal-generic" | "replicate-generic";
+export type ImagePreset = "nano-banana" | "seedream" | "flux" | "gpt-image" | "qwen" | "fal-generic" | "openai-images" | "replicate-generic" | "runway-image";
+export type VideoPreset = "kling" | "veo" | "seedance" | "fal-generic" | "replicate-generic" | "runway-video";
 export type TextPreset = "anthropic-messages" | "openai-chat";
 export type ModelPreset = ImagePreset | VideoPreset | TextPreset;
 
@@ -28,6 +28,7 @@ export const IMAGE_PRESETS: Array<{ id: ImagePreset; label: string; provider: Pr
   { id: "fal-generic", label: "Generic fal endpoint", provider: "fal", hint: "prompt, image_size {width,height}, num_images, seed" },
   { id: "openai-images", label: "OpenAI Images API", provider: "openai", hint: "size per ratio, quality from options" },
   { id: "replicate-generic", label: "Replicate model", provider: "replicate", hint: "prompt, aspect_ratio, width/height, num_outputs, image_input for references; ref = owner/name[:version]" },
+  { id: "runway-image", label: "Runway text_to_image", provider: "runway", hint: "promptText, pixel ratio per size, up to 3 referenceImages; model = gen4_image" },
 ];
 export const VIDEO_PRESETS: Array<{ id: VideoPreset; label: string; provider: ProviderName; hint: string }> = [
   { id: "kling", label: "Kling", provider: "fal", hint: "duration string, start_image_url, generate_audio" },
@@ -35,6 +36,7 @@ export const VIDEO_PRESETS: Array<{ id: VideoPreset; label: string; provider: Pr
   { id: "seedance", label: "Seedance", provider: "fal", hint: "duration 4–15, aspect_ratio, image_url" },
   { id: "fal-generic", label: "Generic fal endpoint", provider: "fal", hint: "prompt, duration, aspect_ratio, image_url" },
   { id: "replicate-generic", label: "Replicate model", provider: "replicate", hint: "prompt, aspect_ratio, duration, image / start_image; ref = owner/name[:version]" },
+  { id: "runway-video", label: "Runway image_to_video", provider: "runway", hint: "promptImage (start frame), promptText, pixel ratio, duration 5 | 10; model = gen4_turbo" },
 ];
 export const TEXT_PRESETS: Array<{ id: TextPreset; label: string; provider: ProviderName; hint: string }> = [
   { id: "anthropic-messages", label: "Anthropic Messages API", provider: "anthropic", hint: "structured outputs, prompt caching, adaptive thinking" },
@@ -278,6 +280,35 @@ export const BUILT_IN_REPLICATE_MODELS: ModelSpec[] = [
   },
 ];
 
+/** Runway Gen-4, shipped disabled until RUNWAYML_API_SECRET is set and Test passes. */
+export const BUILT_IN_RUNWAY_MODELS: ModelSpec[] = [
+  {
+    id: "runway-gen4-image",
+    label: "Runway Gen-4 Image",
+    kind: "image",
+    provider: "runway",
+    preset: "runway-image",
+    endpoints: { text: "gen4_image" },
+    creditsPerUnit: 2,
+    approxCostUsd: 0.08,
+    enabled: false,
+    notes: "Reference-guided stills (up to 3 references).",
+  },
+  {
+    id: "runway-gen4-turbo",
+    label: "Runway Gen-4 Turbo",
+    kind: "video",
+    provider: "runway",
+    preset: "runway-video",
+    endpoints: { imageToVideo: "gen4_turbo" },
+    creditsPerUnit: 8,
+    approxCostUsd: 0.05,
+    enabled: false,
+    video: { durationsSec: [5, 10], ratios: ["16:9", "9:16", "1:1", "4:5"], audio: false, imageToVideo: true },
+    notes: "Image-to-video from the scene still; 5 or 10 s.",
+  },
+];
+
 export const BUILT_IN_TEXT_MODELS: ModelSpec[] = [
   { id: "claude-opus-5", label: "Claude Opus 5", kind: "text", provider: "anthropic", preset: "anthropic-messages", creditsPerUnit: 0, default: true },
   {
@@ -301,7 +332,7 @@ export const BUILT_IN_TEXT_MODELS: ModelSpec[] = [
   },
 ];
 
-export const BUILT_IN_MODELS: ModelSpec[] = [...BUILT_IN_TEXT_MODELS, ...BUILT_IN_IMAGE_MODELS, ...BUILT_IN_VIDEO_MODELS, ...BUILT_IN_REPLICATE_MODELS];
+export const BUILT_IN_MODELS: ModelSpec[] = [...BUILT_IN_TEXT_MODELS, ...BUILT_IN_IMAGE_MODELS, ...BUILT_IN_VIDEO_MODELS, ...BUILT_IN_REPLICATE_MODELS, ...BUILT_IN_RUNWAY_MODELS];
 
 // ---------------------------------------------------------------------------
 // Registry

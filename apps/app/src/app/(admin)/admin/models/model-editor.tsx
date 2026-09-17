@@ -56,6 +56,7 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
           <select name="provider" value={provider} onChange={(e) => pickProvider(e.target.value as ProviderName)}>
             {kind !== "text" ? <option value="fal">fal.ai</option> : null}
             {kind !== "text" ? <option value="replicate">Replicate</option> : null}
+            {kind !== "text" ? <option value="runway">Runway</option> : null}
             <option value="openai">OpenAI {kind === "text" ? "or OpenAI-compatible" : ""}</option>
             {kind === "text" ? <option value="anthropic">Anthropic</option> : null}
           </select>
@@ -116,13 +117,13 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
           </label>
         </div>
       ) : null}
-      {kind === "image" && provider === "replicate" ? (
+      {kind === "image" && (provider === "replicate" || provider === "runway") ? (
         <div className="admin-grid-2">
           <label>
             <span>
-              Replicate model <small>owner/name or owner/name:version</small>
+              {provider === "runway" ? "Runway model" : "Replicate model"} <small>{provider === "runway" ? "e.g. gen4_image" : "owner/name or owner/name:version"}</small>
             </span>
-            <input name="endpoint.text" defaultValue={model?.endpoints?.text ?? ""} placeholder="black-forest-labs/flux-1.1-pro" required />
+            <input name="endpoint.text" defaultValue={model?.endpoints?.text ?? ""} placeholder={provider === "runway" ? "gen4_image" : "black-forest-labs/flux-1.1-pro"} required />
           </label>
           <label className="check" style={{ alignSelf: "end" }}>
             <input type="checkbox" name="promptOnly" defaultChecked={model?.endpoints?.edit === "none"} /> Prompt-only (ignore reference images)
@@ -136,13 +137,13 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
               <span>
                 Image-to-video endpoint <small>start frame → clip</small>
               </span>
-              <input name="endpoint.imageToVideo" defaultValue={model?.endpoints?.imageToVideo ?? ""} placeholder={provider === "replicate" ? "kwaivgi/kling-v2.1" : "fal-ai/kling-video/v3/standard/image-to-video"} />
+              <input name="endpoint.imageToVideo" defaultValue={model?.endpoints?.imageToVideo ?? ""} placeholder={provider === "replicate" ? "kwaivgi/kling-v2.1" : provider === "runway" ? "gen4_turbo" : "fal-ai/kling-video/v3/standard/image-to-video"} />
             </label>
             <label>
               <span>
                 Text-to-video endpoint <small>optional</small>
               </span>
-              <input name="endpoint.textToVideo" defaultValue={model?.endpoints?.textToVideo ?? ""} placeholder={provider === "replicate" ? "kwaivgi/kling-v2.1" : "fal-ai/kling-video/v3/standard/text-to-video"} />
+              <input name="endpoint.textToVideo" defaultValue={model?.endpoints?.textToVideo ?? ""} placeholder={provider === "replicate" ? "kwaivgi/kling-v2.1" : provider === "runway" ? "veo3 (optional)" : "fal-ai/kling-video/v3/standard/text-to-video"} />
             </label>
           </div>
           <div className="admin-grid-3">
@@ -221,7 +222,7 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
           <input name="notes" defaultValue={model?.notes ?? ""} maxLength={200} placeholder="Photoreal lifestyle scenes." />
         </label>
       </div>
-      {kind === "image" && (provider === "fal" || provider === "replicate") ? (
+      {kind === "image" && provider !== "openai" ? (
         <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
           <label className="check">
             <input type="checkbox" name="noSeed" defaultChecked={model?.noSeed ?? false} /> Endpoint rejects a seed field

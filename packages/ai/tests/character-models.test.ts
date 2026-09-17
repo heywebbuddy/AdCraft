@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { falImageInput, trimPrompt } from "../src/image/fal-input";
 import { replicateImageInput, replicateVideoInput } from "../src/replicate";
+import { runwayImageInput, runwayVideoInput } from "../src/runway";
 import { BUILT_IN_IMAGE_MODELS, BUILT_IN_MODELS, defaultModel, getModel, listModels, mergeCatalog, registerModels } from "../src/models";
 import { generatePhotoPresenter } from "../src/presenter/photo";
 
@@ -101,5 +102,21 @@ test("Replicate specs shape generic image and video inputs from the spec", () =>
   assert.equal(v.aspect_ratio, "16:9");
   assert.equal(v.duration, 5, "snapped to the nearest supported duration");
   assert.equal(v.start_image, "https://x/start.png");
+  registerModels(BUILT_IN_MODELS);
+});
+
+test("Runway specs map our sizes to Runway pixel ratios and pick the right task endpoint", () => {
+  const img = { id: "rw-img", label: "RW", kind: "image" as const, provider: "runway" as const, preset: "runway-image" as const, endpoints: { text: "gen4_image" }, creditsPerUnit: 2 };
+  const input = runwayImageInput(img, { prompt: "p", ratio: "9:16", seed: 4 }, ["data:image/png;base64,AAAA", "https://x/b.png"]);
+  assert.equal(input.model, "gen4_image");
+  assert.equal(input.ratio, "1080:1920");
+  assert.deepEqual(input.referenceImages, [{ uri: "data:image/png;base64,AAAA", tag: "ref1" }, { uri: "https://x/b.png", tag: "ref2" }]);
+  const vid = { id: "rw-vid", label: "RWV", kind: "video" as const, provider: "runway" as const, preset: "runway-video" as const, endpoints: { imageToVideo: "gen4_turbo" }, creditsPerUnit: 8, video: { durationsSec: [5, 10], ratios: ["9:16" as const], audio: false, imageToVideo: true } };
+  registerModels([...BUILT_IN_MODELS, vid]);
+  const i2v = runwayVideoInput(vid, { model: "rw-vid", prompt: "p", ratio: "16:9", durationSec: 8 }, "data:image/png;base64,AAAA");
+  assert.equal(i2v.path, "/image_to_video");
+  assert.equal(i2v.body.ratio, "1280:720");
+  assert.equal(i2v.body.duration, 10);
+  assert.throws(() => runwayVideoInput(vid, { model: "rw-vid", prompt: "p", ratio: "16:9", durationSec: 5 }), /needs a start frame/);
   registerModels(BUILT_IN_MODELS);
 });

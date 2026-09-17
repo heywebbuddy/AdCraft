@@ -19,6 +19,7 @@ import { getModel } from "../models";
 import { generateImage as falGenerate, type FalImageRequest } from "./fal";
 import { generateOpenAIImage } from "./openai";
 import { generateReplicateImage } from "../replicate";
+import { generateRunwayImage } from "../runway";
 
 /** Route by the spec's provider: a provider error never silently becomes a placeholder. */
 export function generateImage(req: FalImageRequest) {
@@ -29,6 +30,8 @@ export function generateImage(req: FalImageRequest) {
       return generateOpenAIImage(req);
     case "replicate":
       return generateReplicateImage(req);
+    case "runway":
+      return generateRunwayImage(req);
     default:
       return falGenerate(req);
   }
