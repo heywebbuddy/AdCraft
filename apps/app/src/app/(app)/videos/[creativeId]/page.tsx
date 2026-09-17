@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AudioPreview } from "@/components/audio-preview";
 import { SizeTile } from "@/components/size-tile";
 import { Spark } from "@/components/spark";
 import { notFound } from "next/navigation";
@@ -191,7 +192,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                   <span>Voice-over</span>
                   <span className="text-[11px] font-medium text-muted">{doc.voice?.audio?.durationSec ? `${doc.voice.audio.durationSec.toFixed(1)} s` : "pending"}</span>
                 </div>
-                {fileUrl(doc.voice?.audio) ? <audio controls preload="none" src={fileUrl(doc.voice?.audio) ?? undefined} className="w-full" /> : <div className="h-10 rounded-[5px] bg-[#efeee8]" />}
+                {fileUrl(doc.voice?.audio) ? <AudioPreview src={fileUrl(doc.voice?.audio)!} label="Voice-over" /> : <div className="h-10 rounded-[5px] bg-[#efeee8]" />}
                 <div className="text-[12px] text-muted">Voice {doc.voice?.voiceId || "stock"} · ElevenLabs</div>
               </div>
               <div className="panel flex gap-3.5 p-3.5">
