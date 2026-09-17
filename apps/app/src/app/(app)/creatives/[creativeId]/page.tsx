@@ -53,7 +53,8 @@ export default async function CreativePage({
   const done = c.variants.filter((v) => v.render?.status === "succeeded" && v.render.outputKey);
   const busy = c.status === "rendering";
   const models = await imageModelChoices();
-  const currentModel = (c.document.meta?.model as string | undefined) ?? models.find((m) => m.isDefault)?.id;
+  const currentModel =
+    (c.document.meta?.model as string | undefined) ?? models.find((m) => m.isDefault && m.configured)?.id ?? models.find((m) => m.configured)?.id;
   const modelLabel = models.find((m) => m.id === currentModel)?.label ?? currentModel ?? "—";
   const isAi = c.document.mode === "ai";
   const missing = c.variants.filter((v) => !c.document.artwork?.[v.ratio as keyof NonNullable<typeof c.document.artwork>]).length;
@@ -96,7 +97,6 @@ export default async function CreativePage({
         </div>
       </header>
 
-      {error === "preview" && <p role="status" className="text-[12px] text-muted">Studio preview: generation is not connected yet.</p>}
       {error === "credits" ? (
         <div className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">
           You need more credits for the selected generation.{" "}
@@ -268,7 +268,7 @@ export default async function CreativePage({
             ) : (
               <p className="m-0 text-[12px] text-muted">The background is generated separately from your copy and product.</p>
             ))}
-            <RegenerateForm action={regen} mode={isAi ? "ai" : "editable"} models={models} currentModel={currentModel ?? "gpt-image-2.5-sunburst"} sizes={c.variants.length} missing={missing} balance={ctx.credits.balance} disabled={busy || ctx.role === "viewer"} />
+            <RegenerateForm action={regen} mode={isAi ? "ai" : "editable"} models={models} currentModel={currentModel ?? ""} sizes={c.variants.length} missing={missing} balance={ctx.credits.balance} disabled={busy || ctx.role === "viewer"} />
           </section>
 
           {c.status === "failed" ? (

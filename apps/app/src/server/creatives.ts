@@ -332,12 +332,13 @@ export function buildDocumentFromConcept(c: ConceptForCreative, opts: { template
 export async function createCreativeFromConcept(
   orgId: string,
   conceptId: string,
-  opts: { model?: string; template?: string; templateId?: string },
+  opts: { model?: string; template?: string; templateId?: string; mode?: "editable" | "ai"; placements?: string[] },
 ): Promise<{ creativeId: string }> {
   await dbReady;
   const c = await getConceptForCreative(orgId, conceptId);
   if (!c) throw new Error("Concept not found");
   const model = imageModels.some((m) => m.id === opts.model) ? (opts.model as string) : defaultModel("image").id;
+  const mode: "editable" | "ai" = opts.mode === "ai" ? "ai" : "editable";
 
   // A saved template (Release 3) contributes its layout choices; copy and product come from the concept.
   let saved: Partial<StaticAdDocument> | null = null;
@@ -348,6 +349,7 @@ export async function createCreativeFromConcept(
   }
   const template: StaticTemplate = opts.template && isTemplate(opts.template) ? opts.template : saved?.template && isTemplate(saved.template) ? saved.template : "hero";
   const document = buildDocumentFromConcept(c, { template, model });
+  document.mode = mode;
   if (saved?.layout) document.layout = { ...document.layout, ...saved.layout };
   if (saved?.scene?.kind === "gradient") document.scene = saved.scene;
   if (saved?.product && document.product) document.product = { ...document.product, scale: saved.product.scale, x: saved.product.x, y: saved.product.y };
@@ -357,13 +359,14 @@ export async function createCreativeFromConcept(
     .values({ orgId, conceptId, kind: "static", name: c.title, document: document as unknown as Record<string, unknown> })
     .returning({ id: creatives.id });
 
-  const specs: PlacementSpec[] = STATIC_PLACEMENT_IDS.map((id) => getPlacement(id));
+  const wanted = (opts.placements ?? []).filter((id): id is (typeof STATIC_PLACEMENT_IDS)[number] => (STATIC_PLACEMENT_IDS as readonly string[]).includes(id));
+  const specs: PlacementSpec[] = (wanted.length ? wanted : STATIC_PLACEMENT_IDS).map((id) => getPlacement(id));
   await db.insert(variants).values(
     specs.map((s) => ({ orgId, creativeId: creative.id, placementId: s.id, ratio: s.ratio, width: s.width, height: s.height })),
   );
   await db.update(concepts).set({ status: "selected" }).where(and(eq(concepts.id, conceptId), eq(concepts.status, "proposed")));
 
-  await dispatch("static.generate", { orgId, creativeId: creative.id, model });
+  await dispatch("static.generate", { orgId, creativeId: creative.id, model, mode });
   return { creativeId: creative.id };
 }
 
@@ -400,7 +403,7 @@ export async function rerender(orgId: string, creativeId: string): Promise<void>
 }
 
 /** Generate a fresh scene with the chosen model (charges STATIC_SCENE_CREDITS), then re-render. */
-export async function regenerateScene(orgId: string, creativeId: string, model?: string): Promise<void> {
+export async function regenerateScene(orgId: string, creativeId: string, model?: string, opts: { instructions?: string; onlyMissing?: boolean } = {}): Promise<void> {
   await dbReady;
   const [row] = await db.select().from(creatives).where(and(eq(creatives.id, creativeId), eq(creatives.orgId, orgId))).limit(1);
   if (!row) throw new Error("Creative not found");
@@ -410,5 +413,5 @@ export async function regenerateScene(orgId: string, creativeId: string, model?:
     .update(creatives)
     .set({ document: { ...doc, meta: { ...(doc.meta ?? {}), model: chosen, lastError: undefined } } as unknown as Record<string, unknown> })
     .where(eq(creatives.id, creativeId));
-  await dispatch("static.generate", { orgId, creativeId, model: chosen });
+  await dispatch("static.generate", { orgId, creativeId, model: chosen, mode: doc.mode === "ai" ? "ai" : "editable", instructions: opts.instructions, onlyMissing: opts.onlyMissing });
 }

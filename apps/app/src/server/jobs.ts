@@ -21,7 +21,7 @@ export type JobName =
 
 export type JobPayloads = {
   "concepts.generate": { orgId: string; briefId: string; count?: number };
-  "static.generate": { orgId: string; creativeId: string; model?: string };
+  "static.generate": { orgId: string; creativeId: string; model?: string; mode?: "editable" | "ai"; instructions?: string; onlyMissing?: boolean };
   "product.cutout": { orgId: string; productId: string };
   "render.variants": { orgId: string; creativeId: string };
   "video.generate": { orgId: string; creativeId: string; model?: string };

@@ -3,6 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireOrg } from "@/server/org";
+import { staticModelChoices } from "@/server/static-options";
+
+async function creditsForModel(id: string) {
+  const m = (await staticModelChoices()).find((x) => x.id === id);
+  return m?.credits ?? 2;
+}
 import {
   createCreativeFromConcept as createCreative,
   regenerateScene as regenerate,
@@ -22,16 +28,18 @@ export async function createCreativeFromConcept(formData: FormData) {
   const ctx = await requireOrg();
   if (ctx.role === "viewer") throw new Error("An editor or owner is required.");
   const conceptId = String(formData.get("conceptId") ?? "");
-  if (formData.get("studioPreview") === "true") redirect(`/creatives/new?conceptId=${encodeURIComponent(conceptId)}&error=preview`);
   const model = String(formData.get("model") ?? "");
+  const mode = formData.get("generationMode") === "ai" ? "ai" : "editable";
+  const placements = formData.getAll("placements").map(String).filter(Boolean);
   const templateChoice = String(formData.get("template") ?? "");
   const templateId = templateChoice.startsWith("saved:") ? templateChoice.slice(6) : undefined;
   const template = templateId ? "" : templateChoice;
   if (!conceptId) redirect("/creatives");
-  if (ctx.credits.balance < STATIC_SCENE_CREDITS) redirect(`/creatives/new?conceptId=${conceptId}&error=credits`);
+  const needed = mode === "ai" ? (await creditsForModel(model)) * Math.max(1, placements.length) : STATIC_SCENE_CREDITS;
+  if (ctx.credits.balance < needed) redirect(`/creatives/new?conceptId=${conceptId}&error=credits`);
   let creativeId: string;
   try {
-    ({ creativeId } = await createCreative(ctx.org.id, conceptId, { model, template, templateId }));
+    ({ creativeId } = await createCreative(ctx.org.id, conceptId, { model, template, templateId, mode, placements }));
   } catch {
     redirect(`/creatives/new?conceptId=${conceptId}&error=concept`);
   }
@@ -74,10 +82,11 @@ export async function rerender(creativeId: string) {
 export async function regenerateScene(creativeId: string, formData: FormData) {
   const ctx = await requireOrg();
   if (ctx.role === "viewer") throw new Error("An editor or owner is required.");
-  if (ctx.credits.balance < STATIC_SCENE_CREDITS) redirect(`/creatives/${creativeId}?error=credits`);
-  if (formData.get("studioPreview") === "true") redirect(`/creatives/${creativeId}?error=preview`);
   const model = String(formData.get("model") ?? "") || undefined;
-  await regenerate(ctx.org.id, creativeId, model);
+  const instructions = String(formData.get("instructions") ?? "").trim() || undefined;
+  const onlyMissing = formData.get("retryMissing") === "on" || formData.get("retryMissing") === "true";
+  if (ctx.credits.balance < (model ? await creditsForModel(model) : STATIC_SCENE_CREDITS)) redirect(`/creatives/${creativeId}?error=credits`);
+  await regenerate(ctx.org.id, creativeId, model, { instructions, onlyMissing });
   revalidatePath(`/creatives/${creativeId}`);
   revalidatePath("/dashboard");
 }

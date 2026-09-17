@@ -43,8 +43,17 @@ export function stripProductAndText(visual: string): string {
  * static.generate — paint the AI scene for a static creative, charge credits,
  * then render every size. The document's product/brand/copy layers are untouched.
  */
-export async function runStaticPipeline({ orgId, creativeId, model }: { orgId: string; creativeId: string; model?: string }) {
+export async function runStaticPipeline({ orgId, creativeId, model, mode, instructions, onlyMissing }: { orgId: string; creativeId: string; model?: string; mode?: "editable" | "ai"; instructions?: string; onlyMissing?: boolean }) {
   await dbReady;
+  {
+    // AI-artwork creatives: the model designs each size; see static-ai.ts.
+    const [head] = await db.select({ document: creatives.document }).from(creatives).where(and(eq(creatives.id, creativeId), eq(creatives.orgId, orgId))).limit(1);
+    const docMode = (head?.document as { mode?: string } | null)?.mode;
+    if (mode === "ai" || docMode === "ai") {
+      const { runStaticAiPipeline } = await import("./static-ai");
+      return runStaticAiPipeline({ orgId, creativeId, model, instructions, onlyMissing });
+    }
+  }
   const [row] = await db
     .select({ creative: creatives, concept: concepts, brief: briefs, project: projects })
     .from(creatives)

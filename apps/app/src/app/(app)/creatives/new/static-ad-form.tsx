@@ -9,8 +9,9 @@ import type { StaticTemplate } from "@adcraft/render";
 import styles from "./static-ad-form.module.css";
 
 export type ModelChoice = { id: string; label: string; notes: string; provider: string; enabled: boolean; configured: boolean; credits: number; isDefault: boolean };
-const best = "gpt-image-2.5-sunburst";
-const fast = "gpt-image-2.5-flare";
+// Recommended models: the server marks its default; fall back to any connected model.
+const pickBest = (models: ModelChoice[]) => models.find((m) => m.isDefault && m.configured && m.enabled)?.id ?? models.find((m) => m.configured && m.enabled)?.id ?? models[0]?.id ?? "";
+const pickFast = (models: ModelChoice[], best: string) => models.find((m) => m.id === "gpt-image-2.5-flare" && m.configured && m.enabled)?.id ?? best;
 const directions: Array<{ id: StaticTemplate; title: string; note: string }> = [
   { id: "hero", title: "Product spotlight", note: "Immersive. Warm. All eyes on you." },
   { id: "split", title: "Editorial split", note: "A story in two perfect halves." },
@@ -29,14 +30,15 @@ export function StaticAdForm({ concept, models, saved, sizes, balance, canEdit }
   const [override, setOverride] = useState("");
   const [template, setTemplate] = useState("hero");
   const [placements, setPlacements] = useState(["meta.feed.4x5"]);
+  const best = pickBest(models);
+  const fast = pickFast(models, best);
   const modelId = override || (quality === "fast" ? fast : best);
   const model = models.find((m) => m.id === modelId);
   // Generation remains disabled until the new composition pipeline is connected.
-  const available = false;
+  const available = Boolean(model?.enabled && model?.configured);
   const credits = (model?.credits ?? 0) * (mode === "ai" ? placements.length : 1);
   const toggle = (id: string) => setPlacements((previous) => previous.includes(id) ? previous.filter((p) => p !== id) : [...previous, id]);
   return <form action={createCreativeFromConcept} className={styles.studio}>
-    <input type="hidden" name="studioPreview" value="true" />
     <input type="hidden" name="conceptId" value={concept.id} />
     <input type="hidden" name="model" value={modelId} />
     <div className={styles.main}>
@@ -76,8 +78,8 @@ export function StaticAdForm({ concept, models, saved, sizes, balance, canEdit }
           </div><span className={styles.modelName}>{model?.label} · {model?.credits} {model?.credits === 1 ? "credit" : "credits"} / {mode === "ai" ? "size" : "background"}</span></fieldset>
           <fieldset><legend>Export sizes</legend><div className={styles.sizes}>{sizes.map((s) => <label key={s.id} className={placements.includes(s.id) ? styles.sizeSelected : ""}><input type="checkbox" name="placements" value={s.id} checked={placements.includes(s.id)} onChange={() => toggle(s.id)} /><strong>{s.ratio}</strong><span>{s.width} × {s.height}</span></label>)}</div></fieldset>
         </div>
-        <details className={styles.advanced}><summary>Advanced model settings <span>{override ? "Custom selection" : "Automatic"}</span></summary><label className={styles.advancedLabel}>Image model<select value={override} onChange={(e) => setOverride(e.target.value)}><option value="">Recommended for selected quality</option>{models.filter((m) => mode === "editable" || m.provider === "openai").map((m) => <option key={m.id} value={m.id} disabled={!m.enabled}>{m.label} · {m.credits} credits{!m.enabled ? " · disabled" : !m.configured ? " · not connected" : ""}</option>)}</select></label></details>
-        {!available && <div className={styles.notice} role="status"><strong>{"Studio preview · generation is not enabled yet"}</strong><span>{"Explore the layouts, output sizes and quality settings. The new generation workflow is awaiting approval before it is connected."}</span></div>}
+        <details className={styles.advanced}><summary>Advanced model settings <span>{override ? "Custom selection" : "Automatic"}</span></summary><label className={styles.advancedLabel}>Image model<select value={override} onChange={(e) => setOverride(e.target.value)}><option value="">Recommended for selected quality</option>{models.map((m) => <option key={m.id} value={m.id} disabled={!m.enabled}>{m.label} · {m.credits} credits{!m.enabled ? " · disabled" : !m.configured ? " · not connected" : ""}</option>)}</select></label></details>
+        {!available && <div className={styles.notice} role="status"><strong>{model?.enabled === false ? `${model.label} is turned off` : `${model?.label ?? "This model"} is not connected`}</strong><span>{model?.enabled === false ? "An admin disabled this model. Pick another under Advanced model settings." : model?.provider === "openai" ? "Add OPENAI_API_KEY on the server, or pick a connected model under Advanced model settings." : "Add FAL_KEY on the server, or pick a connected model under Advanced model settings."}</span></div>}
       </section>
 
       <footer className={styles.footer}><div aria-live="polite"><strong>{credits} {credits === 1 ? "credit" : "credits"} <span>· {placements.length} {placements.length === 1 ? "size" : "sizes"}</span></strong><p>{mode === "ai" ? "A distinct composition for each size." : "One background. Every selected size."} {balance} credits available.</p></div><PendingButton className="btn btn-orange h-11" pendingLabel="Preparing your studio…" disabled={!canEdit || !available || !placements.length || balance < credits}>Generate {mode === "ai" ? "ad" : "creative"}<span aria-hidden="true">↗</span></PendingButton></footer>

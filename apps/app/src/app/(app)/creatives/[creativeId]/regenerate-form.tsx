@@ -33,7 +33,6 @@ export function RegenerateForm({
     (mode === "ai" ? (retryMissing ? missing : sizes) : 1);
   return (
     <form action={action} className="flex flex-col gap-3">
-      <input type="hidden" name="studioPreview" value="true" />
       {mode === "ai" && (
         <>
           <p className="m-0 text-[12px] leading-relaxed text-muted">
@@ -63,14 +62,12 @@ export function RegenerateForm({
           onChange={(e) => setModelId(e.target.value)}
           className="h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[12px] font-normal outline-none focus:border-ink"
         >
-          {models
-            .filter((m) => mode !== "ai" || m.provider === "openai")
-            .map((m) => (
+          {models.map((m) => (
               <option key={m.id} value={m.id} disabled={!m.enabled}>
                 {m.label}
                 {!m.configured ? " · not connected" : ""}
               </option>
-            ))}
+          ))}
         </select>
       </label>
       {mode === "ai" && missing > 0 && missing < sizes && (
@@ -87,7 +84,7 @@ export function RegenerateForm({
       <PendingButton
         className="btn btn-outline h-11 text-[12px]"
         pendingLabel="Starting generation…"
-        disabled
+        disabled={disabled || !model?.configured || model?.enabled === false || balance < credits}
       >
         {mode === "ai"
           ? instructions.trim()
@@ -100,9 +97,11 @@ export function RegenerateForm({
       <span aria-live="polite" className="text-[11px] text-muted">
         {credits} credits · {balance} available
       </span>
-      <p className="m-0 text-[11px] text-[#9b683a]">
-        Studio preview: the new generation workflow is not connected yet.
-      </p>
+      {model && !model.configured ? (
+        <p className="m-0 text-[11px] text-[#9b683a]">
+          {model.label} is not connected on this server. Choose a connected model.
+        </p>
+      ) : null}
     </form>
   );
 }
