@@ -181,7 +181,7 @@ export function VideoForm(p: VideoFormProps) {
       </div>
 
       {/* Summary */}
-      <aside className="panel sticky top-6 flex flex-col gap-4 p-5">
+      <aside className="panel side-sticky flex flex-col gap-4 p-5">
         <div className="eyebrow">Ready to generate</div>
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[13px]">
           <dt className="text-muted">Format</dt>

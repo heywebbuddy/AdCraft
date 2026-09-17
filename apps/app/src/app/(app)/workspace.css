@@ -379,16 +379,36 @@
   background: #eeefe9;
 }
 .workspace-body {
+  --topbar-h: 65px;
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
+
+/*
+ * Side column on detail pages (refine panel, brief summary, activity): stays in view
+ * under the fixed top bar while the tall main column scrolls. When the column itself
+ * is taller than the viewport it scrolls on its own instead of pinning.
+ */
+@media (min-width: 1280px) {
+  .side-sticky {
+    position: sticky;
+    top: calc(var(--topbar-h) + 22px);
+    max-height: calc(100vh - var(--topbar-h) - 44px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  .side-sticky::-webkit-scrollbar {
+    display: none;
+  }
+}
 .workspace-topbar {
   position: sticky;
   top: 0;
   z-index: 25;
-  height: 65px;
+  height: var(--topbar-h);
   flex-shrink: 0;
   padding: 0 36px;
   display: flex;
@@ -1278,8 +1298,8 @@
   .workspace-logo {
     font-size: 24px;
   }
-  .workspace-topbar {
-    height: 58px;
+  .workspace-body {
+    --topbar-h: 58px;
   }
   .workspace-breadcrumb > span:first-child {
     display: none;

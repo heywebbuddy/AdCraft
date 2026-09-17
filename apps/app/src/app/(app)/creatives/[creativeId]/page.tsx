@@ -238,10 +238,12 @@ export default async function CreativePage({
               );
             })}
           </div>
+
+          <ReviewPanel creativeId={creativeId} />
         </section>
 
         {/* Editor */}
-        <aside className="flex flex-col gap-4">
+        <aside className="side-sticky flex flex-col gap-4">
           {!isAi && <section className="panel flex flex-col gap-4 p-4">
             <div className="flex items-baseline justify-between">
               <span className="eyebrow">Edit</span>
@@ -284,19 +286,16 @@ export default async function CreativePage({
               </form>
             </section>
           ) : null}
+
+          <div className="panel flex flex-col gap-2 p-5 text-[13px]">
+            <span className="eyebrow">Share and reuse</span>
+            <p className="m-0 text-muted">Send a review link to a client, or save this layout as a template for the next brief.</p>
+            <Link href={`/creatives/${creativeId}/review`} className="btn btn-outline mt-2 h-11 justify-between">
+              Share for review <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
         </aside>
       </div>
-
-      <section className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_360px]">
-        <ReviewPanel creativeId={creativeId} />
-        <div className="panel flex flex-col gap-2 self-start p-5 text-[13px]">
-          <span className="eyebrow">Share and reuse</span>
-          <p className="m-0 text-muted">Send a review link to a client, or save this layout as a template for the next brief.</p>
-          <Link href={`/creatives/${creativeId}/review`} className="btn btn-outline mt-2 h-11 justify-between">
-            Share for review <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </section>
     </>
   );
 }

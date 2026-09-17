@@ -178,7 +178,9 @@ export default async function CreativeReviewPage({
           ) : null}
         </div>
 
-        <ReviewPanel creativeId={creativeId} variantLabels={Object.fromEntries(sizes.map((s) => [s.variantId, s.label]))} />
+        <div className="side-sticky">
+          <ReviewPanel creativeId={creativeId} variantLabels={Object.fromEntries(sizes.map((s) => [s.variantId, s.label]))} />
+        </div>
       </div>
     </>
   );

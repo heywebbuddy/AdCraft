@@ -343,7 +343,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
         </div>
 
         {/* Activity */}
-        <aside className="flex flex-col gap-3">
+        <aside className="side-sticky flex flex-col gap-3">
           <div className="eyebrow">Activity</div>
           <div className="panel flex flex-col divide-y divide-line">
             {v.events.length === 0 ? <div className="p-3.5 text-[12px] text-muted">Nothing yet.</div> : null}

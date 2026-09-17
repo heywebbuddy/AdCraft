@@ -153,7 +153,7 @@ export default async function ProductPage({
           </section>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="side-sticky flex flex-col gap-4">
           <form action={updateProduct.bind(null, product.id)} className="panel flex flex-col gap-4 p-5">
             <span className="eyebrow">Details</span>
             <label className="flex flex-col gap-1.5">

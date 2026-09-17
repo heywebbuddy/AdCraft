@@ -73,7 +73,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
         <form action={bulkGenerate} className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_340px]">
           <BulkPicker briefs={list} />
 
-          <aside className="flex flex-col gap-4 xl:sticky xl:top-6">
+          <aside className="side-sticky flex flex-col gap-4">
             <section className="panel flex flex-col gap-3 p-4">
               <span className="eyebrow">Formats</span>
               {STATIC_TEMPLATES.map((t, i) => (

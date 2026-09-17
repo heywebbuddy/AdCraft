@@ -249,7 +249,7 @@ export default async function NewBriefPage({
           </div>
         </div>
 
-        <aside className="flex flex-col gap-4">
+        <aside className="side-sticky flex flex-col gap-4">
           <section className="panel flex flex-col gap-2.5 px-4 py-3.5">
             <span className="eyebrow">What you get</span>
             <p className="m-0 text-[13px] text-muted">
