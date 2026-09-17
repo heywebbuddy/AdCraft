@@ -9,6 +9,7 @@ import { ReviewPanel } from "@/components/review-panel";
 import { AlertIcon } from "@/components/icons";
 import { regenerateScene, rerender, updateCreativeDocument } from "../actions";
 import { Editor } from "./editor";
+import { RegenerateForm } from "./regenerate-form";
 
 export const dynamic = "force-dynamic";
 
@@ -51,9 +52,11 @@ export default async function CreativePage({
   const selected = c.variants.find((v) => v.ratio === ratio) ?? c.variants.find((v) => v.render?.status === "succeeded") ?? c.variants[0];
   const done = c.variants.filter((v) => v.render?.status === "succeeded" && v.render.outputKey);
   const busy = c.status === "rendering";
-  const models = imageModelChoices();
+  const models = await imageModelChoices();
   const currentModel = (c.document.meta?.model as string | undefined) ?? models.find((m) => m.isDefault)?.id;
   const modelLabel = models.find((m) => m.id === currentModel)?.label ?? currentModel ?? "—";
+  const isAi = c.document.mode === "ai";
+  const missing = c.variants.filter((v) => !c.document.artwork?.[v.ratio as keyof NonNullable<typeof c.document.artwork>]).length;
   const sceneReady = c.document.scene.kind === "image";
 
   const save = updateCreativeDocument.bind(null, c.id);
@@ -77,7 +80,7 @@ export default async function CreativePage({
           <h1 className="m-0 flex flex-wrap items-center gap-3 text-[36px] font-medium leading-[1.05] tracking-[-1.8px]">
             {c.name}
             <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-normal ${STATUS[c.status].cls}`}>
-              {busy && c.generating ? "Painting scene" : STATUS[c.status].label}
+              {busy && c.generating ? isAi ? "Designing ads" : "Painting scene" : STATUS[c.status].label}
             </span>
           </h1>
         </div>
@@ -93,9 +96,10 @@ export default async function CreativePage({
         </div>
       </header>
 
+      {error === "preview" && <p role="status" className="text-[12px] text-muted">Studio preview: generation is not connected yet.</p>}
       {error === "credits" ? (
         <div className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">
-          You need {STATIC_SCENE_CREDITS} credits to paint a new scene.{" "}
+          You need more credits for the selected generation.{" "}
           <Link href="/settings/billing" className="font-semibold">
             Top up
           </Link>
@@ -106,7 +110,7 @@ export default async function CreativePage({
         <div className="flex items-start gap-2.5 rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">
           <AlertIcon className="mt-px shrink-0" />
           <span className="flex flex-col gap-0.5">
-            <span className="font-semibold">Something failed. Credits were not charged for failed scenes.</span>
+            <span className="font-semibold">Generation needs attention. Successful images remain available.</span>
             <span className="break-all opacity-80">{c.lastError}</span>
           </span>
         </div>
@@ -116,7 +120,7 @@ export default async function CreativePage({
         {/* Preview */}
         <section className="flex min-w-0 flex-col gap-3.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+            <div className="flex flex-wrap gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
               {c.variants.map((v) => (
                 <Link
                   key={v.id}
@@ -172,10 +176,10 @@ export default async function CreativePage({
                           : `linear-gradient(160deg, ${c.document.brand.colors.primary}, ${c.document.brand.colors.accent})`,
                     }}
                   >
-                    {selected.render?.status === "failed" ? (
+                    {selected.render?.status === "failed" || (c.status === "failed" && !selected.render) ? (
                       <>
                         <span className="font-serif text-[22px] italic">This size failed to render.</span>
-                        <span className="max-w-[40ch] text-[12px] opacity-80">{selected.render.error}</span>
+                        <span className="max-w-[40ch] text-[12px] opacity-80">{selected.render?.error ?? c.lastError}</span>
                         <form action={retry}>
                           <button type="submit" className="btn btn-outline h-10">
                             Retry
@@ -227,7 +231,7 @@ export default async function CreativePage({
                     </a>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 text-[12px] text-muted">
-                      {v.render?.status === "failed" ? "Failed" : <><Spark size={12} animate="spin" className="text-orange" /> Rendering…</>}
+                      {v.render?.status === "failed" || c.status === "failed" ? "Not ready" : <><Spark size={12} animate="spin" className="text-orange" /> Rendering…</>}
                     </span>
                   )}
                 </div>
@@ -238,20 +242,20 @@ export default async function CreativePage({
 
         {/* Editor */}
         <aside className="flex flex-col gap-4">
-          <section className="panel flex flex-col gap-4 p-4">
+          {!isAi && <section className="panel flex flex-col gap-4 p-4">
             <div className="flex items-baseline justify-between">
               <span className="eyebrow">Edit</span>
               <span className="text-[11px] text-muted">Saves re-render every size</span>
             </div>
-            <Editor creativeId={c.id} document={c.document} templates={STATIC_TEMPLATES.map((t) => ({ id: t.id, label: t.label }))} busy={busy} onSave={save} />
-          </section>
+            <Editor creativeId={c.id} document={c.document} templates={STATIC_TEMPLATES.map((t) => ({ id: t.id, label: t.label }))} busy={busy || ctx.role === "viewer"} onSave={save} />
+          </section>}
 
           <section className="panel flex flex-col gap-3 p-4">
             <div className="flex items-baseline justify-between">
-              <span className="eyebrow">Scene</span>
-              <span className="text-[11px] text-muted">{sceneReady ? `Painted by ${modelLabel}` : "Not painted yet"}</span>
+              <span className="eyebrow">{isAi ? "Refine with AI" : "Background"}</span>
+              <span className="text-[11px] text-muted">{isAi ? "AI-designed ad" : "Editable layers"}</span>
             </div>
-            {sceneReady && c.document.scene.kind === "image" && c.document.scene.key ? (
+            {!isAi && (sceneReady && c.document.scene.kind === "image" && c.document.scene.key ? (
               <div className="flex items-center gap-3">
                 <div className="h-16 w-[52px] shrink-0 overflow-hidden rounded-[5px] bg-[#efeee8]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -262,33 +266,16 @@ export default async function CreativePage({
                 </p>
               </div>
             ) : (
-              <p className="m-0 text-[12px] text-muted">Until the scene lands, sizes render on the brand gradient.</p>
-            )}
-            <form action={regen} className="flex flex-col gap-2.5">
-              <select name="model" defaultValue={currentModel} className="h-11 w-full rounded-[7px] border border-line bg-white px-3.5 text-[14px] outline-none focus:border-ink">
-                {models.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label}
-                    {m.isDefault ? " (default)" : ""}
-                  </option>
-                ))}
-              </select>
-              <div className="flex items-center gap-3">
-                <button type="submit" disabled={busy} className="btn btn-outline h-11 disabled:cursor-not-allowed disabled:opacity-60">
-                  Regenerate scene
-                </button>
-                <span className="text-[12px] text-muted">
-                  Costs {STATIC_SCENE_CREDITS} credits · {ctx.credits.balance} left
-                </span>
-              </div>
-            </form>
+              <p className="m-0 text-[12px] text-muted">The background is generated separately from your copy and product.</p>
+            ))}
+            <RegenerateForm action={regen} mode={isAi ? "ai" : "editable"} models={models} currentModel={currentModel ?? "gpt-image-2.5-sunburst"} sizes={c.variants.length} missing={missing} balance={ctx.credits.balance} disabled={busy || ctx.role === "viewer"} />
           </section>
 
           {c.status === "failed" ? (
             <section className="panel flex flex-col gap-2.5 px-4 py-3.5">
               <span className="eyebrow">Recover</span>
               <p className="m-0 text-[13px] text-muted">
-                Re-render uses the current scene and document. If the scene itself failed, regenerate it above.
+                Re-render exports the images already generated, at no extra cost. Use generation above to create missing artwork.
               </p>
               <form action={retry}>
                 <button type="submit" className="btn btn-dark h-11">

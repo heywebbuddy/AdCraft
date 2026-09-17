@@ -38,7 +38,11 @@ export type LayoutOptions = {
   overlay: number;
 };
 
+export type StaticGenerationMode = "editable" | "ai";
 export interface StaticAdDocument {
+  /** Older documents are editable. AI artwork already includes all copy and branding. */
+  mode?: StaticGenerationMode;
+  artwork?: Partial<Record<Ratio, { key: string }>>;
   template: StaticTemplate;
   scene: SceneLayer;
   product: ProductLayer | null;
@@ -73,6 +77,8 @@ export const DEFAULT_PRODUCT: Omit<ProductLayer, "cutoutKey" | "cutoutUrl"> = { 
 /** Build a document with every field present, filling gaps with sensible defaults. */
 export function normalizeDocument(doc: Partial<StaticAdDocument> & Pick<StaticAdDocument, "headline" | "cta" | "brand">): StaticAdDocument {
   return {
+    mode: doc.mode === "ai" ? "ai" : "editable",
+    artwork: doc.artwork,
     template: doc.template ?? "hero",
     scene: doc.scene ?? { kind: "gradient", from: doc.brand.colors.primary, to: doc.brand.colors.accent, angle: 160 },
     product: doc.product ? { ...DEFAULT_PRODUCT, ...doc.product } : null,

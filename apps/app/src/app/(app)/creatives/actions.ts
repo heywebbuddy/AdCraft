@@ -20,7 +20,9 @@ const num = (v: FormDataEntryValue | null, fallback: number, lo: number, hi: num
 /** `/creatives/new` submit: build the document, create variants, start the scene. */
 export async function createCreativeFromConcept(formData: FormData) {
   const ctx = await requireOrg();
+  if (ctx.role === "viewer") throw new Error("An editor or owner is required.");
   const conceptId = String(formData.get("conceptId") ?? "");
+  if (formData.get("studioPreview") === "true") redirect(`/creatives/new?conceptId=${encodeURIComponent(conceptId)}&error=preview`);
   const model = String(formData.get("model") ?? "");
   const templateChoice = String(formData.get("template") ?? "");
   const templateId = templateChoice.startsWith("saved:") ? templateChoice.slice(6) : undefined;
@@ -40,6 +42,7 @@ export async function createCreativeFromConcept(formData: FormData) {
 /** Editor save: merge the form into the document and re-render every size. */
 export async function updateCreativeDocument(creativeId: string, formData: FormData) {
   const ctx = await requireOrg();
+  if (ctx.role === "viewer") throw new Error("An editor or owner is required.");
   const patch: DocumentPatch = {
     headline: String(formData.get("headline") ?? "").trim(),
     subhead: String(formData.get("subhead") ?? "").trim(),
@@ -62,6 +65,7 @@ export async function updateCreativeDocument(creativeId: string, formData: FormD
 
 export async function rerender(creativeId: string) {
   const ctx = await requireOrg();
+  if (ctx.role === "viewer") throw new Error("An editor or owner is required.");
   await rerenderCreative(ctx.org.id, creativeId);
   revalidatePath(`/creatives/${creativeId}`);
 }
@@ -69,7 +73,9 @@ export async function rerender(creativeId: string) {
 /** Paint a new scene with the chosen model. Costs STATIC_SCENE_CREDITS. */
 export async function regenerateScene(creativeId: string, formData: FormData) {
   const ctx = await requireOrg();
+  if (ctx.role === "viewer") throw new Error("An editor or owner is required.");
   if (ctx.credits.balance < STATIC_SCENE_CREDITS) redirect(`/creatives/${creativeId}?error=credits`);
+  if (formData.get("studioPreview") === "true") redirect(`/creatives/${creativeId}?error=preview`);
   const model = String(formData.get("model") ?? "") || undefined;
   await regenerate(ctx.org.id, creativeId, model);
   revalidatePath(`/creatives/${creativeId}`);

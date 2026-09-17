@@ -1,4 +1,5 @@
 import "server-only";
+import { staticModelChoices } from "./static-options";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   db,
@@ -284,10 +285,7 @@ export async function getConceptForCreative(orgId: string, conceptId: string): P
   };
 }
 
-export function imageModelChoices() {
-  const def = defaultModel("image").id;
-  return imageModels.map((m) => ({ id: m.id, label: m.label, notes: m.notes ?? "", isDefault: m.id === def }));
-}
+export const imageModelChoices = staticModelChoices;
 
 export function isTemplate(t: string): t is StaticTemplate {
   return STATIC_TEMPLATES.some((x) => x.id === t);

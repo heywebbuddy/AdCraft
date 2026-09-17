@@ -604,6 +604,7 @@ export type ProviderStatus = {
 
 const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "lastSuccessAt" | "lastFailureAt" | "lastError" | "total24h" | "failed24h">> = [
   { id: "anthropic", name: "Anthropic", area: "Concepts, copy, scripts", env: ["ANTHROPIC_API_KEY"], eventKey: "anthropic", note: "Falls back to sample concepts when unset." },
+  { id: "openai", name: "OpenAI", area: "Static ad compositions and backgrounds", env: ["OPENAI_API_KEY"], eventKey: "openai", note: "Requires access to GPT Image 2.5. No placeholder fallback." },
   { id: "fal", name: "fal.ai", area: "Images, video, cutouts", env: ["FAL_KEY"], eventKey: "fal", note: "Offline placeholders when unset." },
   { id: "elevenlabs", name: "ElevenLabs", area: "Voice-over", env: ["ELEVENLABS_API_KEY"], eventKey: "elevenlabs" },
   { id: "heygen", name: "HeyGen", area: "UGC presenter", env: ["HEYGEN_API_KEY"], eventKey: "heygen" },
