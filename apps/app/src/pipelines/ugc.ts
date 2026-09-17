@@ -4,6 +4,7 @@ import {
   downloadPresenter,
   downloadVideo,
   generatePresenter,
+  generatePhotoPresenter,
   generateVideo,
   getModel,
   supportedDuration,
@@ -11,6 +12,7 @@ import {
 } from "@adcraft/ai";
 import type { VideoDocument } from "@adcraft/render/video";
 import { registerJob, type JobPayloads } from "@/server/jobs";
+import { reserveGenerationCredits, refundGenerationCredits } from "@/server/generation-credits";
 import { CREDIT_COSTS } from "@/server/billing";
 import {
   assembleVariants,
@@ -70,6 +72,7 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
   await saveVideoDocument(creativeId, doc);
 
   try {
+    if (doc.meta?.characterStudio) await reserveGenerationCredits(orgId, credits, rootEventId);
     // 1. Voice-over.
     if (needsVoice) {
       await setEventStep(rootEventId, "voice", "Synthesising voice-over");
@@ -89,10 +92,13 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
       await setEventStep(rootEventId, "presenter", "Rendering AI presenter");
       const audioBytes = doc.voice?.audio ? await loadVideoAsset(doc.voice.audio) : null;
       const total = doc.voice?.audio?.durationSec;
+      const portrait = doc.presenter?.image ? await loadVideoAsset(doc.presenter.image) : null;
+      if (doc.presenter?.image && (!portrait || !audioBytes)) throw new Error("The saved character image or voice track is unavailable.");
       const res = await withEvent(
         { orgId, creativeId, capability: "presenter", provider: "heygen", model: HEYGEN_MODEL, label: "Presenter", detail: doc.presenter?.avatarId ?? "stock avatar", step: "presenter" },
-        () =>
-          generatePresenter({
+        () => portrait && audioBytes
+          ? generatePhotoPresenter({ image: portrait, audio: audioBytes, ratio: doc.ratio, durationSec: total ?? 30 })
+          : generatePresenter({
             model: HEYGEN_MODEL,
             avatarId: doc.presenter?.avatarId ?? "",
             script,
@@ -107,7 +113,7 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
       );
       const bytes = await downloadPresenter(res.output);
       const key = await storeRender(orgId, bytes, "mp4", "video/mp4");
-      doc.presenter = { avatarId: doc.presenter?.avatarId ?? "", clip: { key, durationSec: res.output.durationSec ?? total } };
+      doc.presenter = { ...doc.presenter, avatarId: doc.presenter?.avatarId ?? "", clip: { key, durationSec: res.output.durationSec ?? total } };
       await saveVideoDocument(creativeId, doc);
     }
 
@@ -120,7 +126,7 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
         await setEventStep(rootEventId, "broll", `B-roll ${n} of ${broll.length} · still`);
         const res = await withEvent(
           { orgId, creativeId, capability: "image", provider: "fal", model: "", label: `B-roll ${n} still`, detail: scene.prompt.slice(0, 80), step: "broll", meta: { sceneId: scene.id } },
-          () => generateSceneStill({ prompt: scene.prompt, ratio: doc.ratio, reference: cutoutBytes ? { bytes: cutoutBytes } : null, seed: 100 + i }),
+          () => generateSceneStill({ model: doc.imageModel, prompt: scene.prompt, ratio: doc.ratio, reference: cutoutBytes ? { bytes: cutoutBytes } : null, seed: 100 + i }),
         );
         const key = await storeRender(orgId, res.png, "png", "image/png");
         doc.scenes[i] = { ...scene, still: { key }, error: undefined };
@@ -160,9 +166,10 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
       { step: "done", detail: `${results.length - failed.length} of ${results.length} sizes ready` },
       credits,
     );
-    await chargeCredits(orgId, credits, rootEventId, { creativeId, capability: "ugc", model: doc.model, presenter: HEYGEN_MODEL });
+    if (!doc.meta?.characterStudio) await chargeCredits(orgId, credits, rootEventId, { creativeId, capability: "ugc", model: doc.model, presenter: HEYGEN_MODEL });
     return { creativeId, eventId: rootEventId, credits, results };
   } catch (err) {
+    if (doc.meta?.characterStudio) await refundGenerationCredits(orgId, rootEventId);
     const message = err instanceof Error ? err.message : String(err);
     await failEvent(rootEventId, err, startedAt);
     await saveVideoDocument(creativeId, { ...doc, meta: { ...(doc.meta ?? {}), lastError: message.slice(0, 500) } });

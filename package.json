@@ -2,7 +2,9 @@
   "name": "adcraft",
   "private": true,
   "packageManager": "pnpm@9.15.9",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "turbo run dev",
     "inngest": "npx inngest-cli@latest dev -u http://localhost:3000/api/inngest --no-discovery",
@@ -10,9 +12,11 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "turbo run db:generate",
-    "db:migrate": "turbo run db:migrate"
+    "db:migrate": "turbo run db:migrate",
+    "test": "turbo run test"
   },
   "devDependencies": {
+    "tsx": "^4.23.13",
     "turbo": "^2.5.6",
     "typescript": "^5.9.2"
   }

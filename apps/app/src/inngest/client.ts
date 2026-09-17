@@ -2,6 +2,7 @@ import { EventSchemas, Inngest } from "inngest";
 import type { JobPayloads } from "@/server/jobs";
 
 type Events = {
+  "character/generate": { data: JobPayloads["character.generate"] };
   "concepts/generate": { data: JobPayloads["concepts.generate"] };
   "static/generate": { data: JobPayloads["static.generate"] };
   "product/cutout": { data: JobPayloads["product.cutout"] };

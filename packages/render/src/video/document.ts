@@ -58,6 +58,8 @@ export interface VideoDocument {
   kind: VideoKind;
   /** Video model id from @adcraft/ai models.ts (e.g. "kling-3.0"). */
   model: string;
+  /** Image model for scene stills; independent from the video animation model. */
+  imageModel?: string;
   /** Primary ratio the scenes are generated in. */
   ratio: VideoRatio;
   /** Full script as proposed by the concept. */
@@ -71,7 +73,7 @@ export interface VideoDocument {
   /** UGC voice-over. */
   voice?: { voiceId: string; audio?: VideoAsset };
   /** UGC presenter clip (licensed avatar). */
-  presenter?: { avatarId: string; clip?: VideoAsset };
+  presenter?: { avatarId: string; image?: VideoAsset; characterId?: string; clip?: VideoAsset };
   /** Show the "AI-generated" label required by platform rules for synthetic presenters. */
   aiLabel: boolean;
   meta?: Record<string, unknown>;
@@ -154,6 +156,7 @@ export function documentDurationSec(doc: Pick<VideoDocument, "scenes" | "endCard
 /** Fill in defaults so older/partial documents render. */
 export function normalizeVideoDocument(doc: Partial<VideoDocument> & Pick<VideoDocument, "kind">): VideoDocument {
   return {
+    imageModel: doc.imageModel,
     kind: doc.kind,
     model: doc.model ?? "kling-3.0",
     ratio: doc.ratio ?? "9:16",

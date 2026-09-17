@@ -11,21 +11,8 @@ import { defaultModel } from "../models";
  */
 export const isFalConfigured = Boolean(process.env.FAL_KEY);
 
-/**
- * Model id (packages/ai/src/models.ts) → fal endpoint ids.
- *
- * `text` is prompt-only generation; `edit` takes reference images (product cutout,
- * style refs) alongside the prompt so the product is not hallucinated.
- *
- * Endpoint ids are taken from the typed endpoint map shipped in @fal-ai/client 1.10.1.
- * TODO: verify live behaviour, pricing and the exact input params for each endpoint
- * against https://fal.ai/models before the provider bake-off (PLAN.md §12).
- */
-export const FAL_IMAGE_ENDPOINTS: Record<string, { text: string; edit: string }> = {
-  "nano-banana-pro": { text: "fal-ai/nano-banana-pro", edit: "fal-ai/nano-banana-pro/edit" },
-  "seedream-4.5": { text: "fal-ai/bytedance/seedream/v4.5/text-to-image", edit: "fal-ai/bytedance/seedream/v4.5/edit" },
-  "flux-2-max": { text: "fal-ai/flux-2-max", edit: "fal-ai/flux-2-max/edit" },
-};
+import { FAL_IMAGE_ENDPOINTS, falImageInput } from "./fal-input";
+export { FAL_IMAGE_ENDPOINTS } from "./fal-input";
 
 /** Background removal. `fal-ai/bria/background/remove` is the licensed alternative. */
 export const FAL_BACKGROUND_REMOVAL_ENDPOINT = "fal-ai/birefnet/v2";
@@ -244,48 +231,14 @@ export async function generateImage(req: FalImageRequest): Promise<GenerationRes
 
   let images: Array<{ url: string; width?: number; height?: number; content_type?: string }> = [];
 
-  if (modelId === "nano-banana-pro") {
-    const input = {
-      prompt,
-      aspect_ratio: nanoBananaRatio(req.ratio),
-      num_images: count,
-      output_format: "png" as const,
-      resolution: "1K" as const,
-      ...(req.seed !== undefined ? { seed: req.seed } : {}),
-    };
-    const res = hasRefs
-      ? await fal().subscribe("fal-ai/nano-banana-pro/edit", { input: { ...input, image_urls: refs } })
-      : await fal().subscribe("fal-ai/nano-banana-pro", { input });
-    images = res.data.images;
-  } else if (modelId === "seedream-4.5") {
-    const input = {
-      prompt,
-      image_size: { width, height },
-      num_images: count,
-      ...(req.seed !== undefined ? { seed: req.seed } : {}),
-    };
-    const res = hasRefs
-      ? await fal().subscribe("fal-ai/bytedance/seedream/v4.5/edit", { input: { ...input, image_urls: refs } })
-      : await fal().subscribe("fal-ai/bytedance/seedream/v4.5/text-to-image", { input });
-    images = res.data.images;
-  } else if (modelId === "flux-2-max") {
-    // Flux 2 Max returns one image per call.
-    const input = {
-      prompt,
-      image_size: { width, height },
-      output_format: "png" as const,
-      ...(req.seed !== undefined ? { seed: req.seed } : {}),
-    };
-    for (let i = 0; i < count; i++) {
-      const res = hasRefs
-        ? await fal().subscribe("fal-ai/flux-2-max/edit", { input: { ...input, image_urls: refs, ...(req.seed !== undefined ? { seed: req.seed + i } : {}) } })
-        : await fal().subscribe("fal-ai/flux-2-max", { input: { ...input, ...(req.seed !== undefined ? { seed: req.seed + i } : {}) } });
-      images.push(...res.data.images);
-    }
-  } else {
-    // A model listed in FAL_IMAGE_ENDPOINTS but without a bespoke input mapping.
-    // TODO: add the mapping when a new model is registered in models.ts.
-    throw new Error(`Image model "${modelId}" has no fal input mapping`);
+  const plan = falImageInput({ model: modelId, prompt, ratio: req.ratio, width, height, count, seed: req.seed }, refs);
+  for (let i = 0; i < plan.calls; i++) {
+    const input = { ...plan.input, ...(plan.calls > 1 && req.seed !== undefined ? { seed: req.seed + i } : {}) };
+    // New provider endpoints may precede the SDK's generated endpoint union.
+    const res = await fal().subscribe(plan.endpoint, { input });
+    const data = res.data as { images?: Array<{ url: string; width?: number; height?: number; content_type?: string }> };
+    if (!data.images?.length || data.images.some((im) => !im.url)) throw new Error(`Image model "${modelId}" returned no usable image`);
+    images.push(...data.images);
   }
 
   const output: GeneratedImage[] = images.map((im) => ({
@@ -300,7 +253,7 @@ export async function generateImage(req: FalImageRequest): Promise<GenerationRes
       provider: "fal",
       model: modelId,
       durationMs: Date.now() - startedAt,
-      costUsd: (APPROX_COST_USD[modelId] ?? 0) * output.length,
+      costUsd: APPROX_COST_USD[modelId] === undefined ? undefined : APPROX_COST_USD[modelId]! * output.length,
       units: output.length,
     },
   };

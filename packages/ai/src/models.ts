@@ -57,6 +57,11 @@ export const videoModels: ModelSpec[] = [
 ];
 
 export const imageModels: ModelSpec[] = [
+  { id: "nano-banana-2", label: "Nano Banana 2", kind: "image", provider: "fal", creditsPerUnit: 2, notes: "Fast portraits and reference-based edits." },
+  { id: "seedream-5-lite", label: "Seedream 5 Lite", kind: "image", provider: "fal", creditsPerUnit: 2, notes: "Detailed portraits, outfits and lifestyle scenes." },
+  { id: "gpt-image-2", label: "GPT Image 2", kind: "image", provider: "fal", creditsPerUnit: 3, notes: "Detailed compositions and reference-based editing." },
+  { id: "qwen-image-2-pro", label: "Qwen Image 2 Pro", kind: "image", provider: "fal", creditsPerUnit: 2, notes: "Portraits, precise prompts and image editing." },
+  { id: "flux-2-dev", label: "FLUX.2 Dev", kind: "image", provider: "fal", creditsPerUnit: 1, notes: "Explore character concepts and new looks." },
   { id: "gpt-image-2.5-sunburst", label: "GPT Image 2.5 Sunburst", kind: "image", provider: "openai", creditsPerUnit: 2, notes: "Detailed compositions and precise image editing." },
   { id: "gpt-image-2.5-flare", label: "GPT Image 2.5 Flare", kind: "image", provider: "openai", creditsPerUnit: 1, notes: "Faster creative exploration and drafts." },
   {
@@ -78,7 +83,7 @@ export const imageModels: ModelSpec[] = [
   },
   {
     id: "flux-2-max",
-    label: "Flux 2 Max",
+    label: "FLUX.2 Max",
     kind: "image",
     provider: "fal",
     creditsPerUnit: 3,

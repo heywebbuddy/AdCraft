@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "site:sync": "node scripts/sync-site.mjs",
     "predev": "node scripts/sync-site.mjs",
-    "prebuild": "node scripts/sync-site.mjs"
+    "prebuild": "node scripts/sync-site.mjs",
+    "test": "tsx --conditions=react-server --test tests/**/*.test.ts"
   },
   "dependencies": {
     "@adcraft/ads": "workspace:*",

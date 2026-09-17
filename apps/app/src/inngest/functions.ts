@@ -2,6 +2,7 @@ import { inngest } from "./client";
 import { runConceptsPipeline } from "@/pipelines/concepts";
 import { runVideoPipeline } from "@/pipelines/video";
 import { runUgcPipeline } from "@/pipelines/ugc";
+import { runCharacterPipeline } from "@/pipelines/character";
 import { runStaticPipeline } from "@/pipelines/static";
 import { runRenderPipeline } from "@/pipelines/render";
 import { runProductCutout } from "@/pipelines/product-cutout";
@@ -51,7 +52,14 @@ export const productCutout = inngest.createFunction(
   async ({ event, step }) => step.run("cutout", () => runProductCutout(event.data)),
 );
 
+export const generateCharacter = inngest.createFunction(
+  { id: "character-generate", retries: 0, concurrency: { limit: 3 } },
+  { event: "character/generate" },
+  async ({ event, step }) => step.run("generate", () => runCharacterPipeline(event.data)),
+);
+
 export const functions = [
+  generateCharacter,
   generateConcepts,
   generateStatic,
   renderVariants,

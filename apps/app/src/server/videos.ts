@@ -186,7 +186,7 @@ export async function getConceptForVideo(orgId: string, conceptId: string): Prom
 
 // ---------- document construction ----------
 
-export type VideoOptions = { kind: VideoKind; model: string; ratio: VideoRatio; avatarId?: string; voiceId?: string };
+export type VideoOptions = { kind: VideoKind; model: string; ratio: VideoRatio; avatarId?: string; voiceId?: string; imageModel?: string; characterImageKey?: string; characterId?: string; templateId?: string };
 
 export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): VideoDocument {
   const kit = c.brand.kit;
@@ -197,6 +197,7 @@ export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): Vide
   return normalizeVideoDocument({
     kind: opts.kind,
     model: opts.model,
+    imageModel: opts.imageModel,
     ratio: opts.ratio,
     script,
     scenes: opts.kind === "ugc" ? [...scenes, ...brollScenes(c.data.visualDirection, c.product?.name)] : scenes,
@@ -210,9 +211,9 @@ export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): Vide
     captions: { style: opts.kind === "ugc" ? "bold" : "clean", position: "bottom" },
     endCard: { headline: c.data.headline, cta: c.data.cta || "Shop now", durationSec: 2.5 },
     voice: opts.kind === "ugc" ? { voiceId: opts.voiceId ?? "" } : undefined,
-    presenter: opts.kind === "ugc" ? { avatarId: opts.avatarId ?? "" } : undefined,
+    presenter: opts.kind === "ugc" ? { avatarId: opts.avatarId ?? "", ...(opts.characterImageKey ? { image: { key: opts.characterImageKey }, characterId: opts.characterId } : {}) } : undefined,
     aiLabel: opts.kind === "ugc",
-    meta: { conceptId: c.id, productId: c.product?.id ?? null, visualDirection: c.data.visualDirection, tone: kit.voice?.tone ?? [] },
+    meta: { conceptId: c.id, productId: c.product?.id ?? null, visualDirection: c.data.visualDirection, tone: kit.voice?.tone ?? [], templateId: opts.templateId, characterStudio: Boolean(opts.characterId) },
   });
 }
 
@@ -249,7 +250,7 @@ export async function createVideoFromConcept(orgId: string, conceptId: string, o
   }
   const model = videoModels.some((m) => m.id === opts.model) ? (opts.model as string) : defaultModel("video").id;
   const ratio: VideoRatio = VIDEO_RATIOS.some((r) => r.id === opts.ratio) ? (opts.ratio as VideoRatio) : "9:16";
-  const document = buildVideoDocument(c, { kind, model, ratio, avatarId: opts.avatarId, voiceId: opts.voiceId });
+  const document = buildVideoDocument(c, { ...opts, kind, model, ratio });
 
   const suffix = kind === "ugc" ? "UGC" : "Video";
   const [creative] = await db
@@ -300,6 +301,7 @@ export async function updateScene(
   if (i < 0) throw new Error("Scene not found");
   const scene = doc.scenes[i]!;
   const promptChanged = patch.prompt !== undefined && patch.prompt.trim() !== scene.prompt;
+  const lineChanged = patch.line !== undefined && patch.line.trim() !== scene.line;
   doc.scenes[i] = {
     ...scene,
     ...(patch.caption !== undefined ? { caption: patch.caption.trim() } : {}),
@@ -308,6 +310,11 @@ export async function updateScene(
     ...(patch.prompt !== undefined ? { prompt: patch.prompt.trim() } : {}),
     ...(promptChanged ? { still: undefined, clip: undefined } : {}),
   };
+  if (lineChanged && doc.kind === "ugc") {
+    if (doc.voice) doc.voice = { ...doc.voice, audio: undefined };
+    if (doc.presenter) doc.presenter = { ...doc.presenter, clip: undefined };
+    doc.script = doc.scenes.filter(s => s.role !== "broll").map(s => s.line).join("\n");
+  }
   await save(row.id, doc);
   await dispatchFor(orgId, creativeId, doc);
 }
@@ -328,7 +335,7 @@ export async function rerunVideo(orgId: string, creativeId: string, opts: { mode
   if (opts.model && videoModels.some((m) => m.id === opts.model)) doc.model = opts.model;
   if (opts.fresh) {
     doc.scenes = doc.scenes.map((s) => ({ ...s, still: undefined, clip: undefined, error: undefined }));
-    doc.presenter = doc.presenter ? { avatarId: doc.presenter.avatarId } : undefined;
+    doc.presenter = doc.presenter ? { ...doc.presenter, clip: undefined } : undefined;
     doc.voice = doc.voice ? { voiceId: doc.voice.voiceId } : undefined;
   }
   doc.meta = { ...(doc.meta ?? {}), lastError: undefined };

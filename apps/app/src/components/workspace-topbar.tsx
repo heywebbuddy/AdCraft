@@ -7,6 +7,7 @@ import { useBreadcrumbTitle } from "./breadcrumb-title";
 const destinations: Array<{ name: string; href: string; match?: string; group: string }> = [
   { name: "Overview", href: "/dashboard", group: "Workspace" },
   { name: "Creative briefs", href: "/briefs", group: "Create" },
+  { name: "Character studio", href: "/characters", group: "Create" },
   { name: "All creatives", href: "/creatives", group: "Create" },
   { name: "Videos", href: "/creatives?kind=video", match: "/videos", group: "Create" },
   { name: "Product library", href: "/library", group: "Assets" },
