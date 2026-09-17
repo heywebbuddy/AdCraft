@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { MAX_UPLOAD_BYTES } from "@/lib/uploads";
 
 type Props = {
   name: string;
@@ -21,6 +22,7 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
   const id = useId();
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [tooLarge, setTooLarge] = useState<string | null>(null);
 
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
 
@@ -54,6 +56,13 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
         className="sr-only"
         onChange={(e) => {
           const f = e.currentTarget.files?.[0];
+          if (f && f.size > MAX_UPLOAD_BYTES) {
+            // Reject here so the form never posts a body the server would refuse.
+            e.currentTarget.value = "";
+            setTooLarge(`${f.name} is ${(f.size / 1024 / 1024).toFixed(1)} MB; the limit is ${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)} MB.`);
+            return;
+          }
+          setTooLarge(null);
           if (preview) URL.revokeObjectURL(preview);
           const url = f ? URL.createObjectURL(f) : null;
           setPreview(url);
@@ -61,7 +70,11 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
           onPreview?.(url);
         }}
       />
-      {fileName ? (
+      {tooLarge ? (
+        <span role="alert" className="text-[11px] text-[#b3261e]">
+          {tooLarge}
+        </span>
+      ) : fileName ? (
         <span className="truncate text-[11px] text-muted">{fileName}</span>
       ) : shown && !compact ? (
         <span className="text-[11px] text-muted">Click the image to replace it.</span>

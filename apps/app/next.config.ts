@@ -11,6 +11,9 @@ for (const file of [".env", ".env.local"]) {
 const nextConfig: NextConfig = {
   // No floating dev badge: it lands in every screenshot and covers the sidebar avatar.
   devIndicators: false,
+  // Product photos and logos post through server actions; allow the same 15 MB the
+  // upload validator accepts (see src/lib/uploads.ts), plus room for form fields.
+  experimental: { serverActions: { bodySizeLimit: "16mb" } },
   // The marketing site (repo `dist/`) is copied into public/ by scripts/sync-site.mjs and served here.
   async rewrites() {
     return [
