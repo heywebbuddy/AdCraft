@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SizeTile } from "@/components/size-tile";
 import { Spark } from "@/components/spark";
 import { notFound } from "next/navigation";
 import { requireOrg } from "@/server/org";
@@ -79,7 +80,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
             {v.name}. <span className="font-serif italic tracking-[-0.6px] text-orange">{headline}</span>
           </h1>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="rounded bg-[#efeee8] px-[7px] py-1 text-[11px] text-[#4a4b44]">
             {spent ? `${spent} credits spent` : `${v.credits} credits per run`} · ~{v.durationSec} s
           </span>
@@ -105,7 +106,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
         </div>
       ) : null}
 
-      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
+      <div className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
         <div className="flex min-w-0 flex-col gap-[26px]">
           {/* Progress */}
           <section className="flex flex-col gap-3">
@@ -118,7 +119,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                 {rendering && v.running ? `Running · ${Math.max(1, Math.round((Date.now() - v.running.createdAt.getTime()) / 1000))} s` : lastRoot ? `Last run ${lastRoot.status}` : "Queued"}
               </span>
             </div>
-            <ol className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+            <ol className="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
               {steps.map((s, i) => {
                 const ok = s.events.filter((e) => e.status === "succeeded").length;
                 const failed = s.events.find((e) => e.status === "failed");
@@ -153,7 +154,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
 
           {/* UGC: voice + presenter */}
           {v.kind === "ugc" ? (
-            <section className="grid gap-3 sm:grid-cols-2">
+            <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="panel flex flex-col gap-2 p-3.5">
                 <div className="flex items-center justify-between text-[13px] font-semibold">
                   <span>Voice-over</span>
@@ -189,7 +190,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
               </div>
               <span className="text-[12px] text-muted">Captions re-assemble instantly. Prompt changes regenerate the scene ({v.kind === "ugc" ? "B-roll only" : `${Math.ceil(v.credits / Math.max(1, scenes.length))} credits`}).</span>
             </div>
-            <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[...scenes, ...broll].map((s, i) => {
                 const clip = fileUrl(s.clip);
                 const still = fileUrl(s.still);
@@ -227,7 +228,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                       {!isBroll ? (
                         <label className="flex flex-col gap-1">
                           <span className="eyebrow">Caption</span>
-                          <textarea name="caption" defaultValue={s.caption} rows={2} className="resize-none rounded-[7px] border border-line bg-white px-2.5 py-2 text-[13px] leading-snug outline-none focus:border-ink" />
+                          <textarea name="caption" defaultValue={s.caption} rows={3} className="rounded-[7px] border border-line bg-white px-2.5 py-2 text-[13px] leading-snug outline-none focus:border-ink" />
                         </label>
                       ) : null}
                       {i === 0 && !isBroll ? (
@@ -238,7 +239,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                       ) : null}
                       <details className="group">
                         <summary className="cursor-pointer select-none text-[11px] font-semibold text-muted hover:text-ink">Scene prompt</summary>
-                        <textarea name="prompt" defaultValue={s.prompt} rows={3} className="mt-1.5 w-full resize-none rounded-[7px] border border-line bg-white px-2.5 py-2 text-[12px] leading-snug outline-none focus:border-ink" />
+                        <textarea name="prompt" defaultValue={s.prompt} rows={4} className="mt-1.5 w-full rounded-[7px] border border-line bg-white px-2.5 py-2 text-[12px] leading-snug outline-none focus:border-ink" />
                       </details>
                       {err ? <div className="text-[11px] text-[#b4382a]">{err.slice(0, 140)}</div> : null}
                       <div className="flex items-center justify-between gap-2">
@@ -264,38 +265,37 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                 Rendered videos. <span className="font-serif italic text-muted">Safe zones respected per placement.</span>
               </h2>
             </div>
-            <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="size-grid">
               {v.variants.map((x) => {
                 const r = x.render;
+                const status = r?.status === "succeeded" && r.url ? "ready" : r?.status === "failed" ? "failed" : r?.status === "running" || (rendering && !r) ? "rendering" : "waiting";
+                const fileName = `${v.name.replace(/[^\w-]+/g, "-").toLowerCase()}-${x.ratio.replace(":", "x")}.mp4`;
                 return (
-                  <div key={x.id} className="panel flex flex-col gap-3 p-3.5">
-                    <div className={`overflow-hidden rounded-[5px] bg-ink ${ratioClass[x.ratio] ?? "aspect-[9/16]"} ${x.ratio === "9:16" ? "mx-auto w-full max-w-[220px]" : ""}`}>
-                      {r?.status === "succeeded" && r.url ? (
-                        <video controls playsInline preload="metadata" src={r.url} className="h-full w-full object-contain" />
-                      ) : (
-                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[12px] text-white/70">
-                          {r?.status === "running" || (rendering && !r) ? <Spark size={26} animate={r?.status === "running" ? "spin" : "breathe"} /> : null}
-                          {r?.status === "running" ? "Rendering…" : r?.status === "failed" ? "Render failed" : rendering ? "Waiting" : "Not rendered"}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-[13px]">
-                      <span className="min-w-0 truncate font-semibold">{x.label}</span>
-                      <span className="tabular text-[11px] text-muted">
-                        {x.ratio} · {x.width}×{x.height}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 text-[12px]">
-                      <span className={r?.status === "succeeded" ? "text-[#3f7a55]" : r?.status === "failed" ? "text-[#b4382a]" : "text-muted"}>
-                        {r?.status === "succeeded" ? `Ready · ${r.fileBytes ? `${(r.fileBytes / 1048576).toFixed(1)} MB` : "mp4"}` : r?.status === "failed" ? r.error?.slice(0, 60) : r?.status ?? "queued"}
-                      </span>
-                      {r?.status === "succeeded" && r.url ? (
-                        <a href={r.url} download={`${v.name.replace(/[^\w-]+/g, "-").toLowerCase()}-${x.ratio.replace(":", "x")}.mp4`} className="font-semibold text-orange hover:underline">
-                          Download ↓
-                        </a>
-                      ) : null}
-                    </div>
-                  </div>
+                  <SizeTile
+                    key={x.id}
+                    label={x.label}
+                    ratio={x.ratio}
+                    width={x.width}
+                    height={x.height}
+                    status={status}
+                    posterUrl={r?.posterUrl ?? null}
+                    videoUrl={status === "ready" ? r!.url : null}
+                    placeholder="linear-gradient(160deg, #2b2c27 0%, #3d3e37 100%)"
+                    footer={
+                      <>
+                        <span className={r?.status === "failed" ? "text-[#b4382a]" : "text-muted"}>
+                          {r?.status === "succeeded" ? (r.fileBytes ? `${(r.fileBytes / 1048576).toFixed(1)} MB` : "mp4") : r?.status === "failed" ? "Render failed" : status === "rendering" ? "Rendering…" : rendering ? "Waiting" : "Not rendered"}
+                        </span>
+                        {status === "ready" ? (
+                          <a href={r!.url!} download={fileName} className="font-semibold text-orange">
+                            Download ↓
+                          </a>
+                        ) : null}
+                      </>
+                    }
+                  >
+                    {status === "rendering" ? <Spark size={26} animate="spin" className="text-white/80" /> : null}
+                  </SizeTile>
                 );
               })}
             </div>

@@ -37,7 +37,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
         </div>
       </header>
 
-      <form action={createProduct} className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      <form action={createProduct} className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="panel flex flex-col gap-3 p-5">
           <div className="flex items-baseline justify-between">
             <span className="eyebrow">Product photo</span>

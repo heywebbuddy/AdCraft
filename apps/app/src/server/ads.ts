@@ -420,7 +420,10 @@ export async function listPublishableCreatives(orgId: string, brandId: string | 
         height: v.height,
         fileBytes: r.fileBytes ?? 0,
         mimeType: r.mimeType ?? "image/png",
-        previewUrl: `/api/files/${r.outputKey}`,
+        previewUrl:
+          r.mimeType?.startsWith("video/") && typeof (r.meta as Record<string, unknown> | null)?.posterKey === "string"
+            ? `/api/files/${(r.meta as Record<string, unknown>).posterKey as string}`
+            : `/api/files/${r.outputKey}`,
         issues: getAdsProvider(platform).validate({ creative: adsCreative, placement: spec }),
       });
     }

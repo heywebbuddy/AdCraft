@@ -362,7 +362,7 @@ export type VideoVariant = {
   ratio: string;
   width: number;
   height: number;
-  render: { id: string; status: "queued" | "running" | "succeeded" | "failed"; url: string | null; fileBytes: number | null; error: string | null; createdAt: Date } | null;
+  render: { id: string; status: "queued" | "running" | "succeeded" | "failed"; url: string | null; posterUrl: string | null; fileBytes: number | null; error: string | null; createdAt: Date } | null;
 };
 
 export type VideoDetail = {
@@ -453,7 +453,17 @@ export async function getVideo(orgId: string, creativeId: string): Promise<Video
       ratio: v.ratio,
       width: v.width,
       height: v.height,
-      render: r ? { id: r.id, status: r.status, url: r.outputKey ? `/api/files/${r.outputKey}` : null, fileBytes: r.fileBytes, error: r.error, createdAt: r.createdAt } : null,
+      render: r
+        ? {
+            id: r.id,
+            status: r.status,
+            url: r.outputKey ? `/api/files/${r.outputKey}` : null,
+            posterUrl: typeof (r.meta as Record<string, unknown> | null)?.posterKey === "string" ? `/api/files/${(r.meta as Record<string, unknown>).posterKey as string}` : null,
+            fileBytes: r.fileBytes,
+            error: r.error,
+            createdAt: r.createdAt,
+          }
+        : null,
     };
   });
 

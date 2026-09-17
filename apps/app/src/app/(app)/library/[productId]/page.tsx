@@ -78,7 +78,7 @@ export default async function ProductPage({
       {saved ? <div className="panel px-4 py-3 text-[13px] text-muted">Saved.</div> : null}
       {error ? <div className="rounded-[9px] bg-[#fbe3d9] px-4 py-3 text-[13px] text-[#b4382a]">{errors[error] ?? "Something went wrong."}</div> : null}
 
-      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-4">
           <div className="grid gap-4 md:grid-cols-2">
             <section className="panel flex flex-col gap-3 p-4">

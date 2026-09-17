@@ -112,7 +112,7 @@ export default async function CreativePage({
         </div>
       ) : null}
 
-      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
         {/* Preview */}
         <section className="flex min-w-0 flex-col gap-3.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -300,7 +300,7 @@ export default async function CreativePage({
         </aside>
       </div>
 
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <ReviewPanel creativeId={creativeId} />
         <div className="panel flex flex-col gap-2 p-5 text-[13px]">
           <span className="eyebrow">Share and reuse</span>

@@ -54,7 +54,7 @@ export default async function LibraryPage({
           placeholder="Search products…"
         />
         <span className="collection-count">
-          {items.length} products · {ready} ready
+          {items.length} product{items.length === 1 ? "" : "s"} · {ready} ready
           {processing ? ` · ${processing} processing` : ""}
         </span>
       </div>

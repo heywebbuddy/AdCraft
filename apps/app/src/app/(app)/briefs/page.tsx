@@ -46,7 +46,7 @@ export default async function BriefsPage({
           placeholder="Search briefs…"
         />
         <span className="collection-count">
-          {items.length} briefs{generating ? ` · ${generating} generating` : ""}
+          {items.length} brief{items.length === 1 ? "" : "s"}{generating ? ` · ${generating} generating` : ""}
         </span>
       </div>
 

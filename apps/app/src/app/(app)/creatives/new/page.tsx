@@ -117,7 +117,7 @@ export default async function NewCreativePage({
 
       <form
         action={createCreativeFromConcept}
-        className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]"
+        className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]"
       >
         <input type="hidden" name="conceptId" value={concept.id} />
         <div className="panel flex flex-col gap-7 p-6">
@@ -214,7 +214,7 @@ export default async function NewCreativePage({
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-[13px] font-semibold">{m.label}</span>
                     {m.isDefault ? (
-                      <span className="rounded-full bg-[#fbe3d9] px-[7px] py-px text-[10px] font-semibold text-orange">
+                      <span className="rounded-full bg-ink px-[7px] py-px text-[10px] font-semibold text-white">
                         Default
                       </span>
                     ) : null}

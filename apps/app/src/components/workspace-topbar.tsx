@@ -7,6 +7,7 @@ const destinations = [
   { name: "Overview", href: "/dashboard", group: "Workspace" },
   { name: "Creative briefs", href: "/briefs", group: "Create" },
   { name: "All creatives", href: "/creatives", group: "Create" },
+  { name: "Videos", href: "/videos", group: "Create" },
   { name: "Product library", href: "/library", group: "Assets" },
   { name: "Brand kits", href: "/brands", group: "Assets" },
   { name: "Campaigns", href: "/campaigns", group: "Distribution" },

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { PlayIcon } from "./icons";
 import { Spark } from "./spark";
+import { getModel } from "@adcraft/ai";
+
+const friendlyModel = (id: string | null | undefined) =>
+  id ? (id === "sample" ? "Sample" : getModel(id)?.label ?? (id === "claude-opus-5" ? "Claude Opus 5" : id)) : "";
 
 /**
  * The creative "wall" tile: a creative shown at its real aspect ratio, with status,
@@ -91,7 +95,7 @@ export function WallTile({ id, name, kind, ratio, status, previewUrl, headline, 
               {sizes.done}/{sizes.total} sizes
             </span>
           ) : (
-            <span>{model ?? ""}</span>
+            <span>{friendlyModel(model)}</span>
           )}
         </div>
       </div>

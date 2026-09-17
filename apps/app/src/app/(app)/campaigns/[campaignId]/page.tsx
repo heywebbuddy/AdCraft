@@ -107,7 +107,7 @@ export default async function CampaignPage({ params, searchParams }: { params: P
         </Notice>
       ) : null}
 
-      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
+      <div className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
         <div className="flex min-w-0 flex-col gap-4">
           {c.adSets.map((set) => (
             <section key={set.id} className="panel overflow-hidden">
@@ -166,7 +166,7 @@ export default async function CampaignPage({ params, searchParams }: { params: P
                             <StatusChip status={ad.status === "draft" ? "publishing" : ad.status} label={ad.status === "draft" ? "Publishing" : undefined} />
                             {canEdit && !isPending(ad.externalId) && (ad.status === "active" || ad.status === "paused") ? (
                               <form action={setAdStatusAction.bind(null, ad.id, ad.status === "active" ? "paused" : "active")}>
-                                <button type="submit" className="text-[11px] font-semibold text-muted hover:text-ink">
+                                <button type="submit" className="whitespace-nowrap text-[11px] font-semibold text-muted hover:text-ink">
                                   {ad.status === "active" ? "Pause ad" : "Resume ad"}
                                 </button>
                               </form>

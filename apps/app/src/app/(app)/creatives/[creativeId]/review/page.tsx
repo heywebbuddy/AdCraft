@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SizeTile } from "@/components/size-tile";
 import { notFound } from "next/navigation";
 import { requireOrg } from "@/server/org";
 import { creativeSummary, listShareLinks, rendersFor } from "@/server/collab-data";
@@ -9,13 +10,6 @@ import { CopyButton } from "@/components/copy-button";
 
 export const dynamic = "force-dynamic";
 
-const ratioClass: Record<string, string> = {
-  "1:1": "aspect-square",
-  "4:5": "aspect-[4/5]",
-  "9:16": "aspect-[9/16]",
-  "16:9": "aspect-video",
-  "1.91:1": "aspect-[1.91/1]",
-};
 
 const inputClass = "h-10 w-full rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink";
 
@@ -85,7 +79,7 @@ export default async function CreativeReviewPage({
         </p>
       ) : null}
 
-      <div className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-[26px]">
           <section className="flex flex-col gap-3">
             <div className="flex items-baseline justify-between">
@@ -95,34 +89,27 @@ export default async function CreativeReviewPage({
             {sizes.length === 0 ? (
               <div className="panel border-dashed p-6 text-[13px] text-muted">No sizes yet. Renders show up here as they finish.</div>
             ) : (
-              <div className="flex flex-wrap items-start gap-4 [&>*]:w-[calc(50%-8px)] lg:[&>*]:w-[calc(33.333%-11px)]">
-                {sizes.map((s) => (
-                  <div key={s.variantId} className="tile flex flex-col">
-                    <div
-                      className={`relative flex flex-col p-3.5 text-white ${ratioClass[s.ratio] ?? "aspect-[4/5]"}`}
-                      style={{
-                        background: s.outputKey
-                          ? `url(/api/files/${s.outputKey}) center/cover`
-                          : `linear-gradient(160deg, ${doc.brand?.colors?.primary ?? "#242521"} 0%, ${doc.brand?.colors?.accent ?? "#e65c32"} 130%)`,
-                      }}
+              <div className="size-grid">
+                {sizes.map((s) => {
+                  const isVideo = s.mimeType?.startsWith("video/") ?? false;
+                  const status = s.outputKey ? "ready" : s.status === "failed" ? "failed" : s.status === "none" ? "waiting" : "rendering";
+                  return (
+                    <SizeTile
+                      key={s.variantId}
+                      label={s.label}
+                      ratio={s.ratio}
+                      width={s.width}
+                      height={s.height}
+                      status={status}
+                      imageUrl={s.outputKey && !isVideo ? `/api/files/${s.outputKey}` : null}
+                      posterUrl={s.posterKey ? `/api/files/${s.posterKey}` : null}
+                      videoUrl={s.outputKey && isVideo ? `/api/files/${s.outputKey}` : null}
+                      placeholder={`linear-gradient(160deg, ${doc.brand?.colors?.primary ?? "#242521"} 0%, ${doc.brand?.colors?.accent ?? "#e65c32"} 130%)`}
                     >
-                      {!s.outputKey && doc.headline ? <span className="mt-auto font-serif text-[20px] leading-none tracking-[-0.4px]">{doc.headline}</span> : null}
-                      <span
-                        className={`absolute right-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold ${
-                          s.outputKey ? "text-[#3f7a55]" : s.status === "failed" ? "text-[#b4382a]" : "text-muted"
-                        }`}
-                      >
-                        {s.outputKey ? "Ready" : s.status === "failed" ? "Failed" : s.status === "none" ? "Waiting" : "Rendering"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 px-[13px] pb-[13px] pt-3 text-[12px]">
-                      <span className="min-w-0 truncate font-semibold">{s.label}</span>
-                      <span className="tabular text-muted">
-                        {s.ratio} · {s.width}×{s.height}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                      {doc.headline ? <span className="wall-headline" style={{ color: "#fff" }}>{doc.headline}</span> : null}
+                    </SizeTile>
+                  );
+                })}
               </div>
             )}
           </section>

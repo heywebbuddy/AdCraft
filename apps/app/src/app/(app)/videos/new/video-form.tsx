@@ -36,7 +36,7 @@ export function VideoForm(p: VideoFormProps) {
     <form
       action={p.action}
       onSubmit={() => setPending(true)}
-      className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_340px]"
+      className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_340px]"
     >
       <input type="hidden" name="conceptId" value={p.conceptId} />
       <input type="hidden" name="kind" value={kind} />
@@ -88,7 +88,7 @@ export function VideoForm(p: VideoFormProps) {
               >
                 <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
                   <span>{m.label}</span>
-                  {m.isDefault ? <span className="rounded-full bg-orange px-2 py-[2px] text-[10px] font-semibold text-white">Default</span> : null}
+                  {m.isDefault ? <span className="rounded-full bg-ink px-2 py-[2px] text-[10px] font-semibold text-white">Default</span> : null}
                 </div>
                 <div className="text-[11px] text-muted">
                   {m.durations.join(" / ")} s clips · {m.audio ? "native audio" : "silent"}

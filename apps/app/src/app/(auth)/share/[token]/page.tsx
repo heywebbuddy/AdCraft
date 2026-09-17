@@ -139,7 +139,7 @@ function ReviewView({
       {ok === "approved" ? <p className="panel m-0 px-4 py-3 text-[13px] text-[#3f7a55]">Approved. Thanks {name}, the team has been told.</p> : null}
       {ok === "changes_requested" ? <p className="panel m-0 px-4 py-3 text-[13px] text-[#3f7a55]">Noted, {name}. The team will make changes.</p> : null}
 
-      <div className="grid items-start gap-[26px] lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid grid-cols-1 items-start gap-[26px] lg:grid-cols-[minmax(0,1fr)_360px]">
         <Sizes token={token} item={item} />
 
         <div className="flex flex-col gap-4">

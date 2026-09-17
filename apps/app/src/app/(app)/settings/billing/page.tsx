@@ -55,7 +55,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[13px]">
                 {p.items.map((x) => (
                   <li key={x} className="flex gap-2">
-                    <span className="text-orange">✓</span>
+                    <span className="text-ink">✓</span>
                     {x}
                   </li>
                 ))}
@@ -72,7 +72,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         })}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section className="panel flex flex-col gap-3 p-5">
           <div className="flex items-baseline justify-between">
             <span className="eyebrow">Credit history</span>

@@ -67,12 +67,12 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
   };
 
   return (
-    <form id="brand-kit-form" action={action} className="grid items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_340px]">
+    <form id="brand-kit-form" action={action} className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_340px]">
       <link rel="stylesheet" href={KIT_FONTS_STYLESHEET} precedence="default" />
 
       <div className="flex min-w-0 flex-col gap-4">
         <Section title="Identity">
-          <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr]">
             <Field label="Brand name">
               <input name="name" required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
             </Field>
@@ -220,7 +220,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
         </Section>
       </div>
 
-      <aside className="flex flex-col gap-3 xl:sticky xl:top-[26px]">
+      <aside className="flex flex-col gap-3 xl:sticky xl:top-[86px] xl:self-start">
         <div className="flex items-baseline justify-between">
           <span className="eyebrow">Preview</span>
           <span className="text-[11px] text-muted">Updates as you type</span>

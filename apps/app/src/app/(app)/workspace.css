@@ -1,7 +1,8 @@
 /* Application-only design system. Marketing and authentication keep their own styling. */
 .app-shell {
-  --muted: #73756d;
+  --muted: #66685f; /* 4.6:1 on paper */
   --line: #e7e8e2;
+  --orange-text: #c94823; /* orange for text and small buttons: 4.6:1 with white */
   display: flex;
   flex: none;
   min-height: 100dvh;
@@ -56,7 +57,7 @@
   background: #fbfbf8;
   border-right: 1px solid var(--line);
   z-index: 30;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .sidebar-logo-row {
   display: flex;
@@ -195,6 +196,17 @@
   display: flex;
   flex-direction: column;
   gap: 25px;
+  /* Only the navigation scrolls; the logo, picker and bottom block stay put. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  margin-right: -8px;
+  padding-right: 8px;
+}
+.sidebar-bottom {
+  flex-shrink: 0;
 }
 .workspace-nav-label {
   display: block;
@@ -521,8 +533,8 @@
   white-space: nowrap;
 }
 .app-shell .btn {
-  height: 38px;
-  min-height: 36px;
+  height: 40px;
+  min-height: 40px;
   border-radius: 7px;
   font-size: 11px;
   padding: 0 14px;
@@ -537,14 +549,14 @@
   transform: none;
 }
 .app-shell .btn-orange {
-  background: #e65c32;
-  border-color: #d9522b;
+  background: var(--orange-text);
+  border-color: #b8401f;
   box-shadow:
     inset 0 1px 0 #ffffff25,
     0 1px 2px #ba542926;
 }
 .app-shell .btn-orange:hover {
-  background: #d65028;
+  background: #b8401f;
 }
 .app-shell .btn-outline {
   border-color: #dcded4;
@@ -609,11 +621,12 @@
   font-weight: 600;
 }
 .workspace-main > header:not(.workspace-page-header) h1 .font-serif {
-  font-family: inherit;
-  font-style: normal;
-  font-size: inherit;
-  letter-spacing: inherit;
-  color: #768568;
+  font-family: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.06em;
+  letter-spacing: -0.3px;
+  color: var(--ink);
 }
 .workspace-main > header:not(.workspace-page-header) p {
   font-size: 12px;
@@ -2372,4 +2385,59 @@
   text-align: center;
   padding: 8px 16px;
   letter-spacing: 0.1px;
+}
+
+/* One control height for every row: inputs, selects and buttons line up at 40px. */
+.app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), select) {
+  height: 40px;
+}
+/* Orange as text: links and inline actions use the deeper shade for legibility. */
+.app-shell a.text-orange,
+.app-shell button.text-orange,
+.app-shell .text-orange:is(a, button, span:not(.wall-badge):not(.spark)) {
+  color: var(--orange-text);
+}
+.app-shell .text-orange:is(a, button):hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.app-shell textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+/* Size tiles (rendered placements) share the wall frame */
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 15px;
+  align-items: start;
+}
+.size-tile-video {
+  object-fit: cover;
+  background: #000;
+  border-radius: 4px;
+  box-shadow: 0 6px 18px #2c251533;
+}
+.size-tile-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+.size-tile-label strong {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.size-tile-label span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.size-tile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
 }

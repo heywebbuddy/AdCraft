@@ -28,6 +28,8 @@ export type RenderedSize = {
   width: number;
   height: number;
   outputKey: string | null;
+  mimeType: string | null;
+  posterKey: string | null;
   status: "queued" | "running" | "succeeded" | "failed" | "none";
 };
 
@@ -94,6 +96,8 @@ export async function rendersFor(creativeIds: string[]): Promise<Map<string, Ren
       width: v.width,
       height: v.height,
       outputKey: r?.status === "succeeded" ? r.outputKey : null,
+      mimeType: r?.mimeType ?? null,
+      posterKey: typeof (r?.meta as Record<string, unknown> | null)?.posterKey === "string" ? ((r!.meta as Record<string, unknown>).posterKey as string) : null,
       status: r?.status ?? "none",
     });
     out.set(v.creativeId, list);
