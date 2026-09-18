@@ -42,12 +42,16 @@ export async function runCharacterLooksPipeline(data: JobPayloads["character.loo
     }
 
     // 2. Start the looks.
-    await setStep(data.source === "prompt" ? "Generating the look" : "Applying the look pack");
+    await setStep(data.source === "prompt" ? "Generating the look" : data.source === "remix" ? "Remixing the library look" : "Applying the look pack");
     let lookIds: string[];
     let packId: string | undefined;
     let baseName = data.lookName;
     if (data.source === "prompt") {
       lookIds = [await generatePromptLook({ referenceLookId: reference, name: data.lookName, prompt: data.prompt ?? "", aspectRatio: data.aspectRatio === "9:16" ? "9:16" : "16:9" })];
+    } else if (data.source === "remix") {
+      if (!data.templateLookId) throw new Error("Choose a library look to remix.");
+      packId = `remix:${data.templateLookId}`;
+      lookIds = (await generatePackLooks({ referenceLookId: reference, templateId: data.templateLookId, type: "template", idempotencyKey: `adcraft-${data.eventId}` })).lookIds;
     } else {
       const pack = findLookPack(data.packId ?? "");
       if (!pack) throw new Error("Unknown look pack.");

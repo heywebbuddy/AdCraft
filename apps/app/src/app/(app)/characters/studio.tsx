@@ -49,7 +49,8 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const [dialogMode, setDialogMode] = useState<"new" | "look" | "profile">("new");
   // New looks: our image models from a description, or HeyGen look packs / templates / prompt.
   const [lookSource, setLookSource] = useState<"describe" | "heygen">("describe");
-  const [pack, setPack] = useState<LookPackState>({ packId: data.lookPacks[0]?.id ?? "", gender: "female", ratio: "9:16", prompt: "", lookName: "" });
+  const [pack, setPack] = useState<LookPackState>({ packId: data.lookPacks[0]?.id ?? "", gender: "female", ratio: "9:16", prompt: "", lookName: "", remix: null });
+  const remixDialog = useRef<HTMLDialogElement>(null);
   const patchPack = (patch: Partial<LookPackState>) => setPack(prev => ({ ...prev, ...patch }));
   // Design-a-look page: which character the looks are for.
   const [lookCharacterId, setLookCharacterId] = useState("");
@@ -115,16 +116,17 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   async function generateLooks(forCharacterId: string, onError: (e: string) => void, onDone?: () => void) {
     const chosen = data.lookPacks.find(p => p.id === pack.packId);
     const form = new FormData();
-    Object.entries({ characterId: forCharacterId, source: pack.packId === "prompt" ? "prompt" : "pack", packId: pack.packId, gender: pack.gender, aspectRatio: pack.ratio, prompt: pack.prompt, lookName: pack.lookName || chosen?.name || "New look" }).forEach(([k, v]) => form.set(k, v));
+    Object.entries({ characterId: forCharacterId, source: pack.packId === "prompt" ? "prompt" : pack.packId === "remix" ? "remix" : "pack", packId: pack.packId, gender: pack.gender, aspectRatio: pack.ratio, prompt: pack.prompt, templateLookId: pack.remix?.id ?? "", lookName: pack.lookName || (pack.packId === "remix" && pack.remix ? `${pack.remix.person} ${pack.remix.name}` : chosen?.name) || "New look" }).forEach(([k, v]) => form.set(k, v));
     try {
       const result = await applyLookPackAction(form);
       if (result.error) { onError(result.error); return; }
-      setNotice(pack.packId === "prompt" ? "HeyGen is generating the look. It appears on the character when it is ready." : `HeyGen is generating ${chosen?.looks ?? 5} looks. They appear on the character as they finish.`);
+      setNotice(pack.packId === "prompt" ? "HeyGen is generating the look. It appears on the character when it is ready." : `HeyGen is generating ${pack.packId === "remix" ? 2 : chosen?.looks ?? 5} looks. They appear on the character as they finish.`);
       onDone?.(); router.refresh();
     } catch { onError("Could not reach the server. Please try again."); }
   }
-  const packCost = (pack.packId === "prompt" ? 1 : data.lookPacks.find(p => p.id === pack.packId)?.looks ?? 5) * data.heygenLookCredits;
-  const packCount = pack.packId === "prompt" ? 1 : data.lookPacks.find(p => p.id === pack.packId)?.looks ?? 5;
+  const packCount = pack.packId === "prompt" ? 1 : pack.packId === "remix" ? 2 : data.lookPacks.find(p => p.id === pack.packId)?.looks ?? 5;
+  const packCost = packCount * data.heygenLookCredits;
+  const packReady = pack.packId === "prompt" ? pack.prompt.trim().length >= 10 : pack.packId === "remix" ? Boolean(pack.remix) : true;
 
   /** From the voice library: put the voice where the studio is currently pointing. */
   function useBrowsedVoice(v: CatalogVoice) {
@@ -195,6 +197,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
         <div className="cs-pickbar-thumb">{browsePresenter.look.previewUrl ? <img src={browsePresenter.look.previewUrl} alt="" /> : <span>{browsePresenter.person.name.slice(0, 1)}</span>}</div>
         <div className="cs-pickbar-text"><strong>{browsePresenter.person.name.trim() || "Unnamed presenter"} <span>· {browsePresenter.look.name}</span></strong><small>{browsePresenter.look.type === "studio_avatar" ? "Filmed studio presenter — gestures are in the footage" : browsePresenter.look.type === "digital_twin" ? "Digital twin — video-trained motion" : browsePresenter.look.engines.includes("avatar_v") ? "AI avatar — Avatar V motion with gesture direction" : "AI avatar — Avatar IV motion"}{browsePresenter.look.orientation ? ` · ${browsePresenter.look.orientation}` : ""}</small></div>
         <button type="button" className="cs-secondary" onClick={() => setBrowsePresenter(null)}>Clear</button>
+        {data.characters.some(c => c.portraitUrl) && <button type="button" className="cs-secondary" disabled={!canEdit} title="Put one of your characters in this outfit and setting" onClick={() => { const c = browsePresenter; patchPack({ packId: "remix", remix: { id: c.look.id, name: c.look.name, person: c.person.name.trim() || "Presenter", previewUrl: c.look.previewUrl } }); setView("looks"); }}>Remix for my character</button>}
         <button type="button" className="cs-primary" disabled={!canEdit} onClick={() => { const c = browsePresenter; setStockAvatar(c); setScene(0); const g = c.look.gender ?? c.person.gender; if (g && stockVoice?.gender !== g) void searchVoicesAction({ gender: g, provider: "elevenlabs" }).then(r => r.items[0] ?? searchVoicesAction({ gender: g }).then(x => x.items[0])).then(v => v && setStockVoice(v)); setNotice(`${c.person.name} is your presenter. Write the story and generate.`); setView("studio"); }}>Create an ad with {browsePresenter.person.name.trim().split(" ")[0] || "this presenter"} <span>→</span></button>
       </div>}
     </section>}
@@ -235,16 +238,16 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
           </div>)}
         </div>
         <div className="ld-step"><span>02</span><h3>Pick a pack</h3></div>
-        <LookPackGallery packs={data.lookPacks} state={pack} onChange={patchPack} size="page" />
+        <LookPackGallery packs={data.lookPacks} state={pack} onChange={patchPack} size="page" onBrowse={() => remixDialog.current?.showModal()} />
         {lookCharacter && lookCharacter.looks.some(l => l.heygen) && <>
           <div className="ld-step"><span>03</span><h3>{lookCharacter.name}'s HeyGen looks</h3></div>
           <div className="ld-recent">{lookCharacter.looks.filter(l => l.heygen).map(l => <figure key={l.id}><img src={l.url} alt="" /><figcaption>{l.name}</figcaption></figure>)}</div>
         </>}
         {lookCharacter && <div className="cs-pickbar" role="region" aria-label="Generate looks">
           <div className="cs-pickbar-thumb"><img src={lookCharacter.portraitUrl!} alt="" /></div>
-          <div className="cs-pickbar-text"><strong>{lookCharacter.name} <span>· {pack.packId === "prompt" ? pack.lookName || "Your own words" : data.lookPacks.find(p => p.id === pack.packId)?.name}</span></strong><small>{packCount} {packCount === 1 ? "look" : "looks"} · {pack.gender === "female" ? "women's" : "men's"} wardrobe · {pack.ratio} · {packCost} credits, {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</small></div>
+          <div className="cs-pickbar-text"><strong>{lookCharacter.name} <span>· {pack.packId === "prompt" ? pack.lookName || "Your own words" : pack.packId === "remix" ? (pack.remix ? `Remix of ${pack.remix.person} · ${pack.remix.name}` : "Pick a library look") : data.lookPacks.find(p => p.id === pack.packId)?.name}</span></strong><small>{packCount} {packCount === 1 ? "look" : "looks"}{pack.packId === "remix" ? "" : ` · ${pack.gender === "female" ? "women's" : "men's"} wardrobe · ${pack.ratio}`} · {packCost} credits, {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</small></div>
           {error && <span className="cs-error">{error}</span>}
-          <button type="button" className="cs-primary" disabled={pending || !canEdit || !data.heygenConnected || balance < packCost || ["queued", "generating"].includes(lookCharacter.status) || (pack.packId === "prompt" && pack.prompt.trim().length < 10)} onClick={() => { setError(""); start(() => generateLooks(lookCharacter.id, setError)); }}>{pending ? "Starting…" : packCount === 1 ? "Generate look" : `Generate ${packCount} looks`} <span>→</span></button>
+          <button type="button" className="cs-primary" disabled={pending || !canEdit || !data.heygenConnected || balance < packCost || ["queued", "generating"].includes(lookCharacter.status) || !packReady} onClick={() => { setError(""); start(() => generateLooks(lookCharacter.id, setError)); }}>{pending ? "Starting…" : packCount === 1 ? "Generate look" : `Generate ${packCount} looks`} <span>→</span></button>
         </div>}
       </> : <div className="cs-library-indexing"><div><strong>Create a character first</strong><p>Look packs dress an existing character. Create one with a portrait, then come back here.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}>＋ Create a character</button></div>}
     </section>}
@@ -259,16 +262,19 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
           <button type="button" role="tab" aria-selected={lookSource === "heygen"} onClick={() => setLookSource("heygen")}>HeyGen look packs <span>{data.lookPacks.length} packs</span></button>
         </div>}
         {dialogMode === "look" && lookSource === "heygen" && <div className="lp-root">
-          <LookPackGallery packs={data.lookPacks} state={pack} onChange={patchPack} />
+          <LookPackGallery packs={data.lookPacks} state={pack} onChange={patchPack} onBrowse={() => remixDialog.current?.showModal()} />
           <p className="cs-modal-note">{character?.onHeyGen ? "This character is registered on HeyGen; new looks render with Avatar V motion and gesture direction." : "The portrait is registered with HeyGen once (about a minute), then the looks are generated against it. Looks render with Avatar V motion and gesture direction."}</p>
         </div>}
         {dialogMode !== "profile" && !(dialogMode === "look" && lookSource === "heygen") && <><div className="cs-form-pair"><label className="cs-field">Look name<input className="cs-input" name="lookName" required maxLength={60} defaultValue={dialogMode === "new" ? "Everyday" : ""} placeholder="e.g. Home office" /></label><label className="cs-field">Portrait model<button type="button" className="cs-model-trigger" onClick={() => openModels("portrait")}><span>{selectedPortraitModel?.label}</span><span>↗</span></button></label></div><label className="cs-field">Outfit and setting<textarea className="cs-input" name="lookPrompt" maxLength={1200} rows={2} defaultValue={dialogMode === "new" ? "Casual neutral clothing, a sunlit home, soft window light." : ""} placeholder="Describe a new outfit and setting. The original portrait stays the identity reference." /></label><p className="cs-modal-note">{dialogMode === "look" ? "The original portrait guides the new look. Review the result for face consistency before using it." : "Create a fictional adult presenter. The approved portrait becomes the reference for future looks."}</p></>}
         {modalError && <p className="cs-error" role="alert">{modalError}</p>}
-        {dialogMode === "look" && lookSource === "heygen" ? <div className="cs-dialog-footer"><span>{packCost} credits · {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || !data.heygenConnected || balance < packCost || (pack.packId === "prompt" && pack.prompt.trim().length < 10)}>{modalPending ? "Starting…" : packCount === 1 ? "Generate look ↗" : `Generate ${packCount} looks ↗`}</button></div> :
+        {dialogMode === "look" && lookSource === "heygen" ? <div className="cs-dialog-footer"><span>{packCost} credits · {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || !data.heygenConnected || balance < packCost || !packReady}>{modalPending ? "Starting…" : packCount === 1 ? "Generate look ↗" : `Generate ${packCount} looks ↗`}</button></div> :
         <div className="cs-dialog-footer"><span>{dialogMode === "profile" ? "Applies to future ads" : `${selectedPortraitModel?.creditsPerUnit ?? 0} credits · ${balance} available`}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || (dialogMode !== "profile" && (!selectedPortraitModel?.connected || !selectedPortraitModel.enabled || balance < selectedPortraitModel.creditsPerUnit))}>{modalPending ? "Saving…" : dialogMode === "profile" ? "Save profile" : "Generate portrait ↗"}</button></div>}{dialogMode !== "profile" && !(dialogMode === "look" && lookSource === "heygen") && !selectedPortraitModel?.connected && <p className="cs-error">{selectedPortraitModel?.provider === "fal" ? "fal.ai" : "OpenAI"} is not connected. Choose a connected model or ask your administrator to connect this provider.</p>}
       </form>
     </dialog>
 
+    <dialog ref={remixDialog} className="cs-dialog cs-library-dialog" aria-label="Choose a look to remix" onClick={e => { if (e.target === e.currentTarget) remixDialog.current?.close(); }}>
+      <PresenterLibrary groups={data.presenterGroups} loadLooks={loadPresenterLooks} selectedId={pack.remix?.id} ratio={pack.ratio} onSelect={c => { patchPack({ packId: "remix", remix: { id: c.look.id, name: c.look.name, person: c.person.name.trim() || "Presenter", previewUrl: c.look.previewUrl } }); remixDialog.current?.close(); }} onClose={() => remixDialog.current?.close()} />
+    </dialog>
     <dialog ref={libraryDialog} className="cs-dialog cs-library-dialog" aria-labelledby="pl-title" onClick={e => { if (e.target === e.currentTarget) libraryDialog.current?.close(); }}>
       <PresenterLibrary groups={data.presenterGroups} loadLooks={loadPresenterLooks} selectedId={stockAvatar?.look.id} ratio={ratio} onSelect={c => { setStockAvatar(c); setScene(0); const g = c.look.gender ?? c.person.gender; if (g && stockVoice?.gender !== g) void searchVoicesAction({ gender: g, provider: "elevenlabs" }).then(r => r.items[0] ?? searchVoicesAction({ gender: g }).then(x => x.items[0])).then(v => v && setStockVoice(v)); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
     </dialog>

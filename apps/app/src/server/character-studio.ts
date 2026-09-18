@@ -29,7 +29,7 @@ export async function characterStudioData(orgId: string, brandId: string) {
     /** This workspace's clones and designed voices (HeyGen private voices). */
     ownVoices: ownVoices.map(toCatalogVoice),
     /** HeyGen look packs and single templates the API resolves for any workspace. */
-    lookPacks: LOOK_PACKS.map(p => ({ id: p.id, name: p.name, kind: p.kind, description: p.description, palette: p.palette, looks: p.looks, type: p.type })),
+    lookPacks: LOOK_PACKS.map(p => ({ id: p.id, name: p.name, kind: p.kind, description: p.description, palette: p.palette, previews: p.previews, looks: p.looks, type: p.type })),
     heygenLookCredits: CREDIT_COSTS.heygenLook,
     voiceStats: { total: voices.length + ownVoices.length, owned: ownVoices.length, elevenlabs: voices.filter(v => v.provider === "elevenlabs").length, heygen: voices.filter(v => v.provider === "heygen").length, languages: new Set(voices.map(v => v.language).filter(Boolean)).size },
     /** HeyGen's public presenter library: people (groups); looks load on demand via loadPresenterLooks. */

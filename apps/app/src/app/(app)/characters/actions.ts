@@ -249,7 +249,10 @@ export async function applyLookPackAction(form: FormData): Promise<{ error?: str
     if (!character) throw new Error("Character not found in this brand.");
     if (!character.portraitKey) throw new Error("This character needs a finished portrait first.");
     if (["queued", "generating"].includes(character.status)) throw new Error("This character is already generating. Wait for it to finish.");
-    const source = field(form, "source", 10) === "prompt" ? "prompt" : "pack";
+    const sourceField = field(form, "source", 10);
+    const source = sourceField === "prompt" ? "prompt" : sourceField === "remix" ? "remix" : "pack";
+    const templateLookId = field(form, "templateLookId", 80);
+    if (source === "remix" && !/^[A-Za-z0-9_-]{6,80}$/.test(templateLookId)) throw new Error("Choose a library look to remix.");
     const gender = field(form, "gender", 10) === "male" ? "male" : "female";
     const aspectRatio = field(form, "aspectRatio", 5) === "9:16" ? "9:16" : "16:9";
     const pack = source === "pack" ? findLookPack(field(form, "packId", 60)) : null;
@@ -257,19 +260,19 @@ export async function applyLookPackAction(form: FormData): Promise<{ error?: str
     const prompt = field(form, "prompt", 1000);
     if (source === "prompt" && prompt.length < 10) throw new Error("Describe the outfit and setting in a few words.");
     const lookName = field(form, "lookName", 60) || pack?.name || "New look";
-    const count = pack?.looks ?? 1;
+    const count = source === "remix" ? 2 : pack?.looks ?? 1;
     const credits = CREDIT_COSTS.heygenLook * count;
     if (ctx.credits.balance < credits) throw new Error(`You need ${credits} credits for ${count === 1 ? "this look" : `these ${count} looks`}.`);
     const eventId = randomUUID();
     await reserveGenerationCredits(ctx.org.id, credits, eventId);
     reservation = { orgId: ctx.org.id, eventId };
-    const meta = { characterId, label: `${character.name} · ${pack?.name ?? lookName}`, source, packId: pack?.id };
+    const meta = { characterId, label: `${character.name} · ${pack?.name ?? lookName}`, source, packId: pack?.id, templateLookId: source === "remix" ? templateLookId : undefined };
     await db.transaction(async tx => {
       const updated = await tx.update(characters).set({ status: "queued", error: null, generationId: eventId, updatedAt: new Date() }).where(and(eq(characters.id, character.id), notInArray(characters.status, ["queued", "generating"]))).returning({ id: characters.id });
       if (!updated.length) throw new Error("This character is already generating.");
       await tx.insert(generationEvents).values({ id: eventId, orgId: ctx.org.id, capability: "image", provider: "heygen", model: "heygen-looks", status: "started", credits, meta });
     });
-    await dispatch("character.looks", { orgId: ctx.org.id, characterId, eventId, source, packId: pack?.id, gender, prompt: source === "prompt" ? prompt : undefined, lookName, aspectRatio, credits, meta });
+    await dispatch("character.looks", { orgId: ctx.org.id, characterId, eventId, source, packId: pack?.id, gender, prompt: source === "prompt" ? prompt : undefined, templateLookId: source === "remix" ? templateLookId : undefined, lookName, aspectRatio, credits, meta });
     revalidatePath("/characters");
     return {};
   } catch (error) {

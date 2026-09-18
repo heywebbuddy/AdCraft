@@ -157,3 +157,9 @@
 .ld-root .lp-page{padding-bottom:110px}
 .ld-root .lp-page:has(+ .ld-step){padding-bottom:0}
 .cs-pickbar .cs-error{font-size:12px;max-width:32ch}
+.lp-preview{position:relative;aspect-ratio:16/9;height:auto}
+.lp-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.lp-page .lp-preview{aspect-ratio:16/10}
+.lp-swatch-remix{background:#efeee8;display:grid;place-items:center;color:var(--cs-green);font-size:22px}
+.lp-kind.remix{background:#fbeee8;color:var(--cs-green)}
+.lp-card-meta .cs-text-button{margin-left:0;font-size:11px}
