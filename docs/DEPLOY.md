@@ -2,7 +2,29 @@
 
 Two deployables: the marketing site (`dist/`, static, already hosted) and the product (`apps/app`, Next.js).
 
-## Product app on Vercel
+## Product app on Railway (current production)
+
+Repo: https://github.com/heywebbuddy/AdCraft — Railway project **adcraft**, services **app** and **Postgres**,
+app URL https://app-production-9ee2.up.railway.app.
+
+One always-on container built from the root `Dockerfile` (`railway.json` points at it): Node 22 on Debian
+bookworm with the Chromium libraries Remotion needs, Chrome Headless Shell downloaded at build time, and
+`scripts/start.sh` as the entrypoint — it runs `drizzle-kit migrate` against `DATABASE_URL`, then `next start`.
+Because the process is always on, pipelines run **inline** (no Inngest keys set) and video renders happen in
+the same container; uploads and renders live on the `/data` volume (`LOCAL_STORAGE_DIR=/data/files`) until
+the `R2_*` variables are set.
+
+- Deploy: `railway up --service app --detach` from the repo root (the CLI is linked to the project), or
+  connect the GitHub repo in the Railway dashboard (Service → Settings → Source) for deploys on push.
+- Variables live on the **app** service (`railway variable list --service app`). `DATABASE_URL` is a reference
+  to `${{Postgres.DATABASE_URL}}`; `AUTH_URL` is the public domain; `AUTH_SECRET` and `TOKEN_ENCRYPTION_KEY`
+  were generated for production (not the local ones).
+- Health check: `/api/health` (Railway waits up to 300 s for it after each deploy).
+- Still to do by hand: a Stripe webhook endpoint for `https://<domain>/api/stripe/webhook` (then set
+  `STRIPE_WEBHOOK_SECRET`), the Railway domain in Google's OAuth redirect list if Google sign-in is wanted
+  (`AUTH_GOOGLE_ID/SECRET`), and R2 credentials for durable media once traffic is real.
+
+## Product app on Vercel (alternative)
 
 1. Push the repo to GitHub and import it in Vercel. Set **Root Directory** to `apps/app` and enable
    "Include source files outside of the Root Directory" (the monorepo packages live in `packages/`).
