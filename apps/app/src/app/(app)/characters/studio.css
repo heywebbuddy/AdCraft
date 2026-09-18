@@ -132,3 +132,28 @@
 .lp-kind.prompt{background:#242521;color:#fff}
 .cs-look-hg{font-size:8px;font-weight:700;letter-spacing:.5px;padding:1px 4px;border-radius:3px;background:#242521;color:#fff;margin-left:2px}
 @media(max-width:640px){.vt-actions{grid-template-columns:1fr}.lp-grid{grid-template-columns:1fr}}
+/* ---------- Design a look (page) ---------- */
+.ld-root .pl-head{padding:0 0 22px;align-items:flex-end}
+.ld-root .pl-head h2{font-size:28px;letter-spacing:-.9px;margin:4px 0 8px}
+.ld-root .pl-head p{font-size:13px;max-width:64ch}
+.ld-step{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+.ld-step span{width:24px;height:24px;border-radius:50%;border:1px solid var(--cs-border);display:grid;place-items:center;font-size:10px;color:var(--cs-muted);background:#fff}
+.ld-step h3{font-size:15px;font-weight:600;margin:0}
+.ld-cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.ld-cast-card{display:flex;align-items:center;gap:12px;padding:8px 12px 8px 8px;border:1px solid var(--cs-border);border-radius:12px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.ld-cast-card:hover{border-color:#24252140}
+.ld-cast-card[aria-selected=true]{border-color:#e65c32;box-shadow:0 0 0 3px #e65c3222;background:#fffaf7}
+.ld-cast-card img{width:46px;height:58px;object-fit:cover;border-radius:8px;flex:none}
+.ld-cast-card span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ld-cast-card strong{font-size:13px;font-weight:600}
+.ld-cast-card small{font-size:11px;color:var(--cs-muted)}
+.lp-page .lp-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.lp-page .lp-card{padding:14px}
+.lp-page .lp-swatch{height:56px}
+.ld-recent{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding-bottom:110px}
+.ld-recent figure{margin:0}
+.ld-recent img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:10px;background:#efeee8}
+.ld-recent figcaption{font-size:12px;margin-top:6px;color:#242521}
+.ld-root .lp-page{padding-bottom:110px}
+.ld-root .lp-page:has(+ .ld-step){padding-bottom:0}
+.cs-pickbar .cs-error{font-size:12px;max-width:32ch}

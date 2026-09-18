@@ -7,15 +7,16 @@ import type { CharacterStudioData } from "@/server/character-studio";
 import { CHARACTER_TEMPLATES, estimatedStudioSeconds, hookVariations, studioScript, type CharacterTemplateId } from "@/lib/character-studio";
 import { applyLookPackAction, auditionVoiceAction, createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction, searchVoicesAction, setCharacterVoiceAction } from "./actions";
 import { VoiceTools } from "./voice-tools";
+import { LookPackGallery, type LookPackState } from "./look-packs";
 import { Spark } from "@/components/spark";
 import { MakerLogo, inferMaker } from "@/components/maker-logo";
 import { PlayButton, VoiceField, VoicePicker, type CatalogVoice } from "@/components/voice-picker";
 import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
 
 type Props = { data: CharacterStudioData; brandName: string; balance: number; videoCredits: number; canEdit: boolean; planEnabled: boolean };
-type View = "studio" | "characters" | "presenters" | "voices" | "templates";
+type View = "studio" | "characters" | "presenters" | "voices" | "looks" | "templates";
 const TABS: Array<[View, string]> = [["studio", "Create an ad"], ["characters", "My characters"], ["templates", "Ad templates"]];
-const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices";
+const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices" || v === "looks";
 
 export function CharacterStudio({ data, brandName, balance, videoCredits, canEdit, planEnabled }: Props) {
   const router = useRouter();
@@ -48,11 +49,11 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const [dialogMode, setDialogMode] = useState<"new" | "look" | "profile">("new");
   // New looks: our image models from a description, or HeyGen look packs / templates / prompt.
   const [lookSource, setLookSource] = useState<"describe" | "heygen">("describe");
-  const [packId, setPackId] = useState<string>(data.lookPacks[0]?.id ?? "");
-  const [packGender, setPackGender] = useState<"female" | "male">("female");
-  const [packRatio, setPackRatio] = useState<"16:9" | "9:16">("9:16");
-  const [packPrompt, setPackPrompt] = useState("");
-  const [packLookName, setPackLookName] = useState("");
+  const [pack, setPack] = useState<LookPackState>({ packId: data.lookPacks[0]?.id ?? "", gender: "female", ratio: "9:16", prompt: "", lookName: "" });
+  const patchPack = (patch: Partial<LookPackState>) => setPack(prev => ({ ...prev, ...patch }));
+  // Design-a-look page: which character the looks are for.
+  const [lookCharacterId, setLookCharacterId] = useState("");
+  const lookCharacter = data.characters.find(c => c.id === lookCharacterId && c.portraitUrl) ?? data.characters.find(c => c.portraitUrl);
   const [dialogVoice, setDialogVoice] = useState<CatalogVoice | null>(data.defaultVoice);
   // Presenter source: a saved character (photo avatar) or a HeyGen library avatar.
   const [stockAvatar, setStockAvatar] = useState<PresenterChoice | null>(null);
@@ -86,25 +87,15 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   function pickProduct(id: string) { setProductId(id); const item = data.products.find(p => p.id === id); setBody(item?.description ?? ""); setHook(hookVariations(item?.name || serviceName || "your service", template)[0]!); }
   function openCharacter(mode: "new" | "look" | "profile", preset?: CatalogVoice | null) {
     setDialogMode(mode); setModalError(""); setDialogVoice(preset ?? (mode === "new" ? data.defaultVoice : character?.voice ?? data.defaultVoice));
-    if (mode === "look") { setLookSource(character?.onHeyGen ? "heygen" : "describe"); setPackGender(character?.voice?.gender === "male" ? "male" : "female"); setPackRatio(ratio === "16:9" ? "16:9" : "9:16"); setPackPrompt(""); setPackLookName(""); }
+    if (mode === "look") { setLookSource(character?.onHeyGen ? "heygen" : "describe"); setPack(prev => ({ ...prev, gender: character?.voice?.gender === "male" ? "male" : "female", ratio: ratio === "16:9" ? "16:9" : "9:16", prompt: "", lookName: "" })); }
     characterDialog.current?.showModal();
   }
   function openModels(target: "portrait" | "scene") { setModelTarget(target); modelDialog.current?.showModal(); }
   function submitCharacter(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (dialogMode === "look" && lookSource === "heygen") {
-      const form = new FormData();
-      const pack = data.lookPacks.find(p => p.id === packId);
-      Object.entries({ characterId: character?.id ?? "", source: packId === "prompt" ? "prompt" : "pack", packId, gender: packGender, aspectRatio: packRatio, prompt: packPrompt, lookName: packLookName || pack?.name || "New look" }).forEach(([k, v]) => form.set(k, v));
       setModalError("");
-      startModal(async () => {
-        try {
-          const result = await applyLookPackAction(form);
-          if (result.error) { setModalError(result.error); return; }
-          setNotice(packId === "prompt" ? "HeyGen is generating the look. It appears here when it is ready." : `HeyGen is generating ${pack?.looks ?? 5} looks. They appear here as they finish.`);
-          characterDialog.current?.close(); router.refresh();
-        } catch { setModalError("Could not reach the server. Please try again."); }
-      });
+      startModal(() => generateLooks(character?.id ?? "", err => setModalError(err), () => characterDialog.current?.close()));
       return;
     }
     const form = new FormData(e.currentTarget); form.set("imageModel", portraitModel); form.set("voiceId", dialogVoice?.id ?? "");
@@ -120,6 +111,21 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       } catch { setModalError("Could not reach the server. Please try again."); }
     });
   }
+  /** Start HeyGen looks for a character from the current pack state (dialog or Design-a-look page). */
+  async function generateLooks(forCharacterId: string, onError: (e: string) => void, onDone?: () => void) {
+    const chosen = data.lookPacks.find(p => p.id === pack.packId);
+    const form = new FormData();
+    Object.entries({ characterId: forCharacterId, source: pack.packId === "prompt" ? "prompt" : "pack", packId: pack.packId, gender: pack.gender, aspectRatio: pack.ratio, prompt: pack.prompt, lookName: pack.lookName || chosen?.name || "New look" }).forEach(([k, v]) => form.set(k, v));
+    try {
+      const result = await applyLookPackAction(form);
+      if (result.error) { onError(result.error); return; }
+      setNotice(pack.packId === "prompt" ? "HeyGen is generating the look. It appears on the character when it is ready." : `HeyGen is generating ${chosen?.looks ?? 5} looks. They appear on the character as they finish.`);
+      onDone?.(); router.refresh();
+    } catch { onError("Could not reach the server. Please try again."); }
+  }
+  const packCost = (pack.packId === "prompt" ? 1 : data.lookPacks.find(p => p.id === pack.packId)?.looks ?? 5) * data.heygenLookCredits;
+  const packCount = pack.packId === "prompt" ? 1 : data.lookPacks.find(p => p.id === pack.packId)?.looks ?? 5;
+
   /** From the voice library: put the voice where the studio is currently pointing. */
   function useBrowsedVoice(v: CatalogVoice) {
     if (stockAvatar) { setStockVoice(v); setNotice(`${v.name} will speak for ${stockAvatar.person.name}.`); setView("studio"); return; }
@@ -143,7 +149,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     });
   }
 
-  const library = view === "presenters" || view === "voices";
+  const library = view === "presenters" || view === "voices" || view === "looks";
   return <div className="character-studio">
     {library && <div className="cs-crumb"><button type="button" className="cs-text-button" onClick={() => setView("studio")}>← Character studio</button><span>{brandName}</span></div>}
     {!library && <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> Create a character</button></header>}
@@ -207,6 +213,42 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       </div>}
     </section>}
 
+    {view === "looks" && <section className="cs-library ld-root">
+      <div className="pl-head">
+        <div>
+          <span className="cs-eyebrow">HeyGen look packs</span>
+          <h2>Design a look</h2>
+          <p>Dress one of your characters in a coordinated set of outfits and settings. HeyGen keeps the face; every look renders with Avatar V motion and gesture direction.</p>
+        </div>
+        <dl className="pl-stats" aria-label="Gallery">
+          <div className="pl-stat pl-stat-static"><dt>Packs</dt><dd>{data.lookPacks.filter(p => p.type === "look_pack").length}</dd></div>
+          <div className="pl-stat pl-stat-static"><dt>Templates</dt><dd>{data.lookPacks.filter(p => p.type === "template").length}</dd></div>
+          <div className="pl-stat pl-stat-static"><dt>Per look</dt><dd>{data.heygenLookCredits} cr</dd></div>
+        </dl>
+      </div>
+      {data.characters.some(c => c.portraitUrl) ? <>
+        <div className="ld-step"><span>01</span><h3>Whose look is it?</h3></div>
+        <div className="ld-cast" role="listbox" aria-label="Characters">
+          {data.characters.filter(c => c.portraitUrl).map(c => <div key={c.id} role="option" tabIndex={0} aria-selected={lookCharacter?.id === c.id} className="ld-cast-card" onClick={() => { setLookCharacterId(c.id); patchPack({ gender: c.voice?.gender === "male" ? "male" : "female" }); }} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLookCharacterId(c.id); } }}>
+            <img src={c.portraitUrl!} alt="" />
+            <span><strong>{c.name}</strong><small>{c.looks.length} {c.looks.length === 1 ? "look" : "looks"}{c.onHeyGen ? " · on HeyGen" : ""}{["queued", "generating"].includes(c.status) ? " · generating…" : ""}</small></span>
+          </div>)}
+        </div>
+        <div className="ld-step"><span>02</span><h3>Pick a pack</h3></div>
+        <LookPackGallery packs={data.lookPacks} state={pack} onChange={patchPack} size="page" />
+        {lookCharacter && lookCharacter.looks.some(l => l.heygen) && <>
+          <div className="ld-step"><span>03</span><h3>{lookCharacter.name}'s HeyGen looks</h3></div>
+          <div className="ld-recent">{lookCharacter.looks.filter(l => l.heygen).map(l => <figure key={l.id}><img src={l.url} alt="" /><figcaption>{l.name}</figcaption></figure>)}</div>
+        </>}
+        {lookCharacter && <div className="cs-pickbar" role="region" aria-label="Generate looks">
+          <div className="cs-pickbar-thumb"><img src={lookCharacter.portraitUrl!} alt="" /></div>
+          <div className="cs-pickbar-text"><strong>{lookCharacter.name} <span>· {pack.packId === "prompt" ? pack.lookName || "Your own words" : data.lookPacks.find(p => p.id === pack.packId)?.name}</span></strong><small>{packCount} {packCount === 1 ? "look" : "looks"} · {pack.gender === "female" ? "women's" : "men's"} wardrobe · {pack.ratio} · {packCost} credits, {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</small></div>
+          {error && <span className="cs-error">{error}</span>}
+          <button type="button" className="cs-primary" disabled={pending || !canEdit || !data.heygenConnected || balance < packCost || ["queued", "generating"].includes(lookCharacter.status) || (pack.packId === "prompt" && pack.prompt.trim().length < 10)} onClick={() => { setError(""); start(() => generateLooks(lookCharacter.id, setError)); }}>{pending ? "Starting…" : packCount === 1 ? "Generate look" : `Generate ${packCount} looks`} <span>→</span></button>
+        </div>}
+      </> : <div className="cs-library-indexing"><div><strong>Create a character first</strong><p>Look packs dress an existing character. Create one with a portrait, then come back here.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}>＋ Create a character</button></div>}
+    </section>}
+
     {view === "templates" && <section><div className="cs-view-heading"><div><h2>Start with a story that fits.</h2><p>Six editable ad structures. Your character, product and voice.</p></div></div><div className="cs-template-grid">{CHARACTER_TEMPLATES.map((t, i) => <button type="button" key={t.id} className="cs-template-card" onClick={() => { pickTemplate(t.id); setView("studio"); }}><div className={`cs-template-art cs-art-${i % 3}`}><span>{t.icon}</span><small>FORMAT 0{i + 1}</small></div><div><h3>{t.name}</h3><p>{t.description}</p><span className="cs-text-button">Use this format ↗</span></div></button>)}</div></section>}
 
     <dialog ref={characterDialog} className="cs-dialog" aria-labelledby="cs-dialog-title" onCancel={e => { if (modalPending) e.preventDefault(); }} onClick={e => { if (e.target === e.currentTarget && !modalPending) characterDialog.current?.close(); }}><div className="cs-dialog-heading"><div><span className="cs-eyebrow">Your brand's recurring cast</span><h2 id="cs-dialog-title">{dialogMode === "new" ? "Create a character" : dialogMode === "look" ? `A new look for ${character?.name}` : "Character profile"}</h2></div><button className="cs-close" type="button" aria-label="Close character dialog" disabled={modalPending} onClick={() => characterDialog.current?.close()}>×</button></div>
@@ -217,28 +259,12 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
           <button type="button" role="tab" aria-selected={lookSource === "heygen"} onClick={() => setLookSource("heygen")}>HeyGen look packs <span>{data.lookPacks.length} packs</span></button>
         </div>}
         {dialogMode === "look" && lookSource === "heygen" && <div className="lp-root">
-          <div className="lp-controls">
-            <div className="pl-segment" role="group" aria-label="Wardrobe variant">{(["female", "male"] as const).map(g => <button type="button" key={g} aria-pressed={packGender === g} onClick={() => setPackGender(g)}>{g === "female" ? "Women's wardrobe" : "Men's wardrobe"}</button>)}</div>
-            <div className="pl-segment" role="group" aria-label="Frame">{(["9:16", "16:9"] as const).map(r => <button type="button" key={r} aria-pressed={packRatio === r} onClick={() => setPackRatio(r)}>{r === "9:16" ? "Portrait 9:16" : "Landscape 16:9"}</button>)}</div>
-          </div>
-          <div className="lp-grid" role="listbox" aria-label="Look packs">
-            {data.lookPacks.map(pk => <div key={pk.id} role="option" tabIndex={0} aria-selected={packId === pk.id} className="lp-card" onClick={() => setPackId(pk.id)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPackId(pk.id); } }}>
-              <span className="lp-swatch" aria-hidden="true">{pk.palette.map((c, i) => <i key={i} style={{ background: c }} />)}</span>
-              <span className="lp-card-text"><strong>{pk.name}</strong><small>{pk.description}</small></span>
-              <span className="lp-card-meta"><span className={`lp-kind ${pk.kind}`}>{pk.kind === "style" ? "Style pack" : "Role pack"}</span><span>{pk.looks} {pk.looks === 1 ? "look" : "looks"}</span></span>
-            </div>)}
-            <div role="option" tabIndex={0} aria-selected={packId === "prompt"} className="lp-card lp-prompt" onClick={() => setPackId("prompt")} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPackId("prompt"); } }}>
-              <span className="lp-swatch lp-swatch-prompt" aria-hidden="true">Aa</span>
-              <span className="lp-card-text"><strong>Your own words</strong><small>Describe an outfit and setting; HeyGen keeps the face.</small></span>
-              <span className="lp-card-meta"><span className="lp-kind prompt">Prompt</span><span>1 look</span></span>
-            </div>
-          </div>
-          {packId === "prompt" && <div className="cs-form-pair"><label className="cs-field">Look name<input className="cs-input" maxLength={60} value={packLookName} onChange={e => setPackLookName(e.target.value)} placeholder="e.g. Rooftop at dusk" /></label><label className="cs-field">Outfit and setting<input className="cs-input" maxLength={1000} value={packPrompt} onChange={e => setPackPrompt(e.target.value)} placeholder="Navy blazer, modern office with plants, warm natural light" /></label></div>}
+          <LookPackGallery packs={data.lookPacks} state={pack} onChange={patchPack} />
           <p className="cs-modal-note">{character?.onHeyGen ? "This character is registered on HeyGen; new looks render with Avatar V motion and gesture direction." : "The portrait is registered with HeyGen once (about a minute), then the looks are generated against it. Looks render with Avatar V motion and gesture direction."}</p>
         </div>}
         {dialogMode !== "profile" && !(dialogMode === "look" && lookSource === "heygen") && <><div className="cs-form-pair"><label className="cs-field">Look name<input className="cs-input" name="lookName" required maxLength={60} defaultValue={dialogMode === "new" ? "Everyday" : ""} placeholder="e.g. Home office" /></label><label className="cs-field">Portrait model<button type="button" className="cs-model-trigger" onClick={() => openModels("portrait")}><span>{selectedPortraitModel?.label}</span><span>↗</span></button></label></div><label className="cs-field">Outfit and setting<textarea className="cs-input" name="lookPrompt" maxLength={1200} rows={2} defaultValue={dialogMode === "new" ? "Casual neutral clothing, a sunlit home, soft window light." : ""} placeholder="Describe a new outfit and setting. The original portrait stays the identity reference." /></label><p className="cs-modal-note">{dialogMode === "look" ? "The original portrait guides the new look. Review the result for face consistency before using it." : "Create a fictional adult presenter. The approved portrait becomes the reference for future looks."}</p></>}
         {modalError && <p className="cs-error" role="alert">{modalError}</p>}
-        {dialogMode === "look" && lookSource === "heygen" ? (() => { const pk = data.lookPacks.find(p => p.id === packId); const n = packId === "prompt" ? 1 : pk?.looks ?? 5; const cost = n * data.heygenLookCredits; return <div className="cs-dialog-footer"><span>{cost} credits · {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || !data.heygenConnected || balance < cost || (packId === "prompt" && packPrompt.trim().length < 10)}>{modalPending ? "Starting…" : n === 1 ? "Generate look ↗" : `Generate ${n} looks ↗`}</button></div>; })() :
+        {dialogMode === "look" && lookSource === "heygen" ? <div className="cs-dialog-footer"><span>{packCost} credits · {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || !data.heygenConnected || balance < packCost || (pack.packId === "prompt" && pack.prompt.trim().length < 10)}>{modalPending ? "Starting…" : packCount === 1 ? "Generate look ↗" : `Generate ${packCount} looks ↗`}</button></div> :
         <div className="cs-dialog-footer"><span>{dialogMode === "profile" ? "Applies to future ads" : `${selectedPortraitModel?.creditsPerUnit ?? 0} credits · ${balance} available`}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || (dialogMode !== "profile" && (!selectedPortraitModel?.connected || !selectedPortraitModel.enabled || balance < selectedPortraitModel.creditsPerUnit))}>{modalPending ? "Saving…" : dialogMode === "profile" ? "Save profile" : "Generate portrait ↗"}</button></div>}{dialogMode !== "profile" && !(dialogMode === "look" && lookSource === "heygen") && !selectedPortraitModel?.connected && <p className="cs-error">{selectedPortraitModel?.provider === "fal" ? "fal.ai" : "OpenAI"} is not connected. Choose a connected model or ask your administrator to connect this provider.</p>}
       </form>
     </dialog>
