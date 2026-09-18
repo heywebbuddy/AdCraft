@@ -5,7 +5,8 @@ import { loadDashboard } from "@/server/dashboard";
 import { loadPerformanceSummary } from "@/server/ads";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeader } from "@/components/workspace-ui";
-import { WallTile, wallPlaceholders as placeholders } from "@/components/wall-tile";
+import { wallPlaceholders as placeholders } from "@/components/wall-tile";
+import { RecentCreative } from "./recent-creative";
 import { StudioLaunchpad } from "./studio-launchpad";
 import "./dashboard.css";
 import {
@@ -40,6 +41,7 @@ export default async function DashboardPage() {
   const firstName = ctx.viewer.name.split(/[\s@.]/)[0];
   const readyCount = data.tiles.filter((t) => t.status === "rendered").length;
   const failedCount = data.tiles.filter((t) => t.status === "failed").length;
+  const recent = data.tiles.filter((t) => t.status !== "failed").slice(0, 4);
   const attention =
     data.counts.failedPipelines.length + data.changeRequests.length + perf.alerts.length + (data.counts.failedRenders > 0 ? 1 : 0) + (ctx.credits.balance <= 10 ? 1 : 0);
 
@@ -142,37 +144,26 @@ export default async function DashboardPage() {
             </section>
           ) : null}
 
-          <section className="home-section">
+          <section className="home-section recent-section">
             <SectionHeader
               title="Recent creations"
               description={
                 data.tiles.length
-                  ? `${readyCount} ready${failedCount ? ` · ${failedCount} failed` : ""} · live ones carry their numbers`
+                  ? "Pick up where you left off."
                   : "Every size it needs to be, with exact copy and product."
               }
               action={
-                <div className="workspace-tabs" role="group" aria-label="Filter">
-                  {[
-                    ["All", "/creatives"],
-                    ["Static", "/creatives?kind=static"],
-                    ["Video", "/creatives?kind=video"],
-                    ["UGC", "/creatives?kind=ugc"],
-                  ].map(([label, href], i) => (
-                    <Link key={label} href={href} className={i === 0 ? "active" : ""}>
-                      {label}
-                    </Link>
-                  ))}
-                </div>
+                <Link className="recent-view-all" href="/creatives">View all{data.counts.creatives ? ` (${data.counts.creatives})` : ""} <ArrowIcon width={14} height={14} /></Link>
               }
             />
 
-            {data.tiles.length ? (
-              <div className="wall">
-                {data.tiles.map((t, i) => (
-                  <WallTile key={t.id} {...t} live={perf.byCreative[t.id] ?? null} index={i} />
+            {recent.length ? (
+              <div className="recent-creative-grid">
+                {recent.map((t) => (
+                  <RecentCreative key={t.id} {...t} live={perf.byCreative[t.id] ?? null} />
                 ))}
               </div>
-            ) : (
+            ) : data.tiles.length === 0 ? (
               <div className="home-empty">
                 <div className="home-empty-art" aria-hidden="true">
                   <span style={{ aspectRatio: "4 / 5", background: placeholders[1] }} />
@@ -194,14 +185,12 @@ export default async function DashboardPage() {
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {data.tiles.length ? (
-              <div className="home-more">
-                <Link href="/creatives" className="btn btn-outline">
-                  All {data.counts.creatives} creative{data.counts.creatives === 1 ? "" : "s"} <ArrowIcon width={14} height={14} />
-                </Link>
-              </div>
+            {failedCount > 0 ? (
+              <Link href="/creatives?status=failed" className="recent-failure-note">
+                <AlertIcon width={16} height={16} /><span>{failedCount} recent creation{failedCount === 1 ? " needs" : "s need"} another try.</span><strong>Review <ArrowIcon width={13} height={13} /></strong>
+              </Link>
             ) : null}
           </section>
 

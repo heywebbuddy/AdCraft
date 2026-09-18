@@ -2034,11 +2034,6 @@
   color: var(--ink);
   font-weight: 600;
 }
-.home-more {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .home-empty {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
@@ -2522,12 +2517,18 @@
 .workspace-main select:not([multiple]):not([size]) {
   appearance: none;
   -webkit-appearance: none;
-  height: 40px;
-  padding-right: 34px;
+  height: var(--control-height, 40px);
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 var(--select-padding-end, 34px) 0 var(--select-padding-start, 12px);
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
   background-color: #fff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2366685f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 11px center;
+  background-position: right var(--select-arrow-inset, 11px) center;
   background-size: 16px 16px;
   border: 1px solid #dfe2d8;
   border-radius: 7px;
@@ -2535,6 +2536,7 @@
 }
 .workspace-main select:not([multiple]):not([size]):disabled {
   background-color: #f0f1ed;
+  cursor: not-allowed;
 }
 .workspace-main :is(input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"]) {
   appearance: none;
@@ -2551,9 +2553,10 @@
   cursor: pointer;
 }
 
-/* One control height for every row: inputs, selects and buttons line up at 40px. */
-.app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), select) {
-  height: 40px;
+/* A consistent default, with an explicit size for compact filters and inline fields.
+   Multiline selects and hidden fields must keep their native sizing. */
+.app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]), select:not([multiple]):not([size])) {
+  height: var(--control-height, 40px);
 }
 /* Orange as text: links and inline actions use the deeper shade for legibility. */
 .app-shell a.text-orange,
@@ -2664,6 +2667,11 @@
   }
   .workspace-main select:not([multiple]):not([size])::picker-icon {
     display: none;
+  }
+  /* base-select uses a flex box; its default cross-axis alignment leaves the
+     selected label at the top even though our background chevron is centered. */
+  .workspace-main select:not([multiple]):not([size]) {
+    align-items: center;
   }
   .workspace-main select::picker(select) {
     margin-top: 4px;
@@ -2884,8 +2892,9 @@
   overflow: hidden;
 }
 .vp-language {
+  --control-height: 32px;
+  --select-padding-start: 10px;
   margin-left: auto;
-  height: 32px;
   font-size: 12px;
   border-radius: 6px;
   border: 1px solid var(--line);

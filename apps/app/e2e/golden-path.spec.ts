@@ -27,7 +27,7 @@ test.describe("golden path", () => {
     await page.goto("/dashboard");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(/Good (morning|afternoon|evening)/);
     await page.locator(".create-menu > summary").first().click();
-    await expect(page.getByRole("link", { name: /Static ad/ })).toBeVisible();
+    await expect(page.locator(".create-menu").first().getByRole("link", { name: /Static ad/ })).toBeVisible();
     await page.getByRole("button", { name: /Activity|running/ }).click();
     await expect(page.getByRole("dialog", { name: "Activity" })).toBeVisible();
   });

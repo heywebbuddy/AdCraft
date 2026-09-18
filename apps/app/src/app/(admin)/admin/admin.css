@@ -487,6 +487,8 @@
 }
 .admin-filters select,
 .admin-filters input {
+  --control-height: 36px;
+  --select-padding-start: 10px;
   height: 36px;
   border: 1px solid #dfe2d8;
   border-radius: 7px;
@@ -532,6 +534,8 @@
 .admin-form input:not([type="checkbox"]),
 .admin-form select,
 .admin-form textarea {
+  --control-height: 38px;
+  --select-padding-start: 11px;
   height: 38px;
   border: 1px solid #dfe2d8;
   border-radius: 7px;
