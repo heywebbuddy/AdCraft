@@ -35,7 +35,28 @@ Everything else — auth, teams, billing, credits, approvals, share links, brand
 
 Timings are real-provider timings on this machine.
 
-## 3. The plan
+## 3. The plan — status (18 Sep 2026, evening)
+
+Phases 1–3 are built and committed (`48d9ec3` … `5c89bc3`); Phase 0's sandbox banner, health check, error reporting and cache notes are in too. What remains from Phase 0 needs the user: real platform keys (Meta first) and the four-call smoke test against a live account, plus a Sentry DSN if wanted.
+
+| Item | Status | Where |
+|---|---|---|
+| 1a Next panel on creative/video | done | `components/next-step.tsx`, `server/next-step.ts` |
+| 1b Campaign stepper + review + `?creative=` entry | done | `campaigns/new/builder.tsx`, `components/stepper.tsx` |
+| 1c Performance actions, winner/fatigue → pre-filled brief | done | `performance/page.tsx`, `server/briefs.ts#briefPrefillFromCreative` |
+| 1d Activity tray, finish emails, honest timings | done | `components/activity-tray.tsx`, `server/activity.ts`, `server/notify.ts` |
+| 2a Create ▾ menu, briefs as history | done | `components/create-menu.tsx` |
+| 2b One builder shell | done (video builder adopts the static studio's card) | `videos/new/video-form.tsx` |
+| 2c Names: Ads, Briefs, Ideas, Cast library; flow map | done | `components/flow-steps.tsx` |
+| 2d Onboarding → product URL import → pre-filled brief | done | `welcome/first-ad`, `server/product-import.ts` |
+| 2e Phone note on builders | done | `components/desktop-hint.tsx` |
+| 3 Claims review before publish | done (rule-based; hard blocks, soft warns, brief constraints harden) | `packages/ads/src/claims.ts` |
+| 3 Cost/credit caps, rate limits, voice slots, spend approval, approval-before-publish | done | `server/guardrails.ts`, Settings → Guardrails, Admin → Guardrail defaults |
+| 3 Playwright golden path | done (6 tests, 27 s, no provider spend) | `apps/app/e2e/golden-path.spec.ts` |
+| 3 Health, error reporting, backups | done | `/api/health`, `instrumentation.ts`, `scripts/backup-db.sh` |
+| 0 Meta/TikTok/Google live | **needs keys** | `.env` META_* / TIKTOK_* / GOOGLE_ADS_* |
+
+Original plan follows.
 
 Four phases. Each is shippable on its own; order matters.
 

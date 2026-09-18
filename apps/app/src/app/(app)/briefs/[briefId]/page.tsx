@@ -84,15 +84,15 @@ export default async function BriefPage({
       : selected > 0
         ? `${selected} selected. Make the ads.`
         : concepts.length > 0
-          ? `${concepts.length} concepts. Pick the keepers.`
-          : "No concepts yet.";
+          ? `${concepts.length} ideas. Pick the keepers.`
+          : "No ideas yet.";
 
   return (
     <>
       {generating ? <Poller intervalMs={3000} /> : null}
 
       <FlowSteps current="ideas" links={{ brief: "/briefs/new" }} format={brief.data.formats[0] === "video" ? "Product video" : brief.data.formats[0] === "ugc" ? "Presenter video" : "Static ad"} />
-      {guardrail ? <div role="alert" className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">The brief is saved, but concepts did not start: {decodeURIComponent(guardrail)}</div> : null}
+      {guardrail ? <div role="alert" className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">The brief is saved, but the ideas did not start: {decodeURIComponent(guardrail)}</div> : null}
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="eyebrow">
@@ -201,7 +201,7 @@ export default async function BriefPage({
             </h2>
             <p className="m-0 text-[12px] text-muted">
               {isSample
-                ? "Sample concepts · Connect an AI provider for generated directions."
+                ? "Sample ideas · Connect an AI provider for generated directions."
                 : "Eight directions from your brief. Pick one to make the ad — or a few, and compare."}
             </p>
           </div>
@@ -262,7 +262,7 @@ export default async function BriefPage({
             </div>
             <form action={generateMoreConcepts.bind(null, brief.id)}>
               <button type="submit" className="btn btn-dark h-11">
-                Generate concepts <span aria-hidden="true">↗</span>
+                Generate ideas <span aria-hidden="true">↗</span>
               </button>
             </form>
           </div>

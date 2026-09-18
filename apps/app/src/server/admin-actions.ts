@@ -8,7 +8,7 @@ import { ADMIN_ORG_COOKIE, requireAdmin } from "./admin";
 import { logAudit } from "./audit";
 import { PLANS, grantCredits, type PlanId } from "./billing";
 import { dispatch, type JobName, type JobPayloads } from "./jobs";
-import { setPlatformSetting, type PlanFeatures } from "./platform-settings";
+import { setPlatformSetting, type PlanFeatures, DEFAULT_GUARDRAILS } from "./platform-settings";
 import "@/pipelines";
 
 /**
@@ -224,7 +224,20 @@ export async function savePlatformSettings(formData: FormData) {
   const trial = Math.round(Number(str(formData, "trialCredits")));
   if (!Number.isFinite(trial) || trial < 0 || trial > 100000) redirect("/admin/settings?error=trial");
   const planFeatures: Record<PlanId, PlanFeatures> = { starter: f(formData, "starter"), studio: f(formData, "studio"), agency: f(formData, "agency") };
+  const gnum = (k: string, fallback: number | null): number | null => {
+    const raw = str(formData, `g:${k}`);
+    if (raw === "") return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? Math.round(n) : fallback;
+  };
+  const guardrails = {
+    monthlyCostCapUsd: gnum("monthlyCostCapUsd", DEFAULT_GUARDRAILS.monthlyCostCapUsd),
+    spendApprovalAbove: gnum("spendApprovalAbove", DEFAULT_GUARDRAILS.spendApprovalAbove),
+    heygenVoicesPerWorkspace: gnum("heygenVoicesPerWorkspace", DEFAULT_GUARDRAILS.heygenVoicesPerWorkspace) ?? DEFAULT_GUARDRAILS.heygenVoicesPerWorkspace,
+    actionsPerMinute: gnum("actionsPerMinute", DEFAULT_GUARDRAILS.actionsPerMinute) ?? DEFAULT_GUARDRAILS.actionsPerMinute,
+  };
   await Promise.all([
+    setPlatformSetting("guardrails", guardrails, admin.userId),
     setPlatformSetting("maintenanceBanner", maintenanceBanner, admin.userId),
     setPlatformSetting("signupsEnabled", signupsEnabled, admin.userId),
     setPlatformSetting("trialCredits", trial, admin.userId),

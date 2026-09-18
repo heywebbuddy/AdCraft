@@ -67,6 +67,16 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
         </div>
 
         <div className="admin-stack">
+          <Panel title="Guardrail defaults" eyebrow="Safety" note={who("guardrails")}>
+            <div className="admin-panel-body admin-form">
+              <label><span>Monthly provider budget per workspace <small>USD · blank = off</small></span><input type="number" name="g:monthlyCostCapUsd" min={0} step={1} defaultValue={s.guardrails.monthlyCostCapUsd ?? ""} /></label>
+              <label><span>Owner approval above daily budget <small>major units · blank = off</small></span><input type="number" name="g:spendApprovalAbove" min={0} step={1} defaultValue={s.guardrails.spendApprovalAbove ?? ""} /></label>
+              <label><span>HeyGen custom voices per workspace <small>account has ~10</small></span><input type="number" name="g:heygenVoicesPerWorkspace" min={0} max={10} step={1} defaultValue={s.guardrails.heygenVoicesPerWorkspace} /></label>
+              <label><span>Actions per minute per workspace <small>generation starts use a quarter of this</small></span><input type="number" name="g:actionsPerMinute" min={10} max={10000} step={10} defaultValue={s.guardrails.actionsPerMinute} /></label>
+              <p>Workspaces can lower the spend-approval threshold and set their own credit cap under Settings → Guardrails; they cannot raise the provider budget.</p>
+            </div>
+          </Panel>
+
           <Panel title="Plan features" eyebrow="Flags" note={who("planFeatures")}>
             <div className="admin-panel-body admin-form">
               {(Object.keys(PLANS) as PlanId[]).map((plan) => (
