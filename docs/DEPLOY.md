@@ -51,3 +51,14 @@ Two deployables: the marketing site (`dist/`, static, already hosted) and the pr
   is `STRIPE_WEBHOOK_SECRET`. Recreate the prices in live mode before launch.
 - **Resend**: `EMAIL_FROM` must use a domain verified in Resend. The dev sign-in stays available outside
   production alongside magic links (`DEV_LOGIN=0` hides it).
+
+## Smoke suite (Playwright)
+
+`pnpm --filter @adcraft/app e2e` runs the golden path against a running dev server (`BASE_URL`, default localhost:3000): sign-in → dashboard → library → brief pre-fill → creative Next panel → five-step campaign builder publishing paused on a sandbox account → performance sync → guardrails → `/api/health`. It spends no provider money (no concept/image generation) and skips politely when the brand has no products or finished creatives. Needs `DEV_LOGIN` on and `E2E_EMAIL` (default `ratnesh@adcraft.local`). Run it before every deploy; archive the `E2E …` campaigns it leaves behind if you run it against a shared database.
+
+## Operations
+
+- **Health**: `GET /api/health` → 200 when database and storage answer (503 otherwise); includes per-check latency.
+- **Errors**: unhandled server errors are logged with route and digest; set `SENTRY_DSN` to also post them as Sentry events (no SDK).
+- **Backups**: `DATABASE_URL=… ./scripts/backup-db.sh` (cron nightly) — gzip `pg_dump`, 14-day retention, optional upload to `R2_BACKUP_BUCKET`.
+- **Guardrails**: platform defaults in `platform_settings.guardrails` (monthly provider budget per workspace, spend-approval threshold, HeyGen voice slots, rate limit); per-workspace overrides under Settings → Guardrails.

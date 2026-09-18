@@ -7,3 +7,7 @@
 .turbo/
 next-env.d.ts
 node_modules/
+
+# Playwright
+apps/app/test-results/
+apps/app/playwright-report/

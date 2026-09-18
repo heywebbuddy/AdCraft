@@ -10,7 +10,9 @@
     "site:sync": "node scripts/sync-site.mjs",
     "predev": "node scripts/sync-site.mjs",
     "prebuild": "node scripts/sync-site.mjs",
-    "test": "tsx --conditions=react-server --test tests/**/*.test.ts"
+    "test": "tsx --conditions=react-server --test tests/**/*.test.ts",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@adcraft/ads": "workspace:*",
@@ -39,6 +41,7 @@
     "stripe": "^22.6.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^22.18.6",
     "@types/react": "^19.1.13",
