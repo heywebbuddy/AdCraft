@@ -48,10 +48,10 @@ function Field({
 export default async function NewBriefPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; format?: string }>;
+  searchParams: Promise<{ error?: string; format?: string; product?: string }>;
 }) {
   const ctx = await requireOrg();
-  const { error, format } = await searchParams;
+  const { error, format, product } = await searchParams;
   const initialFormat = FORMATS.some((f) => f.id === format)
     ? format
     : "static";
@@ -113,7 +113,7 @@ export default async function NewBriefPage({
               <select
                 name="productId"
                 aria-label="Product"
-                defaultValue=""
+                defaultValue={productList.some((p) => p.id === product) ? product : ""}
                 className={`${fieldClass} h-11`}
               >
                 <option value="">Whole brand — no specific product</option>
@@ -264,7 +264,7 @@ export default async function NewBriefPage({
               Concepts use {ctx.brand?.name ?? "your brand"}&rsquo;s tone,
               do-say and don&rsquo;t-say lists automatically.{" "}
               <Link
-                href="/settings/brand"
+                href={ctx.brand ? `/brands/${ctx.brand.id}` : "/brands"}
                 className="font-semibold text-orange"
               >
                 Edit kit ↗
