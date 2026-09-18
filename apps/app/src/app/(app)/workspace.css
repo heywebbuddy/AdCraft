@@ -3445,3 +3445,21 @@
   vertical-align: middle;
   margin: 0 2px;
 }
+
+/* Shown only on phones, at the top of builders. */
+.desktop-hint {
+  display: none;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+@media (max-width: 760px) {
+  .desktop-hint {
+    display: block;
+  }
+}

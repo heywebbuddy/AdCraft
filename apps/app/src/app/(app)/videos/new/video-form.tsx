@@ -7,6 +7,7 @@ import { VoiceField, type CatalogVoice } from "@/components/voice-picker";
 import "@/app/(app)/characters/studio.css";
 import { Spark } from "@/components/spark";
 import { PlayIcon } from "@/components/icons";
+import shell from "@/app/(app)/creatives/new/static-ad-form.module.css";
 
 type Model = { id: string; label: string; notes: string; isDefault: boolean; audio: boolean; durations: number[]; creditsPerSec: number };
 type Choice = { id: string; label: string; previewUrl?: string };
@@ -50,10 +51,10 @@ export function VideoForm(p: VideoFormProps) {
       <input type="hidden" name="model" value={model} />
       <input type="hidden" name="ratio" value={ratio} />
 
-      <div className="flex min-w-0 flex-col gap-[26px]">
+      <div className={shell.main}>
         {/* Kind */}
-        <section className="flex flex-col gap-3">
-          <div className="eyebrow">Format</div>
+        <section className={shell.section}>
+          <div className={shell.sectionHead}><div><span className={shell.step}>01</span><h2>Choose the format</h2></div><span className={shell.micro}>What kind of video</span></div>
           <div className="grid gap-3 sm:grid-cols-2">
             {(
               [
@@ -80,11 +81,8 @@ export function VideoForm(p: VideoFormProps) {
         </section>
 
         {/* Model */}
-        <section className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between">
-            <div className="eyebrow">Video model</div>
-            <span className="text-[12px] text-muted">{kind === "ugc" ? "Used for the B-roll clips" : "Used for every scene clip"}</span>
-          </div>
+        <section className={shell.section}>
+          <div className={shell.sectionHead}><div><span className={shell.step}>02</span><h2>Pick the video model</h2></div><span className={shell.micro}>{kind === "ugc" ? "Used for the B-roll clips" : "Used for every scene clip"}</span></div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {p.models.map((m) => (
               <button
@@ -107,8 +105,8 @@ export function VideoForm(p: VideoFormProps) {
         </section>
 
         {/* Ratio */}
-        <section className="flex flex-col gap-3">
-          <div className="eyebrow">Primary size</div>
+        <section className={shell.section}>
+          <div className={shell.sectionHead}><div><span className={shell.step}>03</span><h2>Primary size</h2></div><span className={shell.micro}>The other sizes follow</span></div>
           <div className="flex flex-wrap gap-2">
             {p.ratios.map((r) => (
               <button
@@ -130,9 +128,11 @@ export function VideoForm(p: VideoFormProps) {
 
         {/* UGC presenter + voice */}
         {kind === "ugc" ? (
-          <section className="grid gap-3 sm:grid-cols-2">
+          <section className={shell.section}>
+          <div className={shell.sectionHead}><div><span className={shell.step}>02b</span><h2>Who presents it</h2></div><span className={shell.micro}>A licensed presenter from the cast library, and a voice</span></div>
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <span className="eyebrow">Presenter (licensed stock avatar)</span>
+              <span className="eyebrow">Presenter</span>
               <input type="hidden" name="avatarId" value={avatar?.look.id ?? ""} />
               <button type="button" onClick={() => libraryDialog.current?.showModal()} className="flex h-14 items-center gap-3 rounded-[7px] border border-line bg-white px-2 text-left text-[13px] hover:border-ink">
                 {avatar?.look.previewUrl ? (
@@ -159,14 +159,14 @@ export function VideoForm(p: VideoFormProps) {
             <p className="m-0 text-[12px] text-muted sm:col-span-2">
               Library presenters and catalogue voices only. Custom faces or cloned voices need a consent flow first (PLAN §4), and the video carries an “AI-generated” label.
             </p>
+          </div>
           </section>
         ) : null}
 
         {/* Storyboard preview */}
-        <section className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between">
-            <div className="eyebrow">Storyboard from the script</div>
-            <span className="text-[12px] text-muted">
+        <section className={shell.section}>
+          <div className={shell.sectionHead}><div><span className={shell.step}>04</span><h2>Storyboard from the script</h2></div>
+            <span className={shell.micro}>
               {board.scenes.filter((s) => s.role !== "broll").length} scenes · ~{board.durationSec} s
             </span>
           </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FlowSteps } from "@/components/flow-steps";
+import { DesktopHint } from "@/components/desktop-hint";
 import { redirect } from "next/navigation";
 import { OBJECTIVES } from "@adcraft/ads";
 import { requireOrg } from "@/server/org";
@@ -49,6 +50,7 @@ export default async function NewCampaignPage({
   return (
     <>
       {creative ? <FlowSteps current="campaign" links={{ ad: `/creatives/${creative}` }} /> : null}
+      <DesktopHint what="Publishing" />
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5">
           <div className="eyebrow">

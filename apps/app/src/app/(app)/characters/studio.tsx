@@ -11,6 +11,7 @@ import { LookPackGallery, type LookPackState } from "./look-packs";
 import { PhotoForm, TwinForm } from "./heygen-forms";
 import { twinConsentAction } from "./actions";
 import { Spark } from "@/components/spark";
+import { DesktopHint } from "@/components/desktop-hint";
 import { MakerLogo, inferMaker } from "@/components/maker-logo";
 import { PlayButton, VoiceField, VoicePicker, type CatalogVoice } from "@/components/voice-picker";
 import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
@@ -167,6 +168,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     if (r.url) { void navigator.clipboard?.writeText(r.url).catch(() => undefined); setNotice(`Consent link copied. Send it to ${c.name} — it is valid for 24 hours.`); router.refresh(); }
   }
   return <div className="character-studio">
+    {view === "studio" && <DesktopHint what="Making a presenter video" />}
     {library && <div className="cs-crumb"><span><button type="button" className="cs-text-button" onClick={() => setView("studio")}>Character studio</button> / {VIEW_TITLES[view]}</span><span>{brandName}</span></div>}
     {!library && <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> New character</button></header>}
 
