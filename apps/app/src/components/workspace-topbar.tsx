@@ -7,13 +7,15 @@ import { useBreadcrumbTitle } from "./breadcrumb-title";
 import { ActivityTray } from "./activity-tray";
 const destinations: Array<{ name: string; href: string; match?: string; group: string }> = [
   { name: "Overview", href: "/dashboard", group: "Workspace" },
-  { name: "Creative briefs", href: "/briefs", group: "Create" },
+  { name: "Briefs", href: "/briefs", group: "Create" },
+  { name: "New static ad", href: "/briefs/new?format=static", group: "Create" },
+  { name: "New product video", href: "/briefs/new?format=video", group: "Create" },
   { name: "Character studio", href: "/characters", group: "Create" },
   { name: "My characters", href: "/characters?view=characters", group: "Create" },
-  { name: "Presenter library", href: "/characters?view=presenters", group: "Create" },
+  { name: "Cast library", href: "/characters?view=presenters", group: "Create" },
   { name: "Voice library", href: "/characters?view=voices", group: "Create" },
   { name: "Design a look", href: "/characters?view=looks", group: "Create" },
-  { name: "All creatives", href: "/creatives", group: "Create" },
+  { name: "Ads", href: "/creatives", group: "Create" },
   { name: "Videos", href: "/creatives?kind=video", match: "/videos", group: "Create" },
   { name: "Product library", href: "/library", group: "Assets" },
   { name: "Brand kits", href: "/brands", group: "Assets" },

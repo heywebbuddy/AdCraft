@@ -12,7 +12,7 @@ import { WallTile } from "@/components/wall-tile";
 import { loadPerformanceSummary } from "@/server/ads";
 export const dynamic = "force-dynamic";
 const KINDS = [
-  { id: "", label: "All creatives" },
+  { id: "", label: "All ads" },
   { id: "static", label: "Static ads" },
   { id: "video", label: "Videos" },
   { id: "ugc", label: "UGC videos" },
@@ -44,7 +44,7 @@ export default async function CreativesPage({
     <>
       <AutoRefresh active={rendering > 0} />
       <PageHeader
-        title="All creatives"
+        title="Ads"
         description="Create, organize, and review every ad in your workspace."
         actions={
           <>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PendingButton } from "@/components/pending-button";
 import { requireOrg } from "@/server/org";
 import { briefPrefillFromCreative } from "@/server/briefs";
+import { FlowSteps } from "@/components/flow-steps";
 import {
   FORMATS,
   OBJECTIVES,
@@ -71,6 +72,7 @@ export default async function NewBriefPage({
 
   return (
     <>
+      <FlowSteps current="brief" format={initialFormat === "video" ? "Product video" : initialFormat === "ugc" ? "Presenter video" : "Static ad"} />
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-1.5">
           <div className="eyebrow">
@@ -79,9 +81,9 @@ export default async function NewBriefPage({
             </Link>{" "}
             · New
           </div>
-          <h1 className="m-0">Create a brief</h1>
+          <h1 className="m-0">{prefill ? "Next round" : initialFormat === "video" ? "A new product video" : initialFormat === "ugc" ? "A new presenter video" : "A new static ad"}</h1>
           <p className="m-0 mt-2 text-muted">
-            Define your audience, message, and creative direction.
+            Start with the brief: who it is for and what it must say. Ideas come next, then the ad.
           </p>
         </div>
         <span className="text-[12px] text-muted">

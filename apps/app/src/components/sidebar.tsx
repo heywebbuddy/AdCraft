@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Spark } from "./spark";
+import { CreateMenu } from "./create-menu";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
@@ -37,7 +38,7 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
     label: "WORKSPACE",
     items: [
       { href: "/dashboard", label: "Overview", Icon: HomeIcon },
-      { href: "/briefs", label: "Creative briefs", Icon: BriefIcon },
+      { href: "/briefs", label: "Briefs", Icon: BriefIcon },
       {
         href: "/characters",
         label: "Character studio",
@@ -45,12 +46,12 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
         children: [
           { href: "/characters", label: "Create an ad" },
           { href: "/characters?view=characters", label: "My characters" },
-          { href: "/characters?view=presenters", label: "Presenter library" },
+          { href: "/characters?view=presenters", label: "Cast library" },
           { href: "/characters?view=voices", label: "Voice library" },
           { href: "/characters?view=looks", label: "Design a look" },
         ],
       },
-      { href: "/creatives", label: "All creatives", Icon: CreativesIcon },
+      { href: "/creatives", label: "Ads", Icon: CreativesIcon },
       { href: "/library", label: "Product library", Icon: LibraryIcon },
       { href: "/brands", label: "Brand kits", Icon: BrandIcon },
     ],
@@ -129,9 +130,7 @@ export function Sidebar(props: SidebarProps) {
           {error && <p role="alert">{error}</p>}
         </div>
       </details>
-      <Link className="sidebar-create btn btn-orange" href="/briefs/new">
-        <span>＋</span> Create a brief
-      </Link>
+      <CreateMenu />
       <div className="sidebar-navigation">
         {groups.map((group) => (
           <nav key={group.label} aria-label={group.label.toLowerCase()}>

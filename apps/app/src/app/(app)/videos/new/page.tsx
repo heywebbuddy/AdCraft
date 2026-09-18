@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FlowSteps } from "@/components/flow-steps";
 import { notFound, redirect } from "next/navigation";
 import { requireOrg } from "@/server/org";
 import { planAllows } from "@/server/platform-settings";
@@ -59,6 +60,7 @@ export default async function NewVideoPage({
 
   return (
     <>
+      <FlowSteps current="ad" links={{ ideas: `/briefs/${concept.briefId}` }} format={initialKind === "ugc" ? "Presenter video" : "Product video"} />
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="eyebrow">

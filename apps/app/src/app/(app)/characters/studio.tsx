@@ -156,7 +156,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   }
 
   const library = view !== "studio";
-  const VIEW_TITLES: Record<View, string> = { studio: "Create an ad", characters: "My characters", presenters: "Presenter library", voices: "Voice library", looks: "Design a look", templates: "Ad templates" };
+  const VIEW_TITLES: Record<View, string> = { studio: "Create an ad", characters: "My characters", presenters: "Cast library", voices: "Voice library", looks: "Design a look", templates: "Ad templates" };
   const [consentBusy, setConsentBusy] = useState("");
   async function consentLink(c: { id: string; name: string }, refresh: boolean) {
     setConsentBusy(c.id); setError("");
@@ -177,7 +177,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       <section className="cs-section"><div className="cs-section-heading"><span>01</span><h2>Your character</h2><button type="button" className="cs-text-button" onClick={() => setView("characters")}>Manage cast ↗</button></div>
         <div className="cs-source" role="tablist" aria-label="Presenter source">
           <button type="button" role="tab" aria-selected={!stockAvatar} onClick={() => setStockAvatar(null)}>My character</button>
-          <button type="button" role="tab" aria-selected={!!stockAvatar} onClick={() => (stockAvatar ? undefined : libraryDialog.current?.showModal())}>Presenter library <span>{data.presenterLibraryLoading ? "indexing…" : data.presenterGroups.length ? `${data.presenterGroups.length.toLocaleString()} people` : "HeyGen"}</span></button>
+          <button type="button" role="tab" aria-selected={!!stockAvatar} onClick={() => (stockAvatar ? undefined : libraryDialog.current?.showModal())}>Cast library <span>{data.presenterLibraryLoading ? "indexing…" : data.presenterGroups.length ? `${data.presenterGroups.length.toLocaleString()} people` : "HeyGen"}</span></button>
         </div>
         {stockAvatar ? <>
           <div className="cs-character-selected"><div className="cs-avatar">{stockAvatar.look.previewUrl ? <img src={stockAvatar.look.previewUrl} alt={stockAvatar.person.name} /> : <span>{stockAvatar.person.name.slice(0, 1)}</span>}</div><div className="cs-character-info"><h3>{stockAvatar.person.name} <span className="cs-look-name">· {stockAvatar.look.name}</span></h3><p>{stockAvatar.look.type === "studio_avatar" ? "Filmed studio presenter — gestures and body language are part of the footage." : stockAvatar.look.type === "digital_twin" ? "Digital twin — video-trained, reference-driven motion." : `AI photo avatar${stockAvatar.look.engines.includes("avatar_v") ? " · Avatar V motion with gesture direction" : " · Avatar IV motion"}.`}</p><span className="cs-badge">Licensed library presenter</span></div><button type="button" className="cs-text-button" onClick={() => libraryDialog.current?.showModal()}>Change ↗</button></div>

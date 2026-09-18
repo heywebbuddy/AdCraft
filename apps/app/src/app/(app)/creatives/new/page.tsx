@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FlowSteps } from "@/components/flow-steps";
 import { requireOrg } from "@/server/org";
 import { getConceptForCreative, imageModelChoices, STATIC_PLACEMENT_IDS } from "@/server/creatives";
 import { getPlacement } from "@adcraft/specs";
@@ -25,8 +26,9 @@ export default async function NewCreativePage({ searchParams }: { searchParams: 
   const kit = concept.brand.kit;
   const productKey = concept.product?.imageKey ?? concept.product?.cutoutKey;
   return <>
+    <FlowSteps current="ad" links={{ ideas: `/briefs/${concept.briefId}` }} format="Static ad" />
     <header className="flex flex-wrap items-end justify-between gap-4">
-      <div className="flex flex-col gap-2.5"><div className="eyebrow"><Link href="/creatives" className="hover:text-ink">Creatives</Link> <span className="mx-1.5 opacity-40">/</span> <Link href={`/briefs/${concept.briefId}`} className="hover:text-ink">{concept.briefTitle}</Link> <span className="mx-1.5 opacity-40">/</span> Static studio</div>
+      <div className="flex flex-col gap-2.5"><div className="eyebrow"><Link href="/creatives" className="hover:text-ink">Ads</Link> <span className="mx-1.5 opacity-40">/</span> <Link href={`/briefs/${concept.briefId}`} className="hover:text-ink">{concept.briefTitle}</Link> <span className="mx-1.5 opacity-40">/</span> Static studio</div>
       <h1 className="m-0 text-[30px] font-medium leading-tight tracking-[-1.25px] sm:text-[34px]">Make your next <span className="font-serif italic font-normal text-[#7c8868]">great impression.</span></h1><p className="m-0 text-[12px] text-muted">From a promising concept to an ad worth stopping for.</p></div>
       <span className="mb-1 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] text-muted">✳ <span className="ml-1 font-semibold text-ink">{ctx.credits.balance}</span> credits available</span>
     </header>

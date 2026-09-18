@@ -35,8 +35,8 @@ export default async function BriefsPage({
   return (
     <>
       <PageHeader
-        title="Creative briefs"
-        description="Give your next campaign a clear direction. Explore concepts, hooks, and formats."
+        title="Briefs"
+        description="Every ad starts from a brief. This is the history — start a new one from Create."
         actions={
           <Link href="/briefs/new" className="btn btn-orange">
             <PlusIcon width={15} height={15} /> New brief

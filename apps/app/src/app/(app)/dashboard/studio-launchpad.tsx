@@ -4,7 +4,7 @@ import { Spark } from "@/components/spark";
 
 const tools = [
   { title: "My characters", href: "/characters?view=characters", Icon: TeamIcon, tone: "peach", description: "Generate a face, start from a photo or description, or clone a real person.", detail: "AI characters · Digital twins" },
-  { title: "Presenter library", href: "/characters?view=presenters", Icon: PlayIcon, tone: "sage", description: "Find your on-camera match. Explore presenters and their ready-made looks.", detail: "Browse · Preview · Cast" },
+  { title: "Cast library", href: "/characters?view=presenters", Icon: PlayIcon, tone: "sage", description: "Find your on-camera match. Explore presenters and their ready-made looks.", detail: "Browse · Preview · Cast" },
   { title: "Design a look", href: "/characters?view=looks", Icon: BrandIcon, tone: "lavender", description: "A fresh setting for a familiar face. Use look packs, remix a look or describe your own.", detail: "Look packs · Templates · Remix" },
   { title: "Voice library", href: "/characters?view=voices", Icon: VoiceIcon, tone: "sand", description: "Audition a voice, clone your own recording or design a new voice from words.", detail: "Discover · Clone · Design" },
 ];

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FlowSteps } from "@/components/flow-steps";
 import { Spark } from "@/components/spark";
 import { MakeVideoLink } from "@/components/video-links";
 import { notFound } from "next/navigation";
@@ -87,6 +88,7 @@ export default async function BriefPage({
     <>
       {generating ? <Poller intervalMs={3000} /> : null}
 
+      <FlowSteps current="ideas" links={{ brief: "/briefs/new" }} format={brief.data.formats[0] === "video" ? "Product video" : brief.data.formats[0] === "ugc" ? "Presenter video" : "Static ad"} />
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="eyebrow">
@@ -191,12 +193,12 @@ export default async function BriefPage({
               Concepts
             </div>
             <h2 className="m-0 text-[16px] font-semibold tracking-[-.3px]">
-              Creative concepts
+              Ideas
             </h2>
             <p className="m-0 text-[12px] text-muted">
               {isSample
                 ? "Sample concepts · Connect an AI provider for generated directions."
-                : "Review your directions and select the concepts to produce."}
+                : "Eight directions from your brief. Pick one to make the ad — or a few, and compare."}
             </p>
           </div>
           <span className="text-[12px] text-muted">

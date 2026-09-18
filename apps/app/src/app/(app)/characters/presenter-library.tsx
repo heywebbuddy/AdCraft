@@ -78,8 +78,8 @@ export function PresenterLibrary({
     <div className={`pl-root ${page ? "pl-page" : ""}`}>
       <div className="pl-head">
         <div>
-          <span className="cs-eyebrow">HeyGen presenter library</span>
-          <h2 id={page ? undefined : "pl-title"}>{page ? "Browse presenters" : "Choose a presenter"}</h2>
+          <span className="cs-eyebrow">Cast library · HeyGen</span>
+          <h2 id={page ? undefined : "pl-title"}>{page ? "Browse the cast" : "Choose a presenter"}</h2>
           <p>
             {groups.length.toLocaleString()} people · {totals.looks.toLocaleString()} looks. {page ? "Real actors filmed in a studio, AI avatars in many settings, and video-trained digital twins — licensed for your ads." : "Pick a person, then the outfit and setting."}
           </p>

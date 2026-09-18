@@ -3295,3 +3295,153 @@
     padding: 0 9px;
   }
 }
+
+/* ---------- Create menu ---------- */
+.create-menu {
+  position: relative;
+  margin-bottom: 25px;
+}
+.create-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  width: 100%;
+  height: 38px;
+  margin-bottom: 0 !important;
+}
+.create-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.create-caret {
+  font-size: 11px;
+  margin-left: auto;
+  opacity: 0.8;
+}
+.create-pop {
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px #25272020;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.create-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: var(--ink);
+}
+.create-item:hover {
+  background: #f4f5f0;
+}
+.create-glyph {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+.tone-peach .create-glyph { background: #fbeee8; color: #c94823; }
+.tone-sage .create-glyph { background: #eef0e6; color: #4e5943; }
+.tone-lavender .create-glyph { background: #eeeaf7; color: #5b4a8f; }
+.tone-sand .create-glyph { background: #f4efe4; color: #7a5b2a; }
+.create-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.create-text strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.create-text small {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Flow map: Brief → Ideas → Ad → Campaign ---------- */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.flow-format {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--orange-text);
+  background: #fbeee8;
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+.flow-steps {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flow-step > a,
+.flow-step > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.flow-step > a:hover {
+  background: #f0f1ea;
+  color: var(--ink);
+}
+.flow-step.current > span {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+.flow-step.done > a,
+.flow-step.done > span {
+  color: #3f7a55;
+}
+.flow-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.flow-step.current .flow-num {
+  border-color: #ffffff80;
+}
+.flow-step + .flow-step::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--line);
+  vertical-align: middle;
+  margin: 0 2px;
+}
