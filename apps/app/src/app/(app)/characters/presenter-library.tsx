@@ -8,6 +8,9 @@ export type { PresenterGroup, PresenterLook };
 export type PresenterChoice = { look: PresenterLook; person: PresenterGroup };
 
 type Kind = "all" | "studio" | "photo" | "twin";
+
+/** Looks fetched this session, shared by every picker instance (page tab, dialog). */
+const lookCache = new Map<string, PresenterLook[]>();
 const KINDS: Array<{ id: Kind; label: string; hint: string }> = [
   { id: "all", label: "All", hint: "Everything in HeyGen's public library" },
   { id: "studio", label: "Filmed studio", hint: "Real actors filmed in a studio — gestures are in the footage" },
@@ -28,6 +31,7 @@ export function PresenterLibrary({
   ratio,
   onSelect,
   onClose,
+  mode = "dialog",
 }: {
   groups: PresenterGroup[];
   loadLooks: (groupId: string) => Promise<PresenterLook[]>;
@@ -35,22 +39,25 @@ export function PresenterLibrary({
   /** The ad's size, to flag looks that suit it. */
   ratio?: string;
   onSelect: (choice: PresenterChoice) => void;
-  onClose: () => void;
+  onClose?: () => void;
+  /** "page" renders as a browsable section (no close, page scroll, stats) instead of a modal. */
+  mode?: "dialog" | "page";
 }) {
   const [query, setQuery] = useState("");
   const [gender, setGender] = useState<"all" | "female" | "male">("all");
   const [kind, setKind] = useState<Kind>("all");
   const [person, setPerson] = useState<PresenterGroup | null>(null);
-  const [looks, setLooks] = useState<Record<string, PresenterLook[]>>({});
+  const [looks, setLooks] = useState<Record<string, PresenterLook[]>>(() => Object.fromEntries(lookCache));
   const [fitOnly, setFitOnly] = useState(false);
   const pending = useRef(new Set<string>());
 
-  const fetchLooks = (id: string) => {
-    if (looks[id] || pending.current.has(id)) return;
+  const fetchLooks = (id: string, force = false) => {
+    if ((looks[id] && !force) || pending.current.has(id)) return;
     pending.current.add(id);
     loadLooks(id)
-      .then((list) => setLooks((prev) => ({ ...prev, [id]: list })))
-      .catch(() => setLooks((prev) => ({ ...prev, [id]: [] })))
+      .then((list) => { lookCache.set(id, list); setLooks((prev) => ({ ...prev, [id]: list })); })
+      // A failed or aborted call is not cached, so opening the person tries again.
+      .catch(() => undefined)
       .finally(() => pending.current.delete(id));
   };
 
@@ -64,17 +71,31 @@ export function PresenterLibrary({
   const personLooks = personLooksAll && fitOnly && wanted ? personLooksAll.filter((l) => l.orientation === wanted) : personLooksAll;
   const fitCount = personLooksAll && wanted ? personLooksAll.filter((l) => l.orientation === wanted).length : 0;
 
+  const page = mode === "page";
+  const totals = useMemo(() => ({ looks: groups.reduce((n, g) => n + g.looksCount, 0), studio: groups.filter((g) => g.kind === "studio").length, twin: groups.filter((g) => g.kind === "twin").length, photo: groups.filter((g) => g.kind === "photo").length }), [groups]);
+
   return (
-    <div className="pl-root">
+    <div className={`pl-root ${page ? "pl-page" : ""}`}>
       <div className="pl-head">
         <div>
           <span className="cs-eyebrow">HeyGen presenter library</span>
-          <h2 id="pl-title">Choose a presenter</h2>
+          <h2 id={page ? undefined : "pl-title"}>{page ? "Browse presenters" : "Choose a presenter"}</h2>
           <p>
-            {groups.length.toLocaleString()} people · {groups.reduce((n, g) => n + g.looksCount, 0).toLocaleString()} looks. Pick a person, then the outfit and setting.
+            {groups.length.toLocaleString()} people · {totals.looks.toLocaleString()} looks. {page ? "Real actors filmed in a studio, AI avatars in many settings, and video-trained digital twins — licensed for your ads." : "Pick a person, then the outfit and setting."}
           </p>
         </div>
-        <button type="button" className="cs-close" onClick={onClose} aria-label="Close">×</button>
+        {page ? (
+          <dl className="pl-stats" aria-label="Library breakdown">
+            {(["studio", "photo", "twin"] as const).map((k) => (
+              <button type="button" key={k} className="pl-stat" aria-pressed={kind === k} onClick={() => { setKind(kind === k ? "all" : k); setPerson(null); }}>
+                <dt>{k === "studio" ? "Filmed" : k === "photo" ? "AI avatars" : "Digital twins"}</dt>
+                <dd>{totals[k].toLocaleString()}</dd>
+              </button>
+            ))}
+          </dl>
+        ) : (
+          <button type="button" className="cs-close" onClick={onClose} aria-label="Close">×</button>
+        )}
       </div>
       <div className="pl-filters">
         <input className="cs-input" placeholder="Search by name…" value={query} onChange={(e) => { setQuery(e.target.value); setPerson(null); }} aria-label="Search presenters" />
@@ -100,7 +121,7 @@ export function PresenterLibrary({
           <button type="button" className="cs-text-button" onClick={() => setPerson(null)}>← All presenters</button>
           <div className="pl-looks-head">
             <h3>
-              {person.name.trim() || "Unnamed presenter"} <span>{person.looksCount} {person.looksCount === 1 ? "look" : "looks"}</span>
+              {person.name.trim() || "Unnamed presenter"} <span>{(personLooksAll?.length ?? person.looksCount)} {(personLooksAll?.length ?? person.looksCount) === 1 ? "look" : "looks"}</span>
             </h3>
             {wanted && personLooksAll ? (
               <label className="pl-fit-toggle">
@@ -124,7 +145,7 @@ export function PresenterLibrary({
         <div className="pl-grid">
           {people.length === 0 ? <p className="pl-empty">No presenters match.</p> : null}
           {people.slice(0, 400).map((g) => (
-            <PersonTile key={g.id} group={g} looks={looks[g.id]} onVisible={() => fetchLooks(g.id)} selected={Boolean(looks[g.id]?.some((l) => l.id === selectedId))} onClick={() => { fetchLooks(g.id); setPerson(g); }} />
+            <PersonTile key={g.id} group={g} looks={looks[g.id]} onVisible={() => fetchLooks(g.id)} selected={Boolean(looks[g.id]?.some((l) => l.id === selectedId))} onClick={() => { fetchLooks(g.id, g.looksCount > 0 && looks[g.id]?.length === 0); setPerson(g); }} />
           ))}
           {people.length > 400 ? <p className="pl-empty">Showing the first 400 — search to narrow down.</p> : null}
         </div>

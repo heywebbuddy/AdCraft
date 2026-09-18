@@ -15,7 +15,7 @@ export async function characterStudioData(orgId: string, brandId: string) {
   const [people, items, models, voices, catalog, library] = await Promise.all([
     db.select().from(characters).where(and(eq(characters.orgId, orgId), eq(characters.brandId, brandId))).orderBy(desc(characters.createdAt)),
     db.select().from(products).where(and(eq(products.orgId, orgId), eq(products.brandId, brandId))).orderBy(desc(products.createdAt)),
-    studioModels(), listAllVoices().then(v => v.slice(0, 1)), getCatalog(), getPresenterGroups(),
+    studioModels(), listAllVoices(), getCatalog(), getPresenterGroups(),
   ]);
   return {
     characters: await Promise.all(people.map(async c => ({ id: c.id, name: c.name, description: c.description, personality: c.personality, voiceId: c.voiceId, voice: await findVoice(c.voiceId), imageModel: c.imageModel, motion: c.motion ?? {}, portraitUrl: c.portraitKey ? `/api/files/${c.portraitKey}` : null, status: c.status, error: c.error, looks: c.looks.map(l => ({ id: l.id, name: l.name, url: `/api/files/${l.imageKey}` })) }))),
@@ -23,6 +23,8 @@ export async function characterStudioData(orgId: string, brandId: string) {
     models,
     /** A sensible starting voice for new characters and library presenters. */
     defaultVoice: voices[0] ?? null,
+    /** Catalogue size for the voice library tab (the list itself is searched server-side). */
+    voiceStats: { total: voices.length, elevenlabs: voices.filter(v => v.provider === "elevenlabs").length, heygen: voices.filter(v => v.provider === "heygen").length, languages: new Set(voices.map(v => v.language).filter(Boolean)).size },
     /** HeyGen's public presenter library: people (groups); looks load on demand via loadPresenterLooks. */
     presenterGroups: library.groups,
     presenterLibraryLoading: library.loading,

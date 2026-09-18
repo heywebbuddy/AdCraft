@@ -165,7 +165,9 @@ export async function listGroupLooks(groupId: string): Promise<AvatarLook[]> {
     return list;
   } catch (err) {
     console.warn("[heygen] listGroupLooks failed", err instanceof Error ? err.message : err);
-    return hit?.list ?? [];
+    // A stale list beats nothing; with no list at all, throw so callers don't cache "no looks".
+    if (hit) return hit.list;
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
 

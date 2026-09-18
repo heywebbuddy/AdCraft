@@ -5,18 +5,23 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 import { useRouter } from "next/navigation";
 import type { CharacterStudioData } from "@/server/character-studio";
 import { CHARACTER_TEMPLATES, estimatedStudioSeconds, hookVariations, studioScript, type CharacterTemplateId } from "@/lib/character-studio";
-import { auditionVoiceAction, createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction, searchVoicesAction } from "./actions";
+import { auditionVoiceAction, createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction, searchVoicesAction, setCharacterVoiceAction } from "./actions";
 import { Spark } from "@/components/spark";
 import { MakerLogo, inferMaker } from "@/components/maker-logo";
-import { VoiceField, type CatalogVoice } from "@/components/voice-picker";
+import { PlayButton, VoiceField, VoicePicker, type CatalogVoice } from "@/components/voice-picker";
 import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
 
 type Props = { data: CharacterStudioData; brandName: string; balance: number; videoCredits: number; canEdit: boolean; planEnabled: boolean };
-type View = "studio" | "characters" | "templates";
+type View = "studio" | "characters" | "presenters" | "voices" | "templates";
+const VIEWS: Array<[View, string]> = [["studio", "Create an ad"], ["characters", "My characters"], ["presenters", "Presenter library"], ["voices", "Voice library"], ["templates", "Ad templates"]];
+const isView = (v: string): v is View => VIEWS.some(([id]) => id === v);
 
 export function CharacterStudio({ data, brandName, balance, videoCredits, canEdit, planEnabled }: Props) {
   const router = useRouter();
-  const [view, setView] = useState<View>("studio");
+  // The section is also in the URL hash (/characters#voices) so the libraries can be linked to.
+  const [view, setViewState] = useState<View>("studio");
+  useEffect(() => { const h = window.location.hash.slice(1); if (isView(h)) setViewState(h); }, []);
+  function setView(v: View) { setViewState(v); window.history.replaceState(null, "", v === "studio" ? window.location.pathname : `#${v}`); window.scrollTo({ top: 0 }); }
   const [characterId, setCharacterId] = useState(data.characters.find(c => c.portraitUrl)?.id ?? data.characters[0]?.id ?? "");
   const character = data.characters.find(c => c.id === characterId) ?? data.characters[0];
   const [lookId, setLookId] = useState("");
@@ -43,6 +48,10 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const [stockAvatar, setStockAvatar] = useState<PresenterChoice | null>(null);
   const [stockVoice, setStockVoice] = useState<CatalogVoice | null>(data.defaultVoice);
   const libraryDialog = useRef<HTMLDialogElement>(null);
+  // Browsing the libraries as pages: what's highlighted, before it's used anywhere.
+  const [browsePresenter, setBrowsePresenter] = useState<PresenterChoice | null>(null);
+  const [browseVoice, setBrowseVoice] = useState<CatalogVoice | null>(null);
+  const [browsePlaying, setBrowsePlaying] = useState(false);
   const [error, setError] = useState("");
   const [modalError, setModalError] = useState("");
   const [notice, setNotice] = useState("");
@@ -65,8 +74,8 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
 
   function pickTemplate(id: CharacterTemplateId) { setTemplate(id); setHook(hookVariations(name, id)[0]!); setScene(0); }
   function pickProduct(id: string) { setProductId(id); const item = data.products.find(p => p.id === id); setBody(item?.description ?? ""); setHook(hookVariations(item?.name || serviceName || "your service", template)[0]!); }
-  function openCharacter(mode: "new" | "look" | "profile") {
-    setDialogMode(mode); setModalError(""); setDialogVoice(mode === "new" ? data.defaultVoice : character?.voice ?? data.defaultVoice);
+  function openCharacter(mode: "new" | "look" | "profile", preset?: CatalogVoice | null) {
+    setDialogMode(mode); setModalError(""); setDialogVoice(preset ?? (mode === "new" ? data.defaultVoice : character?.voice ?? data.defaultVoice));
     characterDialog.current?.showModal();
   }
   function openModels(target: "portrait" | "scene") { setModelTarget(target); modelDialog.current?.showModal(); }
@@ -84,6 +93,19 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       } catch { setModalError("Could not reach the server. Please try again."); }
     });
   }
+  /** From the voice library: put the voice where the studio is currently pointing. */
+  function useBrowsedVoice(v: CatalogVoice) {
+    if (stockAvatar) { setStockVoice(v); setNotice(`${v.name} will speak for ${stockAvatar.person.name}.`); setView("studio"); return; }
+    if (character) {
+      start(async () => {
+        const result = await setCharacterVoiceAction(character.id, v.id);
+        if (result.error) { setError(result.error); return; }
+        setNotice(`${v.name} is now ${character.name}'s recurring voice.`); router.refresh(); setView("studio");
+      });
+      return;
+    }
+    setStockVoice(v); setDialogVoice(v); setNotice(`${v.name} is ready — pick a presenter from the library or create a character.`); setView("presenters");
+  }
   function createAd() {
     setError("");
     const form = new FormData();
@@ -96,7 +118,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
 
   return <div className="character-studio">
     <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> Create a character</button></header>
-    <nav className="cs-tabs" aria-label="Character studio sections">{([['studio', 'Create an ad'], ['characters', 'My characters'], ['templates', 'Ad templates']] as const).map(([id, label]) => <button type="button" key={id} aria-pressed={view === id} onClick={() => setView(id)}>{label}{id === "characters" && <span>{data.characters.length}</span>}</button>)}<span className="cs-tabs-note">Your characters, across every campaign</span></nav>
+    <nav className="cs-tabs" aria-label="Character studio sections">{VIEWS.map(([id, label]) => <button type="button" key={id} aria-pressed={view === id} onClick={() => setView(id)}>{label}{id === "characters" && <span>{data.characters.length}</span>}{id === "presenters" && data.presenterGroups.length > 0 && <span>{data.presenterGroups.length.toLocaleString()}</span>}{id === "voices" && data.voiceStats.total > 0 && <span>{data.voiceStats.total.toLocaleString()}</span>}</button>)}<span className="cs-tabs-note">Your characters, across every campaign</span></nav>
     {!planEnabled && <div className="cs-banner">Character studio is not enabled for your plan. <Link href="/settings/billing">View plans →</Link></div>}
     {notice && <div className="cs-notice" role="status">{notice}<button type="button" aria-label="Dismiss notification" onClick={() => setNotice("")}>×</button></div>}
 
@@ -129,6 +151,29 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     </aside></div>}
 
     {view === "characters" && <section><div className="cs-view-heading"><div><h2>Your recurring cast</h2><p>Private to {brandName}. Reuse a character or create a new look.</p></div><span className="cs-badge">{data.characters.length} characters</span></div><div className="cs-character-grid">{data.characters.map(c => <article className="cs-character-card" key={c.id}><div className="cs-cast-photo">{c.portraitUrl ? <img src={c.portraitUrl} alt={c.name} /> : <div className="cs-cast-pending"><Spark size={32} animate={c.status === "failed" ? undefined : "spin"} /><span>{c.status === "failed" ? "Generation failed" : "Creating your character…"}</span></div>}<span className="cs-preview-label">{c.looks.length} {c.looks.length === 1 ? "LOOK" : "LOOKS"}</span></div><div className="cs-cast-info"><h3>{c.name}</h3><p>{c.personality}</p>{c.error && <p className="cs-error">{c.error}</p>}<button type="button" className="cs-secondary" onClick={() => { setCharacterId(c.id); setLookId(""); setView("studio"); }}>{c.portraitUrl ? "Use character ↗" : "View character ↗"}</button></div></article>)}<button type="button" className="cs-new-character-card" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span><strong>A new face for your brand</strong><small>Design a fictional character from a description.</small></button></div></section>}
+
+    {view === "presenters" && <section className="cs-library">
+      {data.presenterLibraryLoading ? <div className="cs-library-indexing"><Spark size={28} animate="spin" /><div><strong>Indexing HeyGen's library</strong><p>About 1,400 people and 25,000 looks are being catalogued for the first time. This takes a couple of minutes and only happens once.</p></div></div>
+        : data.presenterGroups.length === 0 ? <div className="cs-library-indexing"><div><strong>Connect HeyGen to browse presenters</strong><p>Add a HeyGen key to unlock filmed studio presenters, AI avatars and digital twins.</p></div></div>
+        : <PresenterLibrary mode="page" groups={data.presenterGroups} loadLooks={loadPresenterLooks} selectedId={browsePresenter?.look.id ?? stockAvatar?.look.id} ratio={ratio} onSelect={c => setBrowsePresenter(c)} />}
+      {browsePresenter && <div className="cs-pickbar" role="region" aria-label="Selected presenter">
+        <div className="cs-pickbar-thumb">{browsePresenter.look.previewUrl ? <img src={browsePresenter.look.previewUrl} alt="" /> : <span>{browsePresenter.person.name.slice(0, 1)}</span>}</div>
+        <div className="cs-pickbar-text"><strong>{browsePresenter.person.name.trim() || "Unnamed presenter"} <span>· {browsePresenter.look.name}</span></strong><small>{browsePresenter.look.type === "studio_avatar" ? "Filmed studio presenter — gestures are in the footage" : browsePresenter.look.type === "digital_twin" ? "Digital twin — video-trained motion" : browsePresenter.look.engines.includes("avatar_v") ? "AI avatar — Avatar V motion with gesture direction" : "AI avatar — Avatar IV motion"}{browsePresenter.look.orientation ? ` · ${browsePresenter.look.orientation}` : ""}</small></div>
+        <button type="button" className="cs-secondary" onClick={() => setBrowsePresenter(null)}>Clear</button>
+        <button type="button" className="cs-primary" disabled={!canEdit} onClick={() => { const c = browsePresenter; setStockAvatar(c); setScene(0); const g = c.look.gender ?? c.person.gender; if (g && stockVoice?.gender !== g) void searchVoicesAction({ gender: g, provider: "elevenlabs" }).then(r => r.items[0] ?? searchVoicesAction({ gender: g }).then(x => x.items[0])).then(v => v && setStockVoice(v)); setNotice(`${c.person.name} is your presenter. Write the story and generate.`); setView("studio"); }}>Create an ad with {browsePresenter.person.name.trim().split(" ")[0] || "this presenter"} <span>→</span></button>
+      </div>}
+    </section>}
+
+    {view === "voices" && <section className="cs-library">
+      {data.voiceStats.total === 0 ? <div className="cs-library-indexing"><div><strong>Connect ElevenLabs or HeyGen to browse voices</strong><p>Either key unlocks a catalogue of voices your presenters can speak with.</p></div></div>
+        : <VoicePicker mode="page" stats={data.voiceStats} search={searchVoicesAction} audition={auditionVoiceAction} selectedId={browseVoice?.id} onSelect={v => { setBrowseVoice(v); setBrowsePlaying(false); }} />}
+      {browseVoice && <div className="cs-pickbar" role="region" aria-label="Selected voice">
+        <div className="cs-pickbar-thumb cs-pickbar-audio"><PlayButton src={browseVoice.previewUrl} active={browsePlaying} onToggle={setBrowsePlaying} /></div>
+        <div className="cs-pickbar-text"><strong>{browseVoice.name} <span>· {browseVoice.provider === "heygen" ? "HeyGen" : "ElevenLabs"}</span></strong><small>{[browseVoice.style, browseVoice.gender === "female" ? "Woman" : browseVoice.gender === "male" ? "Man" : null, browseVoice.language, browseVoice.accent].filter(Boolean).join(" · ") || "Voice"}{browseVoice.emotion ? " · emotion tags" : ""}</small></div>
+        <button type="button" className="cs-secondary" disabled={!canEdit} onClick={() => openCharacter("new", browseVoice)}>New character with this voice</button>
+        <button type="button" className="cs-primary" disabled={!canEdit || pending} onClick={() => useBrowsedVoice(browseVoice)}>{stockAvatar ? `Use with ${stockAvatar.person.name.trim().split(" ")[0]}` : character ? `Make it ${character.name.split(" ")[0]}'s voice` : "Use in an ad"} <span>→</span></button>
+      </div>}
+    </section>}
 
     {view === "templates" && <section><div className="cs-view-heading"><div><h2>Start with a story that fits.</h2><p>Six editable ad structures. Your character, product and voice.</p></div></div><div className="cs-template-grid">{CHARACTER_TEMPLATES.map((t, i) => <button type="button" key={t.id} className="cs-template-card" onClick={() => { pickTemplate(t.id); setView("studio"); }}><div className={`cs-template-art cs-art-${i % 3}`}><span>{t.icon}</span><small>FORMAT 0{i + 1}</small></div><div><h3>{t.name}</h3><p>{t.description}</p><span className="cs-text-button">Use this format ↗</span></div></button>)}</div></section>}
 

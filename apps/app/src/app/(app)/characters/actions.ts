@@ -109,6 +109,18 @@ export async function saveCharacterAction(form: FormData): Promise<{ error?: str
   } catch (error) { return { error: message(error) }; }
 }
 
+/** Give a saved character a different recurring voice (from the voice library). */
+export async function setCharacterVoiceAction(characterId: string, voiceId: string): Promise<{ error?: string }> {
+  try {
+    const ctx = await editor();
+    if (!(await findVoice(voiceId))) throw new Error("Choose an available voice.");
+    const rows = await db.update(characters).set({ voiceId, updatedAt: new Date() }).where(and(eq(characters.id, characterId.slice(0, 80)), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id))).returning({ id: characters.id });
+    if (!rows.length) throw new Error("Character not found.");
+    revalidatePath("/characters");
+    return {};
+  } catch (error) { return { error: message(error) }; }
+}
+
 export async function createCharacterAdAction(form: FormData): Promise<{ creativeId?: string; error?: string }> {
   try {
     const ctx = await editor();
@@ -174,8 +186,8 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
 /** Looks (outfits / settings) for one library presenter; fetched when a person is opened or scrolled into view. */
 export async function loadPresenterLooks(groupId: string): Promise<PresenterLook[]> {
   await requireOrg();
-  if (!/^[a-f0-9]{16,64}$/i.test(groupId)) return [];
-  return getPresenterLooks(groupId);
+  if (!/^[a-z0-9_-]{4,80}$/i.test(groupId)) return []; // photo groups are hex, studio groups numeric
+  try { return await getPresenterLooks(groupId); } catch { throw new Error("HeyGen did not answer — try again."); }
 }
 
 /** Paged voice search across ElevenLabs and HeyGen for the voice picker. */

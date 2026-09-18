@@ -35,7 +35,8 @@ export function VoiceField({ voice, search, audition, onChange, disabled, label 
 }
 
 /** Search + filter over the whole catalogue (server-side), 60 at a time, with inline previews. */
-export function VoicePicker({ search, audition, selectedId, initialGender, onSelect, onClose }: { search: SearchFn; audition?: AuditionFn; selectedId?: string; initialGender?: "male" | "female"; onSelect: (v: CatalogVoice) => void; onClose: () => void }) {
+export function VoicePicker({ search, audition, selectedId, initialGender, onSelect, onClose, mode = "dialog", stats }: { search: SearchFn; audition?: AuditionFn; selectedId?: string; initialGender?: "male" | "female"; onSelect: (v: CatalogVoice) => void; onClose?: () => void; /** "page" renders as a browsable section (no close, page scroll, two columns). */ mode?: "dialog" | "page"; /** Catalogue totals for the page header. */ stats?: { elevenlabs: number; heygen: number; languages: number } }) {
+  const page = mode === "page";
   const [query, setQuery] = useState("");
   const [gender, setGender] = useState<"all" | "female" | "male">(initialGender ?? "all");
   const [language, setLanguage] = useState("");
@@ -75,14 +76,20 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
   };
 
   return (
-    <div className="pl-root">
+    <div className={`pl-root ${page ? "pl-page" : ""}`}>
       <div className="pl-head">
         <div>
           <span className="cs-eyebrow">Voice library</span>
-          <h2 id="vp-title">Choose a voice</h2>
-          <p>Your ElevenLabs voices plus HeyGen's library — {total.toLocaleString()} {total === 1 ? "match" : "matches"}. Play before you pick.</p>
+          <h2 id={page ? undefined : "vp-title"}>{page ? "Browse voices" : "Choose a voice"}</h2>
+          <p>{page ? `Your ElevenLabs voices plus HeyGen's library across ${languages.length || "many"} languages — ${total.toLocaleString()} ${total === 1 ? "match" : "matches"}. Play a sample, then use the voice in an ad or give it to a character.` : `Your ElevenLabs voices plus HeyGen's library — ${total.toLocaleString()} ${total === 1 ? "match" : "matches"}. Play before you pick.`}</p>
         </div>
-        <button type="button" className="cs-close" onClick={onClose} aria-label="Close">×</button>
+        {page && stats ? (
+          <dl className="pl-stats" aria-label="Catalogue breakdown">
+            <button type="button" className="pl-stat" aria-pressed={source === "elevenlabs"} onClick={() => setSource(source === "elevenlabs" ? "all" : "elevenlabs")}><dt>ElevenLabs</dt><dd>{stats.elevenlabs.toLocaleString()}</dd></button>
+            <button type="button" className="pl-stat" aria-pressed={source === "heygen"} onClick={() => setSource(source === "heygen" ? "all" : "heygen")}><dt>HeyGen</dt><dd>{stats.heygen.toLocaleString()}</dd></button>
+            <div className="pl-stat pl-stat-static"><dt>Languages</dt><dd>{stats.languages.toLocaleString()}</dd></div>
+          </dl>
+        ) : page ? null : <button type="button" className="cs-close" onClick={onClose} aria-label="Close">×</button>}
       </div>
       <div className="pl-filters">
         <input className="cs-input" placeholder="Search by name or style — warm, confident, narrator…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search voices" />
@@ -109,7 +116,7 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
           ))}
         </select>
       </div>
-      <div className="vp-list" role="listbox" aria-label="Voices">
+      <div className={`vp-list ${page ? "vp-columns" : ""}`} role="listbox" aria-label="Voices">
         {loading && items.length === 0 ? <p className="pl-empty">Loading voices…</p> : null}
         {!loading && items.length === 0 ? <p className="pl-empty">No voices match.</p> : null}
         {items.map((v) => (
@@ -161,7 +168,7 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
 }
 
 /** Round play/pause button that owns one <audio>; only one preview plays at a time per picker. */
-function PlayButton({ src, active, onToggle }: { src?: string; active?: boolean; onToggle?: (on: boolean) => void }) {
+export function PlayButton({ src, active, onToggle }: { src?: string; active?: boolean; onToggle?: (on: boolean) => void }) {
   const audio = useRef<HTMLAudioElement>(null);
   const [on, setOn] = useState(false);
   const isOn = active ?? on;
