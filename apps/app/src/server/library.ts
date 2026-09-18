@@ -8,6 +8,8 @@ import sharp from "sharp";
 import { db, dbReady, products } from "@adcraft/db";
 import { getStorage, objectKey, extFromMime } from "@adcraft/storage";
 import { requireOrg } from "./org";
+import { importProductFromUrl } from "./product-import";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { dispatch } from "./jobs";
 import { getProduct, productAttributes, type ProductAttributes } from "./library-data";
 import { IMAGE_TYPES, MAX_PRODUCT_EDGE, MAX_UPLOAD_BYTES } from "@/lib/uploads";
@@ -73,6 +75,23 @@ export async function createProduct(formData: FormData) {
   await dispatch("product.cutout", { orgId: ctx.org.id, productId: product.id });
   revalidatePath("/library");
   redirect(`/library/${product.id}`);
+}
+
+/** "Import from a URL" on the library: metadata + photo from a product page, then cutout. */
+export async function importProduct(formData: FormData) {
+  const ctx = await requireOrg();
+  if (!ctx.brand) redirect("/brands/new");
+  const url = field(formData, "url");
+  let productId: string;
+  try {
+    const result = await importProductFromUrl(ctx.org.id, ctx.brand.id, url);
+    productId = result.productId;
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    redirect(`/library/new?error=url&detail=${encodeURIComponent(err instanceof Error ? err.message : "Could not read that page.")}`);
+  }
+  revalidatePath("/library");
+  redirect(`/library/${productId}`);
 }
 
 export async function updateProduct(productId: string, formData: FormData) {

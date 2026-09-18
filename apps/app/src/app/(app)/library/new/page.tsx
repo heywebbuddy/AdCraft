@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PendingButton } from "@/components/pending-button";
 import { redirect } from "next/navigation";
 import { requireOrg } from "@/server/org";
-import { createProduct } from "@/server/library";
+import { createProduct, importProduct } from "@/server/library";
 import { ImagePicker } from "@/components/image-picker";
 import { IMAGE_ACCEPT } from "@/lib/uploads";
 
@@ -16,12 +16,13 @@ const errors: Record<string, string> = {
   image: "Choose a product photo.",
   type: "Photos must be PNG, JPG or WebP.",
   size: "Photos must be 15 MB or smaller.",
+  url: "Could not import from that page.",
 };
 
-export default async function NewProductPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function NewProductPage({ searchParams }: { searchParams: Promise<{ error?: string; detail?: string; welcome?: string }> }) {
   const ctx = await requireOrg();
   if (!ctx.brand) redirect("/brands/new");
-  const { error } = await searchParams;
+  const { error, detail, welcome } = await searchParams;
 
   return (
     <>
@@ -33,9 +34,22 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
             </Link>{" "}
             · New product
           </div>
-          <h1 className="m-0">Add a product</h1><p className="m-0 mt-2 text-muted">Upload product imagery to use in your creatives.</p>
+          <h1 className="m-0">Add a product</h1><p className="m-0 mt-2 text-muted">{welcome ? "One product is enough for a first ad. Paste its page, or upload a photo." : "Paste a product page, or upload a photo. The background is removed automatically."}</p>
         </div>
       </header>
+
+      <form action={importProduct} className="panel flex flex-col gap-3 p-5">
+        <div className="flex items-baseline justify-between">
+          <span className="eyebrow">Import from a product page</span>
+          <span className="text-[11px] text-muted">Name, description, price and photo</span>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input name="url" type="url" required placeholder="https://yourbrand.com/products/everyday-serum" className={`${inputClass} flex-1`} />
+          <PendingButton className="btn btn-dark h-11 shrink-0" pendingLabel="Importing…">Import ↗</PendingButton>
+        </div>
+        {error === "url" ? <p className="m-0 text-[12px] text-[#b4382a]">{detail ? decodeURIComponent(detail) : errors.url} Upload a photo below instead.</p> : null}
+      </form>
+      <div className="flex items-center gap-3 text-[11px] uppercase tracking-[1.2px] text-muted"><span className="h-px flex-1 bg-line" />or upload<span className="h-px flex-1 bg-line" /></div>
 
       <form action={createProduct} className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="panel flex flex-col gap-3 p-5">

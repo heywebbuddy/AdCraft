@@ -3,8 +3,10 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { db, dbReady, organizations, memberships, brands, brandKits, creditLedger } from "@adcraft/db";
-import { requireViewer } from "./org";
+import { requireViewer, requireOrg } from "./org";
 import { ORG_COOKIE, BRAND_COOKIE } from "./org";
+import { importProductFromUrl } from "./product-import";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getPlatformSettings } from "./platform-settings";
 
 function slugify(s: string) {
@@ -54,7 +56,24 @@ export async function createWorkspace(formData: FormData) {
   const jar = await cookies();
   jar.set(ORG_COOKIE, org.id, { path: "/", httpOnly: true, sameSite: "lax" });
   jar.set(BRAND_COOKIE, brand.id, { path: "/", httpOnly: true, sameSite: "lax" });
-  redirect("/dashboard");
+  redirect("/welcome/first-ad");
+}
+
+/** Onboarding step 2: import a product from its page and open a pre-filled brief. */
+export async function importFirstProduct(formData: FormData) {
+  const ctx = await requireOrg();
+  if (!ctx.brand) redirect("/brands/new");
+  const url = String(formData.get("url") ?? "").trim();
+  let productId: string;
+  try {
+    const result = await importProductFromUrl(ctx.org.id, ctx.brand.id, url);
+    productId = result.productId;
+    if (!result.hasImage) redirect(`/library/${productId}?welcome=1&noimage=1`);
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    redirect(`/welcome/first-ad?error=${encodeURIComponent(err instanceof Error ? err.message : "Could not read that page.")}`);
+  }
+  redirect(`/briefs/new?product=${productId}&format=static&welcome=1`);
 }
 
 export async function switchBrand(brandId: string) {
