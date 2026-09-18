@@ -9,4 +9,5 @@ else
   echo "[start] DATABASE_URL is empty — using embedded PGlite (data does not survive a redeploy)"
 fi
 mkdir -p "${LOCAL_STORAGE_DIR:-/data/files}"
-exec pnpm --filter @adcraft/app start -- --port "${PORT:-3000}" --hostname 0.0.0.0
+cd apps/app
+exec ./node_modules/.bin/next start -H 0.0.0.0 -p "${PORT:-3000}"
