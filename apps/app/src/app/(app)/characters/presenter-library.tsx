@@ -64,7 +64,7 @@ export function PresenterLibrary({ avatars, selectedId, onSelect, onClose }: { a
           </div>
         </div>
       ) : (
-        <div className="pl-grid pl-grid-people">
+        <div className="pl-grid">
           {people.length === 0 ? <p className="pl-empty">No presenters match “{query}”.</p> : null}
           {people.map(([name, list]) => (
             <PersonCard key={name} name={name} looks={list} selected={list.some((a) => a.id === selectedId)} onClick={() => (list.length === 1 ? onSelect(list[0]!) : setPerson(name))} />
@@ -90,26 +90,28 @@ function AvatarCard({ avatar, title, subtitle, selected, onClick }: { avatar: Li
   return (
     // A div, not a <button>: buttons give their children a shrink-to-fit anonymous box in
     // Chromium, which collapses aspect-ratio artwork to zero height.
-    <div role="button" tabIndex={0} className="pl-card" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
-      <span className="pl-art">
-        {avatar.previewUrl ? <img src={avatar.previewUrl} alt="" loading="lazy" /> : <span className="pl-initial">{title.slice(0, 1)}</span>}
-        {avatar.previewVideoUrl ? <video ref={video} src={avatar.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
+    <div role="button" tabIndex={0} className="pl-tile pl-look" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
+      <span className="pl-sheet solo">
+        <span className="pl-cell pl-hero">
+          {avatar.previewUrl ? <img src={avatar.previewUrl} alt="" loading="lazy" /> : <span className="pl-initial">{title.slice(0, 1)}</span>}
+          {avatar.previewVideoUrl ? <video ref={video} src={avatar.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
+        </span>
         {selected ? <span className="pl-check">✓</span> : null}
       </span>
-      <span className="pl-meta">
+      <span className="pl-caption">
         <strong>{title}</strong>
-        {subtitle ? <small>{subtitle}</small> : <small>{avatar.gender === "female" ? "Woman" : avatar.gender === "male" ? "Man" : ""}</small>}
+        {subtitle ? <small>{subtitle}</small> : null}
       </span>
     </div>
   );
 }
 
-/** A person: hero portrait plus a mosaic of their other looks (settings, outfits). */
+/** A person: hero portrait plus two stacked looks — three tiles, like a contact sheet. */
 function PersonCard({ name, looks, selected, onClick }: { name: string; looks: LibraryAvatar[]; selected?: boolean; onClick: () => void }) {
   const [hover, setHover] = useState(false);
   const video = useRef<HTMLVideoElement>(null);
   const hero = looks[0]!;
-  const rest = looks.slice(1, 5);
+  const rest = looks.slice(1, 3);
   useEffect(() => {
     const v = video.current;
     if (!v) return;
@@ -120,30 +122,22 @@ function PersonCard({ name, looks, selected, onClick }: { name: string; looks: L
     }
   }, [hover]);
   return (
-    <div role="button" tabIndex={0} className="pl-card pl-person" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
-      <span className={`pl-person-art${rest.length ? "" : " solo"}`}>
-        <span className="pl-hero">
+    <div role="button" tabIndex={0} className="pl-tile" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
+      <span className={`pl-sheet n${rest.length}`}>
+        <span className="pl-cell pl-hero">
           {hero.previewUrl ? <img src={hero.previewUrl} alt="" loading="lazy" /> : <span className="pl-initial">{name.slice(0, 1)}</span>}
           {hero.previewVideoUrl ? <video ref={video} src={hero.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
         </span>
-        {rest.length ? (
-          <span className={`pl-mosaic n${rest.length}`}>
-            {rest.map((l) => (
-              <span key={l.id} className="pl-thumb">
-                {l.previewUrl ? <img src={l.previewUrl} alt="" loading="lazy" /> : null}
-              </span>
-            ))}
-            {looks.length > 5 ? <span className="pl-more">+{looks.length - 5}</span> : null}
+        {rest.map((l) => (
+          <span key={l.id} className="pl-cell">
+            {l.previewUrl ? <img src={l.previewUrl} alt="" loading="lazy" /> : null}
           </span>
-        ) : null}
+        ))}
         {selected ? <span className="pl-check">✓</span> : null}
       </span>
-      <span className="pl-meta">
+      <span className="pl-caption">
         <strong>{name}</strong>
-        <small>
-          {looks.length} {looks.length === 1 ? "look" : "looks"}
-          {hero.gender ? ` · ${hero.gender === "female" ? "Woman" : "Man"}` : ""}
-        </small>
+        <small>{looks.length} {looks.length === 1 ? "look" : "looks"}</small>
       </span>
     </div>
   );
