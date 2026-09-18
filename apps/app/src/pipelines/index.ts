@@ -9,6 +9,7 @@ import "./product-cutout";
 import "./video";
 import "./ugc";
 import "./character";
+import "./character-looks";
 
 import "./publish";
 import "./insights";

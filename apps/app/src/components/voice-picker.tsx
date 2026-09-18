@@ -139,7 +139,9 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
           <div key={v.id} role="option" aria-selected={v.id === selectedId} className="vp-row" onClick={() => onSelect(v)} onKeyDown={(e) => { if (e.key === "Enter") onSelect(v); }} tabIndex={0}>
             {v.previewUrl || samples[v.id] ? (
               <PlayButton src={samples[v.id] ?? v.previewUrl} active={playing === v.id} onToggle={(on) => setPlaying(on ? v.id : null)} />
-            ) : audition && v.provider === "heygen" ? (
+            ) : v.status === "processing" ? (
+              <span className="vp-nosample" title="Training on HeyGen">…</span>
+            ) : audition && v.provider === "heygen" && !v.owned ? (
               <button
                 type="button"
                 className="vp-audition"
@@ -166,9 +168,9 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
             )}
             <div className="vp-text">
               <strong>{v.name}</strong>
-              <small>{[v.style, v.gender === "female" ? "Woman" : v.gender === "male" ? "Man" : null, v.language, v.accent].filter(Boolean).join(" · ")}{!v.previewUrl && !samples[v.id] ? " · no sample yet" : ""}</small>
+              <small>{[v.style, v.gender === "female" ? "Woman" : v.gender === "male" ? "Man" : null, v.language, v.accent].filter(Boolean).join(" · ")}{v.status === "processing" ? " · still training" : v.status === "failed" ? " · clone failed" : !v.previewUrl && !samples[v.id] ? " · no sample yet" : ""}</small>
             </div>
-            <span className={`vp-source ${v.provider}`}>{v.provider === "heygen" ? "HeyGen" : "ElevenLabs"}</span>
+            <span className={`vp-source ${v.owned ? `owned ${v.owned}` : v.provider}`}>{v.owned === "clone" ? "Your clone" : v.owned === "designed" ? "Designed" : v.provider === "heygen" ? "HeyGen" : "ElevenLabs"}</span>
             {v.id === selectedId ? <span className="vp-check">✓</span> : null}
           </div>
         ))}

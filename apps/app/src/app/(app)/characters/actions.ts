@@ -2,9 +2,10 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, notInArray } from "drizzle-orm";
-import { db, characters, generationEvents, products, projects, briefs, concepts } from "@adcraft/db";
-import { findVoice, generateHeyGenVoiceSample, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, searchVoices, setHeyGenVoicePreview, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
+import { db, characters, generationEvents, products, projects, briefs, concepts, brandVoices } from "@adcraft/db";
+import { cloneHeyGenVoice, designHeyGenVoices, findLookPack, generateHeyGenVoiceSample, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, isHeyGenVoiceId, searchVoices, setHeyGenVoicePreview, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
 import { getVoiceSample, storeVoiceSample } from "@/server/voice-samples";
+import { deleteBrandVoice, discardHeyGenVoices, listBrandVoices, resolveVoice, storeBrandVoiceSample, toCatalogVoice } from "@/server/brand-voices";
 import { getPresenterLooks, type PresenterLook } from "@/server/presenter-library";
 import { requireOrg } from "@/server/org";
 import { studioModels } from "@/server/character-studio";
@@ -63,7 +64,7 @@ export async function generateCharacterAction(form: FormData): Promise<{ id?: st
     const personality = existing?.personality ?? field(form, "personality", 300);
     const voiceId = existing?.voiceId ?? field(form, "voiceId", 120);
     if (!name || description.length < 15) throw new Error("Add a name and at least 15 characters describing your fictional adult presenter.");
-    if (!(await findVoice(voiceId))) throw new Error("Choose an available voice.");
+    if (!(await resolveVoice(ctx.org.id, voiceId))) throw new Error("Choose an available voice.");
     const eventId = randomUUID();
     await reserveGenerationCredits(ctx.org.id, model.creditsPerUnit, eventId);
     reservation = { orgId: ctx.org.id, eventId };
@@ -99,7 +100,7 @@ export async function saveCharacterAction(form: FormData): Promise<{ error?: str
   try {
     const ctx = await editor();
     const voiceId = field(form, "voiceId", 120);
-    if (!(await findVoice(voiceId))) throw new Error("Choose an available voice.");
+    if (!(await resolveVoice(ctx.org.id, voiceId))) throw new Error("Choose an available voice.");
     const name = field(form, "name", 60);
     if (!name) throw new Error("Give your character a name.");
     const rows = await db.update(characters).set({ name, personality: field(form, "personality", 300), voiceId, motion: motionOf(form), updatedAt: new Date() }).where(and(eq(characters.id, field(form, "characterId", 80)), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id))).returning({ id: characters.id });
@@ -113,7 +114,7 @@ export async function saveCharacterAction(form: FormData): Promise<{ error?: str
 export async function setCharacterVoiceAction(characterId: string, voiceId: string): Promise<{ error?: string }> {
   try {
     const ctx = await editor();
-    if (!(await findVoice(voiceId))) throw new Error("Choose an available voice.");
+    if (!(await resolveVoice(ctx.org.id, voiceId))) throw new Error("Choose an available voice.");
     const rows = await db.update(characters).set({ voiceId, updatedAt: new Date() }).where(and(eq(characters.id, characterId.slice(0, 80)), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id))).returning({ id: characters.id });
     if (!rows.length) throw new Error("Character not found.");
     revalidatePath("/characters");
@@ -145,8 +146,10 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
     const look = character?.looks.find(l => l.id === field(form, "lookId", 80));
     if (!stockAvatar && !look) throw new Error("Choose one of this character's saved looks.");
     const voiceId = character?.voiceId ?? field(form, "voiceId", 120);
-    const voice = await findVoice(voiceId);
+    const voice = await resolveVoice(ctx.org.id, voiceId);
     if (!voice) throw new Error("Choose a voice for this presenter.");
+    if (voice.status === "processing") throw new Error("That voice is still being cloned. Give it a minute.");
+    if (voice.status === "failed") throw new Error("That voice clone failed. Pick another voice.");
     if (voice.provider === "elevenlabs" && !isElevenLabsConfigured) throw new Error("That voice needs ElevenLabs; pick a HeyGen voice or connect ElevenLabs.");
     const presenterName = character?.name ?? stockAvatar!.person ?? stockAvatar!.label;
     const tone = character?.personality ?? "Warm and conversational";
@@ -176,7 +179,8 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
       voiceId,
       voiceProvider: voice.provider,
       templateId,
-      ...(stockAvatar ? { avatarId: stockAvatar.id } : { characterImageKey: look!.imageKey, characterId: character!.id, motion: character!.motion ?? {} }),
+      // A HeyGen-generated look renders as that look's avatar_id; our own portraits go up as an image.
+      ...(stockAvatar ? { avatarId: stockAvatar.id } : look!.heygenLookId ? { avatarId: look!.heygenLookId, characterId: character!.id, motion: character!.motion ?? {} } : { characterImageKey: look!.imageKey, characterId: character!.id, motion: character!.motion ?? {} }),
     });
     revalidatePath("/characters"); revalidatePath("/creatives");
     return result;
@@ -192,8 +196,20 @@ export async function loadPresenterLooks(groupId: string): Promise<PresenterLook
 
 /** Paged voice search across ElevenLabs and HeyGen for the voice picker. */
 export async function searchVoicesAction(q: VoiceQuery): Promise<{ items: CatalogVoice[]; total: number; languages: string[] }> {
-  await requireOrg();
-  return searchVoices({ query: String(q.query ?? "").slice(0, 60), gender: q.gender === "male" || q.gender === "female" ? q.gender : undefined, language: q.language ? String(q.language).slice(0, 40) : undefined, provider: q.provider === "heygen" || q.provider === "elevenlabs" ? q.provider : undefined, offset: Number(q.offset) || 0, limit: 60 });
+  const ctx = await requireOrg();
+  const query = String(q.query ?? "").slice(0, 60);
+  const gender = q.gender === "male" || q.gender === "female" ? q.gender : undefined;
+  const language = q.language ? String(q.language).slice(0, 40) : undefined;
+  const provider = q.provider === "heygen" || q.provider === "elevenlabs" ? q.provider : undefined;
+  const offset = Number(q.offset) || 0;
+  const result = await searchVoices({ query, gender, language, provider, offset, limit: 60 });
+  if (provider === "elevenlabs" || !ctx.brand) return result;
+  // The workspace's own clones and designed voices lead page one.
+  const needle = query.trim().toLowerCase();
+  const own = (await listBrandVoices(ctx.org.id, ctx.brand.id)).map(toCatalogVoice).filter(v => (!gender || v.gender === gender) && (!language || v.language === language) && (!needle || `${v.name} ${v.style ?? ""} ${v.language ?? ""}`.toLowerCase().includes(needle)));
+  const ownIds = new Set(own.map(v => v.id));
+  const items = result.items.filter(v => !ownIds.has(v.id));
+  return { items: offset === 0 ? [...own, ...items] : items, total: result.total + own.length, languages: result.languages };
 }
 
 /**
@@ -204,10 +220,10 @@ export async function searchVoicesAction(q: VoiceQuery): Promise<{ items: Catalo
 export async function auditionVoiceAction(voiceId: string): Promise<{ url?: string; error?: string }> {
   const ctx = await requireOrg();
   if (ctx.role === "viewer") return { error: "Viewers can't generate samples." };
-  if (!/^[a-f0-9]{16,64}$/i.test(voiceId)) return { error: "Unknown voice." };
+  if (!isHeyGenVoiceId(voiceId)) return { error: "Unknown voice." };
   const cached = await getVoiceSample(voiceId);
   if (cached) return { url: cached };
-  const voice = await findVoice(voiceId);
+  const voice = await resolveVoice(ctx.org.id, voiceId);
   if (!voice || voice.provider !== "heygen") return { error: "Only HeyGen voices can be auditioned this way." };
   try {
     const { url } = await generateHeyGenVoiceSample(voiceId);
@@ -217,4 +233,134 @@ export async function auditionVoiceAction(voiceId: string): Promise<{ url?: stri
   } catch (error) {
     return { error: message(error) };
   }
+}
+
+/**
+ * Give a character new looks on HeyGen — a Look Pack (5), a single template (2) or one
+ * from a description. Credits are reserved per look and returned for any that fail.
+ */
+export async function applyLookPackAction(form: FormData): Promise<{ error?: string }> {
+  let reservation: { orgId: string; eventId: string } | null = null;
+  try {
+    const ctx = await editor();
+    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to generate looks.");
+    const characterId = field(form, "characterId", 80);
+    const [character] = await db.select().from(characters).where(and(eq(characters.id, characterId), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id)));
+    if (!character) throw new Error("Character not found in this brand.");
+    if (!character.portraitKey) throw new Error("This character needs a finished portrait first.");
+    if (["queued", "generating"].includes(character.status)) throw new Error("This character is already generating. Wait for it to finish.");
+    const source = field(form, "source", 10) === "prompt" ? "prompt" : "pack";
+    const gender = field(form, "gender", 10) === "male" ? "male" : "female";
+    const aspectRatio = field(form, "aspectRatio", 5) === "9:16" ? "9:16" : "16:9";
+    const pack = source === "pack" ? findLookPack(field(form, "packId", 60)) : null;
+    if (source === "pack" && !pack) throw new Error("Choose a look pack.");
+    const prompt = field(form, "prompt", 1000);
+    if (source === "prompt" && prompt.length < 10) throw new Error("Describe the outfit and setting in a few words.");
+    const lookName = field(form, "lookName", 60) || pack?.name || "New look";
+    const count = pack?.looks ?? 1;
+    const credits = CREDIT_COSTS.heygenLook * count;
+    if (ctx.credits.balance < credits) throw new Error(`You need ${credits} credits for ${count === 1 ? "this look" : `these ${count} looks`}.`);
+    const eventId = randomUUID();
+    await reserveGenerationCredits(ctx.org.id, credits, eventId);
+    reservation = { orgId: ctx.org.id, eventId };
+    const meta = { characterId, label: `${character.name} · ${pack?.name ?? lookName}`, source, packId: pack?.id };
+    await db.transaction(async tx => {
+      const updated = await tx.update(characters).set({ status: "queued", error: null, generationId: eventId, updatedAt: new Date() }).where(and(eq(characters.id, character.id), notInArray(characters.status, ["queued", "generating"]))).returning({ id: characters.id });
+      if (!updated.length) throw new Error("This character is already generating.");
+      await tx.insert(generationEvents).values({ id: eventId, orgId: ctx.org.id, capability: "image", provider: "heygen", model: "heygen-looks", status: "started", credits, meta });
+    });
+    await dispatch("character.looks", { orgId: ctx.org.id, characterId, eventId, source, packId: pack?.id, gender, prompt: source === "prompt" ? prompt : undefined, lookName, aspectRatio, credits, meta });
+    revalidatePath("/characters");
+    return {};
+  } catch (error) {
+    if (reservation) {
+      await refundGenerationCredits(reservation.orgId, reservation.eventId);
+      await db.update(characters).set({ status: "ready", error: "Could not queue the looks. Your credits were returned." }).where(and(eq(characters.orgId, reservation.orgId), eq(characters.generationId, reservation.eventId)));
+      await db.update(generationEvents).set({ status: "failed", error: "Could not queue looks" }).where(eq(generationEvents.id, reservation.eventId));
+    }
+    return { error: message(error) };
+  }
+}
+
+const AUDIO_TYPES: Record<string, string> = { "audio/mpeg": "mp3", "audio/mp3": "mp3", "audio/wav": "wav", "audio/x-wav": "wav", "audio/wave": "wav", "audio/mp4": "m4a", "audio/x-m4a": "m4a", "audio/m4a": "m4a", "audio/aac": "aac", "audio/ogg": "ogg", "audio/webm": "webm", "audio/flac": "flac" };
+const MAX_CLONE_BYTES = 10 * 1024 * 1024;
+
+/** Instant clone from one recording. Returns the workspace voice; it finishes in the background. */
+export async function cloneVoiceAction(form: FormData): Promise<{ voice?: CatalogVoice; error?: string }> {
+  try {
+    const ctx = await editor();
+    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to clone voices.");
+    const name = field(form, "name", 60);
+    if (!name) throw new Error("Name the voice.");
+    if (field(form, "consent", 5) !== "yes") throw new Error("Confirm you have permission to clone this voice.");
+    const file = form.get("audio");
+    if (!(file instanceof File) || !file.size) throw new Error("Add a recording (mp3, wav or m4a).");
+    if (file.size > MAX_CLONE_BYTES) throw new Error("Keep the recording under 10 MB — one to two minutes is plenty.");
+    const mimeType = AUDIO_TYPES[file.type] ? file.type : file.name.toLowerCase().endsWith(".wav") ? "audio/wav" : file.name.toLowerCase().endsWith(".m4a") ? "audio/mp4" : "audio/mpeg";
+    const language = field(form, "language", 10) || undefined;
+    const voiceId = await cloneHeyGenVoice({ name, audio: Buffer.from(await file.arrayBuffer()), mimeType, language });
+    const [row] = await db.insert(brandVoices).values({ orgId: ctx.org.id, brandId: ctx.brand.id, voiceId, name, kind: "clone", language: language ?? null, status: "processing" }).returning();
+    revalidatePath("/characters");
+    return { voice: toCatalogVoice(row!) };
+  } catch (error) { return { error: message(error) }; }
+}
+
+export type DesignedVoice = { voiceId: string; name: string; gender?: "male" | "female"; language?: string; previewUrl?: string };
+
+/**
+ * Design voices from a description. HeyGen returns up to three already-created private
+ * voices; the client must keep one (`keepDesignedVoiceAction`) or discard the batch.
+ */
+export async function designVoicesAction(input: { prompt: string; gender?: "male" | "female"; locale?: string; seed?: number }): Promise<{ voices?: DesignedVoice[]; seed?: number; error?: string }> {
+  try {
+    await editor();
+    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to design voices.");
+    const prompt = String(input.prompt ?? "").trim().slice(0, 1000);
+    if (prompt.length < 20) throw new Error("Describe the voice in a full sentence — tone, age, accent, pace and what it is for.");
+    const res = await designHeyGenVoices({ prompt, gender: input.gender === "male" || input.gender === "female" ? input.gender : undefined, locale: input.locale ? String(input.locale).slice(0, 10) : undefined, seed: Math.max(0, Math.min(20, Number(input.seed) || 0)) });
+    return { voices: res.voices.map(v => ({ voiceId: v.id, name: v.name, gender: v.gender, language: v.language, previewUrl: v.previewUrl })), seed: res.seed };
+  } catch (error) { return { error: message(error) }; }
+}
+
+/** Keep one designed voice for this workspace and delete the others in the batch. */
+export async function keepDesignedVoiceAction(input: { keep: DesignedVoice; name?: string; prompt?: string; discard: string[] }): Promise<{ voice?: CatalogVoice; error?: string }> {
+  try {
+    const ctx = await editor();
+    const keep = input.keep;
+    if (!keep?.voiceId || !isHeyGenVoiceId(keep.voiceId)) throw new Error("Choose a voice to keep.");
+    const name = String(input.name ?? keep.name ?? "Designed voice").trim().slice(0, 60) || "Designed voice";
+    const sampleKey = keep.previewUrl ? await storeBrandVoiceSample(ctx.org.id, keep.voiceId, keep.previewUrl).catch(() => null) : null;
+    const [row] = await db.insert(brandVoices).values({ orgId: ctx.org.id, brandId: ctx.brand.id, voiceId: keep.voiceId, name, kind: "designed", gender: keep.gender ?? null, language: keep.language ?? null, sampleKey, status: "ready", prompt: String(input.prompt ?? "").slice(0, 1000) || null }).returning();
+    await discardHeyGenVoices((input.discard ?? []).filter(id => isHeyGenVoiceId(id) && id !== keep.voiceId));
+    revalidatePath("/characters");
+    return { voice: toCatalogVoice(row!) };
+  } catch (error) { return { error: message(error) }; }
+}
+
+/** The user closed a design batch without keeping any: free the slots on HeyGen. */
+export async function discardDesignedVoicesAction(ids: string[]): Promise<void> {
+  try {
+    await editor();
+    await discardHeyGenVoices((ids ?? []).filter(isHeyGenVoiceId).slice(0, 10));
+  } catch { /* best effort */ }
+}
+
+/** This workspace's clones and designed voices, refreshed against HeyGen. */
+export async function brandVoicesAction(): Promise<CatalogVoice[]> {
+  const ctx = await requireOrg();
+  if (!ctx.brand) return [];
+  return (await listBrandVoices(ctx.org.id, ctx.brand.id)).map(toCatalogVoice);
+}
+
+export async function deleteBrandVoiceAction(voiceId: string): Promise<{ error?: string }> {
+  try {
+    const ctx = await editor();
+    const [row] = await db.select({ id: brandVoices.id, voiceId: brandVoices.voiceId }).from(brandVoices).where(and(eq(brandVoices.orgId, ctx.org.id), eq(brandVoices.brandId, ctx.brand.id), eq(brandVoices.voiceId, voiceId.slice(0, 80)))).limit(1);
+    if (!row) throw new Error("Voice not found.");
+    const inUse = await db.select({ id: characters.id }).from(characters).where(and(eq(characters.orgId, ctx.org.id), eq(characters.voiceId, row.voiceId))).limit(1);
+    if (inUse.length) throw new Error("A character still uses this voice. Give it another voice first.");
+    await deleteBrandVoice(ctx.org.id, ctx.brand.id, row.id);
+    revalidatePath("/characters");
+    return {};
+  } catch (error) { return { error: message(error) }; }
 }

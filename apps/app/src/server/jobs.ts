@@ -12,6 +12,7 @@ import { hydrateModels } from "./model-catalog";
  */
 export type JobName =
   | "character.generate"
+  | "character.looks"
   | "concepts.generate"
   | "static.generate"
   | "product.cutout"
@@ -23,6 +24,8 @@ export type JobName =
 
 export type JobPayloads = {
   "character.generate": { orgId: string; characterId: string; eventId: string; model: string; prompt: string; lookName: string };
+  /** HeyGen looks for a character: a Look Pack / template (`packId` + `gender`) or a prompt. */
+  "character.looks": { orgId: string; characterId: string; eventId: string; source: "pack" | "prompt"; packId?: string; gender?: "female" | "male"; prompt?: string; lookName: string; aspectRatio?: "16:9" | "9:16"; credits: number; meta?: Record<string, unknown> };
   "concepts.generate": { orgId: string; briefId: string; count?: number };
   "static.generate": { orgId: string; creativeId: string; model?: string; mode?: "editable" | "ai"; instructions?: string; onlyMissing?: boolean };
   "product.cutout": { orgId: string; productId: string };

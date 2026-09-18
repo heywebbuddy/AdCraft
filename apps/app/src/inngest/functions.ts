@@ -3,6 +3,7 @@ import { runConceptsPipeline } from "@/pipelines/concepts";
 import { runVideoPipeline } from "@/pipelines/video";
 import { runUgcPipeline } from "@/pipelines/ugc";
 import { runCharacterPipeline } from "@/pipelines/character";
+import { runCharacterLooksPipeline } from "@/pipelines/character-looks";
 import { runStaticPipeline } from "@/pipelines/static";
 import { runRenderPipeline } from "@/pipelines/render";
 import { runProductCutout } from "@/pipelines/product-cutout";
@@ -62,8 +63,16 @@ export const generateCharacter = inngest.createFunction(
   async ({ event, step }) => step.run("generate", () => withCatalog(() => runCharacterPipeline(event.data))),
 );
 
+/** HeyGen look packs poll for up to ~20 minutes, so the function keeps a generous step timeout. */
+export const generateCharacterLooks = inngest.createFunction(
+  { id: "character-looks", retries: 0, concurrency: { limit: 2 } },
+  { event: "character/looks" },
+  async ({ event, step }) => step.run("looks", () => withCatalog(() => runCharacterLooksPipeline(event.data))),
+);
+
 export const functions = [
   generateCharacter,
+  generateCharacterLooks,
   generateConcepts,
   generateStatic,
   renderVariants,

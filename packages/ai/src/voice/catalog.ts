@@ -1,4 +1,5 @@
 import { listVoices as listElevenLabsVoices, isElevenLabsConfigured } from "./elevenlabs";
+import { listHeyGenPrivateVoices } from "./heygen-voices";
 
 /**
  * One voice catalogue across providers.
@@ -25,11 +26,23 @@ export type CatalogVoice = {
   previewUrl?: string;
   /** HeyGen: voice can express emotion tags in the script. */
   emotion?: boolean;
+  /** A private voice this workspace created (instant clone or designed). */
+  owned?: "clone" | "designed";
+  /** Clones: still training / failed. Absent means ready. */
+  status?: "processing" | "failed";
 };
 
 const API = process.env.HEYGEN_API_BASE ?? "https://api.heygen.com";
 const SIX_HOURS = 6 * 60 * 60_000;
 let heygenCache: { at: number; list: CatalogVoice[] } | null = null;
+
+/** HeyGen mixes names and codes ("en", "Turkey", "unknown") in `language`; present one spelling. */
+const LANGUAGE_ALIASES: Record<string, string> = { en: "English", es: "Spanish", fr: "French", de: "German", it: "Italian", pt: "Portuguese", nl: "Dutch", hi: "Hindi", ja: "Japanese", ko: "Korean", zh: "Chinese", ar: "Arabic", ru: "Russian", tr: "Turkish", turkey: "Turkish", pl: "Polish", sv: "Swedish", da: "Danish", fi: "Finnish", no: "Norwegian", cs: "Czech", el: "Greek", he: "Hebrew", id: "Indonesian", th: "Thai", vi: "Vietnamese", uk: "Ukrainian", ro: "Romanian", hu: "Hungarian", ta: "Tamil", te: "Telugu", ur: "Urdu", bn: "Bangla", ms: "Malay" };
+function normaliseLanguage(raw?: string | null): string | undefined {
+  const l = raw?.trim();
+  if (!l || /^unknown$/i.test(l)) return undefined;
+  return LANGUAGE_ALIASES[l.toLowerCase()] ?? l;
+}
 
 type RawHeyGenVoice = { voice_id: string; name: string; gender?: string; language?: string; preview_audio?: string | null; emotion_support?: boolean };
 
@@ -42,7 +55,9 @@ export async function listHeyGenVoices(): Promise<CatalogVoice[]> {
     const res = await fetch(`${API}/v2/voices`, { headers: { "x-api-key": key, accept: "application/json" }, signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`HeyGen /v2/voices ${res.status}`);
     const data = (await res.json()) as { data?: { voices?: RawHeyGenVoice[] } };
-    const list: CatalogVoice[] = (data.data?.voices ?? []).map((v) => {
+    // Clones and designed voices belong to one workspace; the shared catalogue must not list them.
+    const privateIds = new Set((await listHeyGenPrivateVoices().catch(() => [])).map((v) => v.id));
+    const list: CatalogVoice[] = (data.data?.voices ?? []).filter((v) => !privateIds.has(v.voice_id)).map((v) => {
       const [name, ...rest] = v.name.split(/\s+[-–]\s+/);
       const g = v.gender?.toLowerCase();
       return {
@@ -51,7 +66,7 @@ export async function listHeyGenVoices(): Promise<CatalogVoice[]> {
         name: (name ?? v.name).trim(),
         style: rest.join(" - ").trim() || undefined,
         gender: g === "male" || g === "female" ? g : undefined,
-        language: v.language?.trim() || undefined,
+        language: normaliseLanguage(v.language),
         previewUrl: v.preview_audio ?? undefined,
         emotion: Boolean(v.emotion_support),
       };

@@ -28,3 +28,4 @@ export {
   type AvatarType,
   type Orientation,
 } from "./library";
+export { LOOK_PACKS, findLookPack, createPhotoAvatar, generatePackLooks, generatePromptLook, getOwnedLook, waitForLooks, type LookPack, type LookPackKind, type OwnedLookStatus } from "./looks";

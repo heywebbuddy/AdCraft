@@ -15,8 +15,11 @@ export async function reserveGenerationCredits(orgId: string, credits: number, r
   });
 }
 
-export async function refundGenerationCredits(orgId: string, referenceId: string) {
+/** Return what a failed generation reserved — all of it, or `amount` for a partial failure. */
+export async function refundGenerationCredits(orgId: string, referenceId: string, amount?: number) {
   const [charged] = await db.select().from(creditLedger).where(and(eq(creditLedger.orgId, orgId), eq(creditLedger.reason, "generation"), eq(creditLedger.referenceId, referenceId)));
   if (!charged || charged.delta >= 0) return;
-  await db.insert(creditLedger).values({ orgId, delta: -charged.delta, reason: "adjustment", referenceId: `refund:${referenceId}`, meta: { reason: "Generation failed" } }).onConflictDoNothing();
+  const delta = amount === undefined ? -charged.delta : Math.min(-charged.delta, Math.max(0, Math.round(amount)));
+  if (!delta) return;
+  await db.insert(creditLedger).values({ orgId, delta, reason: "adjustment", referenceId: amount === undefined ? `refund:${referenceId}` : `refund:${referenceId}:partial`, meta: { reason: amount === undefined ? "Generation failed" : "Some outputs failed" } }).onConflictDoNothing();
 }

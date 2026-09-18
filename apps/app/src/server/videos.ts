@@ -227,7 +227,7 @@ export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): Vide
     voice: opts.kind === "ugc" ? { voiceId: opts.voiceId ?? "", provider: opts.voiceProvider } : undefined,
     presenter:
       opts.kind === "ugc"
-        ? { avatarId: opts.avatarId ?? "", ...(opts.characterImageKey ? { image: { key: opts.characterImageKey }, characterId: opts.characterId, motion: opts.motion } : {}) }
+        ? { avatarId: opts.avatarId ?? "", ...(opts.characterImageKey ? { image: { key: opts.characterImageKey } } : {}), ...(opts.characterId ? { characterId: opts.characterId, motion: opts.motion } : {}) }
         : undefined,
     aiLabel: opts.kind === "ugc",
     meta: { conceptId: c.id, productId: c.product?.id ?? null, visualDirection: c.data.visualDirection, tone: kit.voice?.tone ?? [], templateId: opts.templateId, characterStudio: Boolean(opts.characterId || opts.templateId) },

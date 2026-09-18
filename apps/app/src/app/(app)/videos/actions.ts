@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { findVoice } from "@adcraft/ai";
+import { resolveVoice } from "@/server/brand-voices";
 import { requireOrg } from "@/server/org";
 import { createVideoFromConcept, regenerateScene, rerunVideo, updateScene } from "@/server/videos";
 
@@ -17,7 +17,7 @@ export async function createVideo(formData: FormData) {
   const conceptId = str(formData, "conceptId");
   if (!conceptId) redirect("/briefs");
   const kind = str(formData, "kind") === "ugc" ? "ugc" : "video";
-  const voice = kind === "ugc" ? await findVoice(str(formData, "voiceId")) : null;
+  const voice = kind === "ugc" ? await resolveVoice(ctx.org.id, str(formData, "voiceId")) : null;
   const { creativeId } = await createVideoFromConcept(ctx.org.id, conceptId, {
     kind,
     model: str(formData, "model") || undefined,

@@ -43,6 +43,13 @@
       "when": 1789705811097,
       "tag": "0005_character_motion",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789721674943,
+      "tag": "0006_heygen_voices_looks",
+      "breakpoints": true
     }
   ]
 }
