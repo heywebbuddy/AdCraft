@@ -20,7 +20,7 @@ export async function characterStudioData(orgId: string, brandId: string) {
     studioModels(), listAllVoices(), getCatalog(), getPresenterGroups(), listBrandVoices(orgId, brandId),
   ]);
   return {
-    characters: await Promise.all(people.map(async c => ({ id: c.id, name: c.name, description: c.description, personality: c.personality, voiceId: c.voiceId, voice: await resolveVoice(orgId, c.voiceId), imageModel: c.imageModel, motion: c.motion ?? {}, portraitUrl: c.portraitKey ? `/api/files/${c.portraitKey}` : null, status: c.status, error: c.error, onHeyGen: Boolean(c.heygen?.lookId), looks: c.looks.map(l => ({ id: l.id, name: l.name, url: `/api/files/${l.imageKey}`, heygen: Boolean(l.heygenLookId), packId: l.packId ?? null })) }))),
+    characters: await Promise.all(people.map(async c => ({ id: c.id, name: c.name, description: c.description, personality: c.personality, voiceId: c.voiceId, voice: await resolveVoice(orgId, c.voiceId), imageModel: c.imageModel, motion: c.motion ?? {}, portraitUrl: c.portraitKey ? `/api/files/${c.portraitKey}` : null, status: c.status, error: c.error, onHeyGen: Boolean(c.heygen?.lookId), heygenType: c.heygen?.type ?? null, consent: c.heygen?.consent ?? null, consentUrl: c.heygen?.consentUrl && c.heygen.consentUrlAt && Date.now() - c.heygen.consentUrlAt < 23 * 60 * 60_000 ? c.heygen.consentUrl : null, looks: c.looks.map(l => ({ id: l.id, name: l.name, url: `/api/files/${l.imageKey}`, heygen: Boolean(l.heygenLookId), packId: l.packId ?? null })) }))),
     products: items.map(p => ({ id: p.id, name: p.name, description: p.description ?? "", imageUrl: p.imageKey ? `/api/files/${p.imageKey}` : null })),
     models,
     /** A sensible starting voice for new characters and library presenters. */
@@ -31,6 +31,7 @@ export async function characterStudioData(orgId: string, brandId: string) {
     /** HeyGen look packs and single templates the API resolves for any workspace. */
     lookPacks: LOOK_PACKS.map(p => ({ id: p.id, name: p.name, kind: p.kind, description: p.description, palette: p.palette, previews: p.previews, looks: p.looks, type: p.type })),
     heygenLookCredits: CREDIT_COSTS.heygenLook,
+    avatarCredits: { digitalTwin: CREDIT_COSTS.digitalTwin, heygenAvatar: CREDIT_COSTS.heygenAvatar },
     voiceStats: { total: voices.length + ownVoices.length, owned: ownVoices.length, elevenlabs: voices.filter(v => v.provider === "elevenlabs").length, heygen: voices.filter(v => v.provider === "heygen").length, languages: new Set(voices.map(v => v.language).filter(Boolean)).size },
     /** HeyGen's public presenter library: people (groups); looks load on demand via loadPresenterLooks. */
     presenterGroups: library.groups,

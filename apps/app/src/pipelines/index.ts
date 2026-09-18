@@ -10,6 +10,7 @@ import "./video";
 import "./ugc";
 import "./character";
 import "./character-looks";
+import "./avatar-create";
 
 import "./publish";
 import "./insights";

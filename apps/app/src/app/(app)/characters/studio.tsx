@@ -8,15 +8,17 @@ import { CHARACTER_TEMPLATES, estimatedStudioSeconds, hookVariations, studioScri
 import { applyLookPackAction, auditionVoiceAction, createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction, searchVoicesAction, setCharacterVoiceAction } from "./actions";
 import { VoiceTools } from "./voice-tools";
 import { LookPackGallery, type LookPackState } from "./look-packs";
+import { AvatarCreate } from "./avatar-create";
+import { twinConsentAction } from "./actions";
 import { Spark } from "@/components/spark";
 import { MakerLogo, inferMaker } from "@/components/maker-logo";
 import { PlayButton, VoiceField, VoicePicker, type CatalogVoice } from "@/components/voice-picker";
 import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
 
 type Props = { data: CharacterStudioData; brandName: string; balance: number; videoCredits: number; canEdit: boolean; planEnabled: boolean };
-type View = "studio" | "characters" | "presenters" | "voices" | "looks" | "templates";
+type View = "studio" | "characters" | "presenters" | "voices" | "looks" | "avatars" | "templates";
 const TABS: Array<[View, string]> = [["studio", "Create an ad"], ["characters", "My characters"], ["templates", "Ad templates"]];
-const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices" || v === "looks";
+const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices" || v === "looks" || v === "avatars";
 
 export function CharacterStudio({ data, brandName, balance, videoCredits, canEdit, planEnabled }: Props) {
   const router = useRouter();
@@ -151,7 +153,16 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     });
   }
 
-  const library = view === "presenters" || view === "voices" || view === "looks";
+  const library = view === "presenters" || view === "voices" || view === "looks" || view === "avatars";
+  const [consentBusy, setConsentBusy] = useState("");
+  async function consentLink(c: { id: string; name: string }, refresh: boolean) {
+    setConsentBusy(c.id); setError("");
+    const r = await twinConsentAction(c.id, refresh);
+    setConsentBusy("");
+    if (r.error) { setError(r.error); return; }
+    if (r.status === "approved") { setNotice(`${c.name} is approved — the twin can be used in ads.`); router.refresh(); return; }
+    if (r.url) { void navigator.clipboard?.writeText(r.url).catch(() => undefined); setNotice(`Consent link copied. Send it to ${c.name} — it is valid for 24 hours.`); router.refresh(); }
+  }
   return <div className="character-studio">
     {library && <div className="cs-crumb"><button type="button" className="cs-text-button" onClick={() => setView("studio")}>← Character studio</button><span>{brandName}</span></div>}
     {!library && <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> Create a character</button></header>}
@@ -250,6 +261,29 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
           <button type="button" className="cs-primary" disabled={pending || !canEdit || !data.heygenConnected || balance < packCost || ["queued", "generating"].includes(lookCharacter.status) || !packReady} onClick={() => { setError(""); start(() => generateLooks(lookCharacter.id, setError)); }}>{pending ? "Starting…" : packCount === 1 ? "Generate look" : `Generate ${packCount} looks`} <span>→</span></button>
         </div>}
       </> : <div className="cs-library-indexing"><div><strong>Create a character first</strong><p>Look packs dress an existing character. Create one with a portrait, then come back here.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}>＋ Create a character</button></div>}
+    </section>}
+
+    {view === "avatars" && <section className="cs-library ac-root">
+      <div className="pl-head">
+        <div>
+          <span className="cs-eyebrow">HeyGen avatars</span>
+          <h2>Create an avatar</h2>
+          <p>Create an identity that looks, moves and sounds consistently in any outfit and setting. Both become characters here — give them looks from the look packs, then put them in ads.</p>
+        </div>
+      </div>
+      <AvatarCreate canEdit={canEdit} connected={data.heygenConnected} balance={balance} credits={data.avatarCredits} defaultVoice={data.defaultVoice} onCreated={id => { setCharacterId(id); setNotice("HeyGen is building your avatar. It appears under My characters when it is ready."); setView("characters"); }} />
+      {data.characters.some(c => c.heygenType === "digital_twin" || c.heygenType === "prompt" || c.heygenType === "photo") && <>
+        <div className="ld-step"><span>✓</span><h3>Your HeyGen avatars</h3></div>
+        <div className="ac-list">
+          {data.characters.filter(c => c.heygenType).map(c => <div key={c.id} className="ac-row">
+            <div className="cs-pickbar-thumb">{c.portraitUrl ? <img src={c.portraitUrl} alt="" /> : <span>{c.name.slice(0, 1)}</span>}</div>
+            <div className="cs-pickbar-text"><strong>{c.name} <span>· {c.heygenType === "digital_twin" ? "Digital twin" : c.heygenType === "prompt" ? "Virtual character · from a description" : "Virtual character · from a photo"}</span></strong><small>{["queued", "generating"].includes(c.status) ? "HeyGen is still training this avatar…" : c.status === "failed" ? c.error ?? "Failed" : c.heygenType === "digital_twin" ? (c.consent === "approved" ? "Consent approved · ready for ads" : c.consent === "rejected" ? "Consent was rejected — re-record it" : "Waiting for the person's consent recording") : `${c.looks.length} ${c.looks.length === 1 ? "look" : "looks"} · ready for ads`}</small></div>
+            {c.heygenType === "digital_twin" && c.status === "ready" && c.consent !== "approved" && <button type="button" className="cs-secondary" disabled={!canEdit || consentBusy === c.id} onClick={() => consentLink(c, !c.consentUrl)}>{consentBusy === c.id ? "Checking…" : c.consentUrl ? "Copy consent link" : "New consent link"}</button>}
+            {c.heygenType === "digital_twin" && c.status === "ready" && c.consent !== "approved" && <button type="button" className="cs-text-button" disabled={consentBusy === c.id} onClick={() => consentLink(c, false)}>Check status</button>}
+            {c.status === "ready" && <button type="button" className="cs-primary" onClick={() => { setCharacterId(c.id); setLookId(""); setStockAvatar(null); setView("studio"); }}>Use in an ad <span>→</span></button>}
+          </div>)}
+        </div>
+      </>}
     </section>}
 
     {view === "templates" && <section><div className="cs-view-heading"><div><h2>Start with a story that fits.</h2><p>Six editable ad structures. Your character, product and voice.</p></div></div><div className="cs-template-grid">{CHARACTER_TEMPLATES.map((t, i) => <button type="button" key={t.id} className="cs-template-card" onClick={() => { pickTemplate(t.id); setView("studio"); }}><div className={`cs-template-art cs-art-${i % 3}`}><span>{t.icon}</span><small>FORMAT 0{i + 1}</small></div><div><h3>{t.name}</h3><p>{t.description}</p><span className="cs-text-button">Use this format ↗</span></div></button>)}</div></section>}

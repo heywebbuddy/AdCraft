@@ -4,6 +4,7 @@ import { runVideoPipeline } from "@/pipelines/video";
 import { runUgcPipeline } from "@/pipelines/ugc";
 import { runCharacterPipeline } from "@/pipelines/character";
 import { runCharacterLooksPipeline } from "@/pipelines/character-looks";
+import { runAvatarCreatePipeline } from "@/pipelines/avatar-create";
 import { runStaticPipeline } from "@/pipelines/static";
 import { runRenderPipeline } from "@/pipelines/render";
 import { runProductCutout } from "@/pipelines/product-cutout";
@@ -70,9 +71,17 @@ export const generateCharacterLooks = inngest.createFunction(
   async ({ event, step }) => step.run("looks", () => withCatalog(() => runCharacterLooksPipeline(event.data))),
 );
 
+/** Digital twins train for up to an hour or more; the step waits it out. */
+export const createAvatar = inngest.createFunction(
+  { id: "avatar-create", retries: 0, concurrency: { limit: 2 } },
+  { event: "avatar/create" },
+  async ({ event, step }) => step.run("create", () => withCatalog(() => runAvatarCreatePipeline(event.data))),
+);
+
 export const functions = [
   generateCharacter,
   generateCharacterLooks,
+  createAvatar,
   generateConcepts,
   generateStatic,
   renderVariants,

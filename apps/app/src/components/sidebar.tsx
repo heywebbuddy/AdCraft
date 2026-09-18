@@ -46,6 +46,7 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
           { href: "/characters?view=presenters", label: "Presenter library" },
           { href: "/characters?view=voices", label: "Voice library" },
           { href: "/characters?view=looks", label: "Design a look" },
+          { href: "/characters?view=avatars", label: "Create an avatar" },
         ],
       },
       { href: "/creatives", label: "All creatives", Icon: CreativesIcon },

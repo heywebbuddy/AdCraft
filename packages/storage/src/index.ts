@@ -26,12 +26,12 @@ export function objectKey(orgId: string, kind: "products" | "cutouts" | "renders
 }
 
 export function extFromMime(mime: string) {
-  return ({ "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif", "video/mp4": "mp4", "image/svg+xml": "svg" } as Record<string, string>)[mime] ?? "bin";
+  return ({ "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif", "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm", "image/svg+xml": "svg", "audio/mpeg": "mp3", "audio/wav": "wav", "audio/x-wav": "wav", "audio/mp4": "m4a", "audio/x-m4a": "m4a" } as Record<string, string>)[mime] ?? "bin";
 }
 
 export function mimeFromExt(key: string) {
   const ext = key.split(".").pop()?.toLowerCase();
-  return ({ png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", gif: "image/gif", mp4: "video/mp4", svg: "image/svg+xml" } as Record<string, string>)[ext ?? ""] ?? "application/octet-stream";
+  return ({ png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", gif: "image/gif", mp4: "video/mp4", mov: "video/quicktime", webm: "video/webm", svg: "image/svg+xml", mp3: "audio/mpeg", wav: "audio/wav", m4a: "audio/mp4" } as Record<string, string>)[ext ?? ""] ?? "application/octet-stream";
 }
 
 class LocalStorage implements Storage {

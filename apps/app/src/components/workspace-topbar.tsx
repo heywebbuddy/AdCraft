@@ -11,6 +11,7 @@ const destinations: Array<{ name: string; href: string; match?: string; group: s
   { name: "Presenter library", href: "/characters?view=presenters", group: "Create" },
   { name: "Voice library", href: "/characters?view=voices", group: "Create" },
   { name: "Design a look", href: "/characters?view=looks", group: "Create" },
+  { name: "Create an avatar", href: "/characters?view=avatars", group: "Create" },
   { name: "All creatives", href: "/creatives", group: "Create" },
   { name: "Videos", href: "/creatives?kind=video", match: "/videos", group: "Create" },
   { name: "Product library", href: "/library", group: "Assets" },

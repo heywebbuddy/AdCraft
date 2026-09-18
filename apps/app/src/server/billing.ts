@@ -35,7 +35,7 @@ export const PLANS: Record<PlanId, { name: string; price: number; credits: numbe
 export const TOP_UP = { price: 10, credits: 100 };
 
 /** Credits per action, from PLAN.md section 5. */
-export const CREDIT_COSTS = { concepts: 1, staticAd: 2, productVideo15s: 20, ugcVideo30s: 40, resize: 0, /** One HeyGen-generated look (look packs, templates, prompts). */ heygenLook: 3 } as const;
+export const CREDIT_COSTS = { concepts: 1, staticAd: 2, productVideo15s: 20, ugcVideo30s: 40, resize: 0, /** One HeyGen-generated look (look packs, templates, prompts). */ heygenLook: 3, /** A digital twin trained from footage (HeyGen bills this as an avatar slot). */ digitalTwin: 25, /** A virtual character from a photo or a prompt on HeyGen. */ heygenAvatar: 5 } as const;
 
 export const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 

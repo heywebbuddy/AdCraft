@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db, characters, generationEvents, products, projects, briefs, concepts, brandVoices } from "@adcraft/db";
-import { cloneHeyGenVoice, designHeyGenVoices, findLookPack, generateHeyGenVoiceSample, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, isHeyGenVoiceId, searchVoices, setHeyGenVoicePreview, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
+import { cloneHeyGenVoice, createConsentLink, designHeyGenVoices, findLookPack, getGroupConsent, generateHeyGenVoiceSample, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, isHeyGenVoiceId, searchVoices, setHeyGenVoicePreview, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
 import { getVoiceSample, storeVoiceSample } from "@/server/voice-samples";
 import { deleteBrandVoice, discardHeyGenVoices, listBrandVoices, resolveVoice, storeBrandVoiceSample, toCatalogVoice } from "@/server/brand-voices";
 import { getPresenterLooks, type PresenterLook } from "@/server/presenter-library";
@@ -18,8 +18,9 @@ import { createVideoFromConcept } from "@/server/videos";
 import { CHARACTER_TEMPLATES, studioScript } from "@/lib/character-studio";
 import "@/pipelines";
 
+/** A trimmed string field; absent fields read as "" (a form only sends the inputs it renders). */
 function field(form: FormData, key: string, max = 1500) {
-  const value = form.get(key);
+  const value = form.get(key) ?? "";
   if (typeof value !== "string" || value.trim().length > max) throw new Error(`Please check ${key}.`);
   return value.trim();
 }
@@ -365,5 +366,77 @@ export async function deleteBrandVoiceAction(voiceId: string): Promise<{ error?:
     await deleteBrandVoice(ctx.org.id, ctx.brand.id, row.id);
     revalidatePath("/characters");
     return {};
+  } catch (error) { return { error: message(error) }; }
+}
+
+/**
+ * Create a character on HeyGen: a digital twin from footage (`sourceKey` from /api/uploads),
+ * a virtual character from a photo (`sourceKey`) or from a description (`prompt`).
+ */
+export async function createAvatarAction(form: FormData): Promise<{ id?: string; error?: string }> {
+  let reservation: { orgId: string; eventId: string; characterId?: string } | null = null;
+  try {
+    const ctx = await editor();
+    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to create avatars.");
+    const typeField = field(form, "type", 20);
+    const type = typeField === "digital_twin" ? "digital_twin" : typeField === "prompt" ? "prompt" : "photo";
+    const name = field(form, "name", 60);
+    if (!name) throw new Error("Name the character.");
+    const sourceKey = field(form, "sourceKey", 200);
+    const prompt = field(form, "prompt", 1000);
+    if (type !== "prompt" && !sourceKey.startsWith(`org/${ctx.org.id}/uploads/`)) throw new Error(type === "digital_twin" ? "Upload the footage first." : "Upload a photo first.");
+    if (type === "prompt" && prompt.length < 15) throw new Error("Describe the character in a sentence or two.");
+    if (type === "digital_twin" && field(form, "consent", 5) !== "yes") throw new Error("Confirm the person in the footage has agreed to be cloned.");
+    const personality = field(form, "personality", 300) || "Warm and conversational";
+    const voiceId = field(form, "voiceId", 120);
+    const voice = voiceId ? await resolveVoice(ctx.org.id, voiceId) : null;
+    if (!voice && type !== "digital_twin") throw new Error("Choose a voice for this character.");
+    const fallbackVoice = voice?.id ?? (await searchVoices({ provider: "heygen", limit: 1 })).items[0]?.id ?? "";
+    const credits = type === "digital_twin" ? CREDIT_COSTS.digitalTwin : CREDIT_COSTS.heygenAvatar;
+    if (ctx.credits.balance < credits) throw new Error(`You need ${credits} credits for this.`);
+    const eventId = randomUUID();
+    await reserveGenerationCredits(ctx.org.id, credits, eventId);
+    reservation = { orgId: ctx.org.id, eventId };
+    const description = type === "prompt" ? prompt : type === "digital_twin" ? `Digital twin of a real person, trained from footage.` : `Virtual character created from a photo.`;
+    const id = await db.transaction(async tx => {
+      const [row] = await tx.insert(characters).values({ orgId: ctx.org.id, brandId: ctx.brand.id, name, description, personality, voiceId: fallbackVoice, imageModel: `heygen-${type}`, motion: { expressiveness: "high" }, heygen: { type, consent: type === "digital_twin" ? "pending" : "not_required" }, generationId: eventId }).returning({ id: characters.id });
+      await tx.insert(generationEvents).values({ id: eventId, orgId: ctx.org.id, capability: "image", provider: "heygen", model: `heygen-${type}`, status: "started", credits, meta: { characterId: row!.id, label: `${name} · ${type === "digital_twin" ? "Digital twin" : type === "prompt" ? "Prompt character" : "Photo avatar"}` } });
+      return row!.id;
+    });
+    reservation.characterId = id;
+    const origin = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "";
+    await dispatch("avatar.create", { orgId: ctx.org.id, characterId: id, eventId, type, sourceKey: type === "prompt" ? undefined : sourceKey, prompt: type === "prompt" ? prompt : undefined, aspectRatio: "9:16", rerouteUrl: origin ? `${origin.replace(/\/$/, "")}/characters?view=characters&consent=done` : undefined, meta: { characterId: id, type } });
+    revalidatePath("/characters");
+    return { id };
+  } catch (error) {
+    if (reservation) {
+      await refundGenerationCredits(reservation.orgId, reservation.eventId);
+      if (reservation.characterId) {
+        await db.update(characters).set({ status: "failed", error: "Could not queue the avatar. Your credits were returned." }).where(and(eq(characters.id, reservation.characterId), eq(characters.generationId, reservation.eventId)));
+        await db.update(generationEvents).set({ status: "failed", error: "Could not queue avatar" }).where(eq(generationEvents.id, reservation.eventId));
+      }
+    }
+    return { error: message(error) };
+  }
+}
+
+/** Refresh a digital twin's consent status from HeyGen; issue a fresh link if the old one expired. */
+export async function twinConsentAction(characterId: string, refreshLink = false): Promise<{ status?: string; url?: string | null; error?: string }> {
+  try {
+    const ctx = await editor();
+    const [character] = await db.select().from(characters).where(and(eq(characters.id, characterId.slice(0, 80)), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id)));
+    if (!character?.heygen?.groupId || character.heygen.type !== "digital_twin") throw new Error("This character is not a digital twin.");
+    const heygen = { ...character.heygen };
+    heygen.consent = await getGroupConsent(heygen.groupId!);
+    const stale = !heygen.consentUrl || !heygen.consentUrlAt || Date.now() - heygen.consentUrlAt > 23 * 60 * 60_000;
+    if (heygen.consent !== "approved" && (refreshLink || stale)) {
+      const origin = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "";
+      const link = await createConsentLink(heygen.groupId!, origin ? `${origin.replace(/\/$/, "")}/characters?view=characters&consent=done` : undefined);
+      heygen.consentUrl = link.url; heygen.consentUrlAt = Date.now();
+      if (link.status !== "not_required") heygen.consent = link.status;
+    }
+    await db.update(characters).set({ heygen, updatedAt: new Date() }).where(eq(characters.id, character.id));
+    revalidatePath("/characters");
+    return { status: heygen.consent, url: heygen.consent === "approved" ? null : heygen.consentUrl ?? null };
   } catch (error) { return { error: message(error) }; }
 }

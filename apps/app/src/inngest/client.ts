@@ -4,6 +4,7 @@ import type { JobPayloads } from "@/server/jobs";
 type Events = {
   "character/generate": { data: JobPayloads["character.generate"] };
   "character/looks": { data: JobPayloads["character.looks"] };
+  "avatar/create": { data: JobPayloads["avatar.create"] };
   "concepts/generate": { data: JobPayloads["concepts.generate"] };
   "static/generate": { data: JobPayloads["static.generate"] };
   "product/cutout": { data: JobPayloads["product.cutout"] };

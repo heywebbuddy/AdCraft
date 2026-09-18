@@ -15,8 +15,22 @@ export type CharacterLook = {
   packId?: string;
 };
 
-/** The character as HeyGen knows it, once a portrait has been registered as a photo avatar. */
-export type CharacterHeyGen = { groupId?: string; lookId?: string };
+/**
+ * The character as HeyGen knows it. `type` says how it came to be: a portrait registered as a
+ * photo avatar (default), a digital twin trained from footage, or a prompt-generated character.
+ * Twins need the subject's consent before they can render; `consent` mirrors HeyGen's status.
+ */
+export type CharacterHeyGen = {
+  groupId?: string;
+  lookId?: string;
+  type?: "photo" | "digital_twin" | "prompt";
+  consent?: "pending" | "approved" | "rejected" | "not_required" | "unknown";
+  /** Last consent link issued (valid 24 h) and when. */
+  consentUrl?: string;
+  consentUrlAt?: number;
+  /** Voice HeyGen cloned from the twin's footage. */
+  clonedVoiceId?: string;
+};
 
 /** Private, reusable synthetic identities. Looks retain their original reference and model. */
 export const characters = pgTable("characters", {

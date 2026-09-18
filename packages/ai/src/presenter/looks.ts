@@ -154,3 +154,108 @@ export async function waitForLooks(lookIds: string[], opts: { pollMs?: number; t
   }
   return lookIds.map((id) => results.get(id) ?? { id, status: "processing", engines: [] });
 }
+
+// ---------- creating avatars (digital twin from footage, virtual character from image / prompt) ----------
+
+/**
+ * Upload a file to HeyGen's asset store. Under 32 MB goes as one multipart request; larger
+ * files (twin footage) use the presigned direct-upload flow (init → PUT → complete).
+ */
+export async function uploadHeyGenAsset(bytes: Buffer, mimeType: string, filename: string): Promise<string> {
+  if (!key()) throw new Error("HeyGen is not connected.");
+  if (bytes.byteLength <= 31 * 1024 * 1024) {
+    const form = new FormData();
+    form.set("file", new Blob([new Uint8Array(bytes)], { type: mimeType }), filename);
+    const res = await fetch(`${API}/v3/assets`, { method: "POST", headers: { "x-api-key": key() }, body: form, signal: AbortSignal.timeout(5 * 60_000) });
+    if (!res.ok) throw new Error(`HeyGen asset upload failed (${res.status}).`);
+    const body = (await res.json()) as { data?: { asset_id?: string } };
+    if (!body.data?.asset_id) throw new Error("HeyGen returned no asset ID.");
+    return body.data.asset_id;
+  }
+  const init = await heygen<{ data?: { asset_id?: string; upload_url?: string; upload_headers?: Record<string, string> } }>("POST", "/v3/assets/direct-uploads", { filename, content_type: mimeType, size_bytes: bytes.byteLength });
+  const { asset_id: assetId, upload_url: uploadUrl, upload_headers: headers } = init.data ?? {};
+  if (!assetId || !uploadUrl) throw new Error("HeyGen did not open an upload.");
+  const put = await fetch(uploadUrl, { method: "PUT", headers: headers ?? {}, body: new Uint8Array(bytes), signal: AbortSignal.timeout(20 * 60_000) });
+  if (!put.ok) throw new Error(`Uploading the footage to HeyGen failed (${put.status}).`);
+  for (let i = 0; i < 6; i++) {
+    try {
+      await heygen("POST", `/v3/assets/${encodeURIComponent(assetId)}/complete`, {});
+      return assetId;
+    } catch (err) {
+      // 409 until the object is visible; retry briefly.
+      if (i === 5 || !(err instanceof Error && /409|not found yet/i.test(err.message))) throw err;
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+  return assetId;
+}
+
+export type CreatedAvatar = { lookId: string; groupId: string; voiceId?: string; previewUrl?: string; engines: string[]; status: "processing" | "completed" | "failed" };
+
+type RawCreate = { data?: { avatar_item?: { id?: string; group_id?: string; default_voice_id?: string | null; preview_image_url?: string | null; supported_api_engines?: string[]; status?: string }; avatar_group?: { id?: string; default_voice_id?: string | null } } };
+
+const toCreated = (res: RawCreate): CreatedAvatar => {
+  const item = res.data?.avatar_item;
+  const lookId = item?.id;
+  const groupId = res.data?.avatar_group?.id ?? item?.group_id;
+  if (!lookId || !groupId) throw new Error("HeyGen did not return the new avatar.");
+  return { lookId, groupId, voiceId: item?.default_voice_id ?? res.data?.avatar_group?.default_voice_id ?? undefined, previewUrl: item?.preview_image_url ?? undefined, engines: item?.supported_api_engines ?? [], status: item?.status === "completed" ? "completed" : item?.status === "failed" ? "failed" : "processing" };
+};
+
+/**
+ * A digital twin from footage of a real person (15–600 s, one person, audible speech). HeyGen
+ * also clones the voice from the same recording (`voiceId`). The group then needs consent
+ * (`createConsentLink`) before it can render.
+ */
+export async function createDigitalTwin(req: { name: string; assetId: string; idempotencyKey?: string }): Promise<CreatedAvatar> {
+  const res = await fetch(`${API}/v3/avatars`, {
+    method: "POST",
+    headers: { "x-api-key": key(), "content-type": "application/json", accept: "application/json", ...(req.idempotencyKey ? { "Idempotency-Key": req.idempotencyKey } : {}) },
+    body: JSON.stringify({ type: "digital_twin", name: req.name.slice(0, 100), file: { type: "asset_id", asset_id: req.assetId } }),
+    signal: AbortSignal.timeout(120_000),
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    let message = "";
+    try {
+      message = (JSON.parse(text) as { error?: { message?: string } }).error?.message ?? "";
+    } catch {
+      /* not JSON */
+    }
+    throw new Error(message ? `HeyGen: ${message}` : `HeyGen could not start the twin (${res.status}).`);
+  }
+  return toCreated(JSON.parse(text) as RawCreate);
+}
+
+/** A virtual character from one image (a HeyGen asset) — no consent step, no real footage. */
+export async function createPhotoAvatarFromAsset(req: { name: string; assetId: string }): Promise<CreatedAvatar> {
+  return toCreated(await heygen<RawCreate>("POST", "/v3/avatars", { type: "photo", name: req.name.slice(0, 100), file: { type: "asset_id", asset_id: req.assetId } }, 120_000));
+}
+
+/** A fully synthetic character from a description. */
+export async function createPromptAvatar(req: { name: string; prompt: string; aspectRatio?: "16:9" | "9:16" | "1:1" | "4:5" | "auto" }): Promise<CreatedAvatar> {
+  return toCreated(await heygen<RawCreate>("POST", "/v3/avatars", { type: "prompt", name: req.name.slice(0, 100), prompt: req.prompt.slice(0, 1000), ...(req.aspectRatio ? { aspect_ratio: req.aspectRatio } : {}) }, 120_000));
+}
+
+export type ConsentStatus = "pending" | "approved" | "rejected" | "not_required" | "unknown";
+
+/** Start the webcam consent flow for a digital twin's group; the subject opens the link (valid 24 h). */
+export async function createConsentLink(groupId: string, rerouteUrl?: string): Promise<{ url?: string; status: ConsentStatus }> {
+  const res = await heygen<{ data?: { url?: string; avatar_group?: { consent_status?: string | null } } }>("POST", `/v3/avatars/${encodeURIComponent(groupId)}/consent`, rerouteUrl ? { reroute_url: rerouteUrl } : {}, 60_000);
+  return { url: res.data?.url, status: normaliseConsent(res.data?.avatar_group?.consent_status) };
+}
+
+/** Consent status of a group (null for photo / prompt characters). */
+export async function getGroupConsent(groupId: string): Promise<ConsentStatus> {
+  const res = await heygen<{ data?: { consent_status?: string | null } }>("GET", `/v3/avatars/${encodeURIComponent(groupId)}`);
+  return normaliseConsent(res.data?.consent_status);
+}
+
+function normaliseConsent(raw?: string | null): ConsentStatus {
+  if (raw === null || raw === undefined || raw === "") return "not_required";
+  const s = raw.toLowerCase();
+  if (/approv|complete|verified|success|accepted/.test(s)) return "approved";
+  if (/reject|fail|denied/.test(s)) return "rejected";
+  if (/pending|wait|review|progress/.test(s)) return "pending";
+  return "unknown";
+}
