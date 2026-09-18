@@ -1,0 +1,15 @@
+.git
+.data
+.turbo
+node_modules
+**/node_modules
+**/.next
+**/.turbo
+apps/app/public
+apps/app/test-results
+apps/app/playwright-report
+apps/app/next-env.d.ts
+**/*.tsbuildinfo
+.env
+.env.*
+!.env.example
