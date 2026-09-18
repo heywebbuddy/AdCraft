@@ -51,28 +51,43 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
   const [auditionError, setAuditionError] = useState<string | null>(null);
   const seq = useRef(0);
 
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     const id = ++seq.current;
     setLoading(true);
-    const t = setTimeout(() => {
-      search({ query, gender: gender === "all" ? undefined : gender, language: language || undefined, provider: source === "all" ? undefined : source, offset: 0 })
+    setFailed(false);
+    const run = (retry: boolean) =>
+      Promise.race([
+        search({ query, gender: gender === "all" ? undefined : gender, language: language || undefined, provider: source === "all" ? undefined : source, offset: 0 }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 30_000)),
+      ])
         .then((r) => {
           if (id !== seq.current) return;
           setItems(r.items);
           setTotal(r.total);
           setLanguages(r.languages);
+          setLoading(false);
         })
-        .finally(() => id === seq.current && setLoading(false));
-    }, query ? 200 : 0);
+        .catch(() => {
+          if (id !== seq.current) return;
+          // A server action can be aborted by a concurrent navigation; one quiet retry, then say so.
+          if (retry) setTimeout(() => id === seq.current && run(false), 500);
+          else { setFailed(true); setLoading(false); }
+        });
+    const t = setTimeout(() => run(true), query ? 200 : 0);
     return () => clearTimeout(t);
-  }, [query, gender, language, source, search]);
+  }, [query, gender, language, source, search, attempt]);
 
   const more = () => {
     const id = ++seq.current;
-    search({ query, gender: gender === "all" ? undefined : gender, language: language || undefined, provider: source === "all" ? undefined : source, offset: items.length }).then((r) => {
-      if (id !== seq.current) return;
-      setItems((prev) => [...prev, ...r.items]);
-    });
+    search({ query, gender: gender === "all" ? undefined : gender, language: language || undefined, provider: source === "all" ? undefined : source, offset: items.length })
+      .then((r) => {
+        if (id !== seq.current) return;
+        setItems((prev) => [...prev, ...r.items]);
+      })
+      .catch(() => undefined);
   };
 
   return (
@@ -81,7 +96,7 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
         <div>
           <span className="cs-eyebrow">Voice library</span>
           <h2 id={page ? undefined : "vp-title"}>{page ? "Browse voices" : "Choose a voice"}</h2>
-          <p>{page ? `Your ElevenLabs voices plus HeyGen's library across ${languages.length || "many"} languages — ${total.toLocaleString()} ${total === 1 ? "match" : "matches"}. Play a sample, then use the voice in an ad or give it to a character.` : `Your ElevenLabs voices plus HeyGen's library — ${total.toLocaleString()} ${total === 1 ? "match" : "matches"}. Play before you pick.`}</p>
+          <p>{page ? `Your ElevenLabs voices plus HeyGen's library across ${languages.length || stats?.languages || "many"} languages${loading && items.length === 0 ? "" : ` — ${total.toLocaleString()} ${total === 1 ? "match" : "matches"}`}. Play a sample, then use the voice in an ad or give it to a character.` : `Your ElevenLabs voices plus HeyGen's library${loading && items.length === 0 ? "" : ` — ${total.toLocaleString()} ${total === 1 ? "match" : "matches"}`}. Play before you pick.`}</p>
         </div>
         {page && stats ? (
           <dl className="pl-stats" aria-label="Catalogue breakdown">
@@ -118,7 +133,8 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
       </div>
       <div className={`vp-list ${page ? "vp-columns" : ""}`} role="listbox" aria-label="Voices">
         {loading && items.length === 0 ? <p className="pl-empty">Loading voices…</p> : null}
-        {!loading && items.length === 0 ? <p className="pl-empty">No voices match.</p> : null}
+        {!loading && failed ? <p className="pl-empty" role="alert">Couldn't load voices. <button type="button" className="cs-text-button vp-retry" onClick={() => setAttempt((n) => n + 1)}>Try again</button></p> : null}
+        {!loading && !failed && items.length === 0 ? <p className="pl-empty">No voices match.</p> : null}
         {items.map((v) => (
           <div key={v.id} role="option" aria-selected={v.id === selectedId} className="vp-row" onClick={() => onSelect(v)} onKeyDown={(e) => { if (e.key === "Enter") onSelect(v); }} tabIndex={0}>
             {v.previewUrl || samples[v.id] ? (

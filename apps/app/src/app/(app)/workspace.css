@@ -2961,3 +2961,7 @@
   color: var(--muted);
   font-size: 12px;
 }
+.vp-retry {
+  margin-left: 4px;
+  font-size: 13px;
+}
