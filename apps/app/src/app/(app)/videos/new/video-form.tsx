@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { PresenterLibrary, type LibraryAvatar } from "@/app/(app)/characters/presenter-library";
+import { PresenterLibrary, type PresenterChoice, type PresenterGroup } from "@/app/(app)/characters/presenter-library";
+import { loadPresenterLooks } from "@/app/(app)/characters/actions";
 import "@/app/(app)/characters/studio.css";
 import { Spark } from "@/components/spark";
 import { PlayIcon } from "@/components/icons";
@@ -16,7 +17,7 @@ export type VideoFormProps = {
   initialKind: "video" | "ugc";
   models: Model[];
   ratios: Ratio[];
-  avatars: LibraryAvatar[];
+  groups: PresenterGroup[];
   voices: Choice[];
   storyboards: Record<"video" | "ugc", { scenes: ScenePreview[]; durationSec: number; credits: number }>;
   balance: number;
@@ -30,7 +31,7 @@ export function VideoForm(p: VideoFormProps) {
   const [model, setModel] = useState(p.models.find((m) => m.isDefault)?.id ?? p.models[0]?.id ?? "");
   const [ratio, setRatio] = useState<Ratio["id"]>("9:16");
   const [pending, setPending] = useState(false);
-  const [avatar, setAvatar] = useState<LibraryAvatar | null>(p.avatars[0] ?? null);
+  const [avatar, setAvatar] = useState<PresenterChoice | null>(null);
   const libraryDialog = useRef<HTMLDialogElement>(null);
   const board = p.storyboards[kind];
   const chosen = p.models.find((m) => m.id === model);
@@ -130,22 +131,22 @@ export function VideoForm(p: VideoFormProps) {
           <section className="grid gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <span className="eyebrow">Presenter (licensed stock avatar)</span>
-              <input type="hidden" name="avatarId" value={avatar?.id ?? ""} />
+              <input type="hidden" name="avatarId" value={avatar?.look.id ?? ""} />
               <button type="button" onClick={() => libraryDialog.current?.showModal()} className="flex h-14 items-center gap-3 rounded-[7px] border border-line bg-white px-2 text-left text-[13px] hover:border-ink">
-                {avatar?.previewUrl ? (
+                {avatar?.look.previewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatar.previewUrl} alt="" className="h-10 w-8 rounded-[5px] object-cover" />
+                  <img src={avatar.look.previewUrl} alt="" className="h-10 w-8 rounded-[5px] object-cover" />
                 ) : (
                   <span className="grid h-10 w-8 place-items-center rounded-[5px] bg-[#efeee8] text-[15px]">✦</span>
                 )}
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <strong className="truncate font-semibold">{avatar ? `${avatar.person} · ${avatar.look}` : "Choose a presenter"}</strong>
-                  <small className="text-[11px] text-muted">{p.avatars.length.toLocaleString()} looks in the HeyGen library</small>
+                  <strong className="truncate font-semibold">{avatar ? `${avatar.person.name} · ${avatar.look.name}` : "Choose a presenter"}</strong>
+                  <small className="text-[11px] text-muted">{p.groups.length.toLocaleString()} people in the HeyGen library</small>
                 </span>
                 <span className="pr-2 text-[12px] font-semibold text-orange">Change ↗</span>
               </button>
               <dialog ref={libraryDialog} className="cs-dialog cs-library-dialog" aria-labelledby="pl-title" onClick={(e) => { if (e.target === e.currentTarget) libraryDialog.current?.close(); }}>
-                <PresenterLibrary avatars={p.avatars} selectedId={avatar?.id} onSelect={(a) => { setAvatar(a); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
+                <PresenterLibrary groups={p.groups} loadLooks={loadPresenterLooks} selectedId={avatar?.look.id} ratio={ratio} onSelect={(c) => { setAvatar(c); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
               </dialog>
             </div>
             <label className="flex flex-col gap-1.5">

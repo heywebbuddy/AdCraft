@@ -5,11 +5,11 @@ import { useEffect, useRef, useState, useTransition, type FormEvent } from "reac
 import { useRouter } from "next/navigation";
 import type { CharacterStudioData } from "@/server/character-studio";
 import { CHARACTER_TEMPLATES, estimatedStudioSeconds, hookVariations, studioScript, type CharacterTemplateId } from "@/lib/character-studio";
-import { createCharacterAdAction, generateCharacterAction, saveCharacterAction } from "./actions";
+import { createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction } from "./actions";
 import { Spark } from "@/components/spark";
 import { MakerLogo, inferMaker } from "@/components/maker-logo";
 import { AudioPreview } from "@/components/audio-preview";
-import { PresenterLibrary, type LibraryAvatar } from "./presenter-library";
+import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
 
 type Props = { data: CharacterStudioData; brandName: string; balance: number; videoCredits: number; canEdit: boolean; planEnabled: boolean };
 type View = "studio" | "characters" | "templates";
@@ -40,7 +40,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const [dialogMode, setDialogMode] = useState<"new" | "look" | "profile">("new");
   const [voiceId, setVoiceId] = useState(data.voices[0]?.id ?? "");
   // Presenter source: a saved character (photo avatar) or a HeyGen library avatar.
-  const [stockAvatar, setStockAvatar] = useState<LibraryAvatar | null>(null);
+  const [stockAvatar, setStockAvatar] = useState<PresenterChoice | null>(null);
   const [stockVoiceId, setStockVoiceId] = useState(data.voices[0]?.id ?? "");
   const libraryDialog = useRef<HTMLDialogElement>(null);
   const [error, setError] = useState("");
@@ -51,8 +51,8 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const characterDialog = useRef<HTMLDialogElement>(null);
   const modelDialog = useRef<HTMLDialogElement>(null);
   const characterForm = useRef<HTMLFormElement>(null);
-  const busy = data.characters.some(c => c.status === "queued" || c.status === "generating");
-  useEffect(() => { if (!busy) return; const interval = setInterval(() => router.refresh(), 4000); return () => clearInterval(interval); }, [busy, router]);
+  const busy = data.characters.some(c => c.status === "queued" || c.status === "generating") || data.presenterLibraryLoading;
+  useEffect(() => { if (!busy) return; const interval = setInterval(() => router.refresh(), data.presenterLibraryLoading ? 10000 : 4000); return () => clearInterval(interval); }, [busy, data.presenterLibraryLoading, router]);
   const selectedPortraitModel = data.models.find(m => m.id === portraitModel);
   const selectedSceneModel = data.models.find(m => m.id === sceneModel);
   const script = studioScript(hook, body, cta);
@@ -60,7 +60,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const seconds = estimatedStudioSeconds(script);
   const voice = data.voices.find(v => v.id === (character?.voiceId ?? voiceId));
   const modalVoice = data.voices.find(v => v.id === voiceId);
-  const previewUrl = scene === 0 ? (stockAvatar ? stockAvatar.previewUrl ?? undefined : look?.url) : product?.imageUrl;
+  const previewUrl = scene === 0 ? (stockAvatar ? stockAvatar.look.previewUrl ?? undefined : look?.url) : product?.imageUrl;
   const previewCaption = [hook, product?.name || serviceName || "Your product", body || "Your product message", cta][scene];
   const canGenerate = canEdit && data.videoConnected && (!!stockAvatar || !!look) && !!body.trim() && !!hook.trim() && !!cta.trim() && !!(product || serviceName.trim()) && words <= 75 && balance >= videoCredits && selectedSceneModel?.connected && selectedSceneModel.enabled && !!videoModel;
 
@@ -88,7 +88,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   function createAd() {
     setError("");
     const form = new FormData();
-    Object.entries({ characterId: stockAvatar ? "" : character?.id ?? "", lookId: stockAvatar ? "" : look?.id ?? "", stockAvatarId: stockAvatar?.id ?? "", voiceId: stockAvatar ? stockVoiceId : "", productId, serviceName, templateId: template, hook, body, cta, ratio, videoModel, imageModel: sceneModel }).forEach(([key, value]) => form.set(key, value));
+    Object.entries({ characterId: stockAvatar ? "" : character?.id ?? "", lookId: stockAvatar ? "" : look?.id ?? "", stockAvatarId: stockAvatar?.look.id ?? "", stockPersonName: stockAvatar?.person.name ?? "", voiceId: stockAvatar ? stockVoiceId : "", productId, serviceName, templateId: template, hook, body, cta, ratio, videoModel, imageModel: sceneModel }).forEach(([key, value]) => form.set(key, value));
     start(async () => {
       try { const result = await createCharacterAdAction(form); if (result.error) setError(result.error); else if (result.creativeId) router.push(`/videos/${result.creativeId}`); }
       catch { setError("Could not start the ad. Please try again."); }
@@ -105,10 +105,10 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       <section className="cs-section"><div className="cs-section-heading"><span>01</span><h2>Your character</h2><button type="button" className="cs-text-button" onClick={() => setView("characters")}>Manage cast ↗</button></div>
         <div className="cs-source" role="tablist" aria-label="Presenter source">
           <button type="button" role="tab" aria-selected={!stockAvatar} onClick={() => setStockAvatar(null)}>My character</button>
-          <button type="button" role="tab" aria-selected={!!stockAvatar} onClick={() => (stockAvatar ? undefined : libraryDialog.current?.showModal())}>Presenter library <span>{data.avatars.length ? `${new Set(data.avatars.map(a => a.person)).size} people` : "HeyGen"}</span></button>
+          <button type="button" role="tab" aria-selected={!!stockAvatar} onClick={() => (stockAvatar ? undefined : libraryDialog.current?.showModal())}>Presenter library <span>{data.presenterLibraryLoading ? "indexing…" : data.presenterGroups.length ? `${data.presenterGroups.length.toLocaleString()} people` : "HeyGen"}</span></button>
         </div>
         {stockAvatar ? <>
-          <div className="cs-character-selected"><div className="cs-avatar">{stockAvatar.previewUrl ? <img src={stockAvatar.previewUrl} alt={stockAvatar.person} /> : <span>{stockAvatar.person.slice(0, 1)}</span>}</div><div className="cs-character-info"><h3>{stockAvatar.person} <span className="cs-look-name">· {stockAvatar.look}</span></h3><p>Filmed presenter from the HeyGen library. Natural gestures and body language are part of the footage.</p><span className="cs-badge">Licensed stock presenter</span></div><button type="button" className="cs-text-button" onClick={() => libraryDialog.current?.showModal()}>Change ↗</button></div>
+          <div className="cs-character-selected"><div className="cs-avatar">{stockAvatar.look.previewUrl ? <img src={stockAvatar.look.previewUrl} alt={stockAvatar.person.name} /> : <span>{stockAvatar.person.name.slice(0, 1)}</span>}</div><div className="cs-character-info"><h3>{stockAvatar.person.name} <span className="cs-look-name">· {stockAvatar.look.name}</span></h3><p>{stockAvatar.look.type === "studio_avatar" ? "Filmed studio presenter — gestures and body language are part of the footage." : stockAvatar.look.type === "digital_twin" ? "Digital twin — video-trained, reference-driven motion." : `AI photo avatar${stockAvatar.look.engines.includes("avatar_v") ? " · Avatar V motion with gesture direction" : " · Avatar IV motion"}.`}</p><span className="cs-badge">Licensed library presenter</span></div><button type="button" className="cs-text-button" onClick={() => libraryDialog.current?.showModal()}>Change ↗</button></div>
           <div className="cs-voice-row"><label className="cs-inline-select">♫ Voice <select value={stockVoiceId} onChange={e => setStockVoiceId(e.target.value)}>{data.voices.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}</select></label></div>{data.voices.find(v => v.id === stockVoiceId)?.previewUrl && <AudioPreview src={data.voices.find(v => v.id === stockVoiceId)!.previewUrl!} label="Preview voice" compact />}
         </> : character ? <><div className="cs-character-selected"><div className="cs-avatar">{look?.url ? <img src={look.url} alt={character.name} /> : <span>{character.name.slice(0, 1)}</span>}</div><div className="cs-character-info"><label className="cs-sr" htmlFor="cs-character">Choose a character</label><select id="cs-character" value={character.id} onChange={e => { setCharacterId(e.target.value); setLookId(""); }}>{data.characters.map(c => <option value={c.id} key={c.id}>{c.name}</option>)}</select><p>{character.personality}</p><span className="cs-badge">{character.status === "generating" || character.status === "queued" ? "Generating a look…" : "Saved brand character"}</span></div></div>
           {character.looks.length > 0 && <div className="cs-looks">{character.looks.map(l => <button type="button" key={l.id} aria-pressed={look?.id === l.id} onClick={() => setLookId(l.id)}><img src={l.url} alt="" />{l.name}</button>)}<button type="button" disabled={!canEdit || ["queued", "generating"].includes(character.status)} onClick={() => openCharacter("look")}>＋ New look</button></div>}
@@ -142,7 +142,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     </dialog>
 
     <dialog ref={libraryDialog} className="cs-dialog cs-library-dialog" aria-labelledby="pl-title" onClick={e => { if (e.target === e.currentTarget) libraryDialog.current?.close(); }}>
-      <PresenterLibrary avatars={data.avatars} selectedId={stockAvatar?.id} onSelect={a => { setStockAvatar(a); setScene(0); const match = data.voices.find(v => v.gender === a.gender) ?? data.voices[0]; if (match) setStockVoiceId(match.id); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
+      <PresenterLibrary groups={data.presenterGroups} loadLooks={loadPresenterLooks} selectedId={stockAvatar?.look.id} ratio={ratio} onSelect={c => { setStockAvatar(c); setScene(0); const g = c.look.gender ?? c.person.gender; const match = data.voices.find(v => v.gender === g) ?? data.voices[0]; if (match) setStockVoiceId(match.id); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
     </dialog>
     <dialog ref={modelDialog} className="cs-dialog cs-model-dialog" aria-labelledby="cs-model-title" onClick={e => { if (e.target === e.currentTarget) modelDialog.current?.close(); }}><div className="cs-dialog-heading"><div><span className="cs-eyebrow">Image generation</span><h2 id="cs-model-title">Find the right model for your idea.</h2><p>Choose how to create {modelTarget === "portrait" ? "your character's portrait" : "your product scene stills"}.</p></div><button type="button" className="cs-close" aria-label="Close model picker" onClick={() => modelDialog.current?.close()}>×</button></div><div className="cs-model-grid">{data.models.map((m, i) => <button type="button" key={m.id} className={`cs-model-card cs-model-art-${i % 4}`} aria-pressed={(modelTarget === "portrait" ? portraitModel : sceneModel) === m.id} disabled={!m.enabled} onClick={() => { if (modelTarget === "portrait") setPortraitModel(m.id); else setSceneModel(m.id); modelDialog.current?.close(); }}><div className="cs-model-visual"><span className="cs-model-maker">{(m.maker ?? inferMaker(m.id, m.provider)).toUpperCase()}</span><span className="cs-model-letter" aria-hidden="true"><MakerLogo maker={m.maker ?? inferMaker(m.id, m.provider)} size={72} /></span><span className="cs-model-check">{(modelTarget === "portrait" ? portraitModel : sceneModel) === m.id ? "✓" : "↗"}</span></div><div className="cs-model-info"><h3>{m.label}</h3><p>{m.notes}</p><div><span>{m.creditsPerUnit} credits / image</span><span className={m.connected && m.enabled ? "cs-connected" : ""}>{!m.enabled ? "Disabled" : m.connected ? "Connected" : "Not connected"}</span></div></div></button>)}</div><p className="cs-modal-note">Adcraft credit prices for one image. Provider access and availability depend on your connected account.</p></dialog>
   </div>;

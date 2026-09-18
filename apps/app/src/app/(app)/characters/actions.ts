@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db, characters, generationEvents, products, projects, briefs, concepts } from "@adcraft/db";
-import { isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, listAvatars, listVoices } from "@adcraft/ai";
+import { getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, listVoices } from "@adcraft/ai";
+import { getPresenterLooks, type PresenterLook } from "@/server/presenter-library";
 import { requireOrg } from "@/server/org";
 import { studioModels } from "@/server/character-studio";
 import { currentSubscription, CREDIT_COSTS } from "@/server/billing";
@@ -122,8 +123,9 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
     // Presenter: either a saved character look (photo avatar, Avatar IV motion) or a HeyGen
     // library avatar (filmed actor with gestures built in).
     const stockAvatarId = field(form, "stockAvatarId", 120);
-    const stockAvatar = stockAvatarId ? (await listAvatars()).find(a => a.id === stockAvatarId && a.licensed) : undefined;
-    if (stockAvatarId && !stockAvatar) throw new Error("That presenter is no longer available in the library.");
+    const stockLook = stockAvatarId ? await getLook(stockAvatarId) : null;
+    if (stockAvatarId && !stockLook) throw new Error("That presenter is no longer available in the library.");
+    const stockAvatar = stockLook ? { id: stockLook.id, person: field(form, "stockPersonName", 80) || stockLook.name, label: stockLook.name } : undefined;
     const characterId = field(form, "characterId", 80);
     const [character] = characterId ? await db.select().from(characters).where(and(eq(characters.id, characterId), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id))) : [];
     if (!stockAvatar && !character?.portraitKey) throw new Error("Choose a character with a completed portrait, or a presenter from the library.");
@@ -163,4 +165,11 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
     revalidatePath("/characters"); revalidatePath("/creatives");
     return result;
   } catch (error) { return { error: message(error) }; }
+}
+
+/** Looks (outfits / settings) for one library presenter; fetched when a person is opened or scrolled into view. */
+export async function loadPresenterLooks(groupId: string): Promise<PresenterLook[]> {
+  await requireOrg();
+  if (!/^[a-f0-9]{16,64}$/i.test(groupId)) return [];
+  return getPresenterLooks(groupId);
 }

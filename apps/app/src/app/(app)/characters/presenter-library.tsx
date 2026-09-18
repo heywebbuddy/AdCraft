@@ -1,37 +1,68 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { PresenterGroup, PresenterLook } from "@/server/presenter-library";
 
-export type LibraryAvatar = {
-  id: string;
-  label: string;
-  person: string;
-  look: string;
-  gender: "male" | "female" | null;
-  previewUrl: string | null;
-  previewVideoUrl: string | null;
-};
+export type { PresenterGroup, PresenterLook };
+
+/** What the picker hands back: the look (the `avatar_id`) plus its person for display. */
+export type PresenterChoice = { look: PresenterLook; person: PresenterGroup };
+
+type Kind = "all" | "studio" | "photo" | "twin";
+const KINDS: Array<{ id: Kind; label: string; hint: string }> = [
+  { id: "all", label: "All", hint: "Everything in HeyGen's public library" },
+  { id: "studio", label: "Filmed studio", hint: "Real actors filmed in a studio — gestures are in the footage" },
+  { id: "photo", label: "AI avatars", hint: "Photo avatars — many settings and outfits, animated with Avatar IV / V" },
+  { id: "twin", label: "Digital twins", hint: "Video-trained avatars with reference-driven motion" },
+];
 
 /**
- * HeyGen's public presenter library: ~160 filmed people, each with several looks
- * (pose / setting). Search, filter by gender, pick a person, then a look. Hovering a
- * card plays the short preview clip so the motion is visible before choosing.
+ * HeyGen's public presenter library (v3): ~1,400 people, ~25,000 looks. People come from
+ * the server; a person's looks load on demand (a shared cache keeps them for the session)
+ * — first when the tile scrolls into view (for the contact-sheet thumbnails), then when
+ * the person is opened.
  */
-export function PresenterLibrary({ avatars, selectedId, onSelect, onClose }: { avatars: LibraryAvatar[]; selectedId?: string; onSelect: (a: LibraryAvatar) => void; onClose: () => void }) {
+export function PresenterLibrary({
+  groups,
+  loadLooks,
+  selectedId,
+  ratio,
+  onSelect,
+  onClose,
+}: {
+  groups: PresenterGroup[];
+  loadLooks: (groupId: string) => Promise<PresenterLook[]>;
+  selectedId?: string;
+  /** The ad's size, to flag looks that suit it. */
+  ratio?: string;
+  onSelect: (choice: PresenterChoice) => void;
+  onClose: () => void;
+}) {
   const [query, setQuery] = useState("");
   const [gender, setGender] = useState<"all" | "female" | "male">("all");
-  const [person, setPerson] = useState<string | null>(() => avatars.find((a) => a.id === selectedId)?.person ?? null);
+  const [kind, setKind] = useState<Kind>("all");
+  const [person, setPerson] = useState<PresenterGroup | null>(null);
+  const [looks, setLooks] = useState<Record<string, PresenterLook[]>>({});
+  const [fitOnly, setFitOnly] = useState(false);
+  const pending = useRef(new Set<string>());
+
+  const fetchLooks = (id: string) => {
+    if (looks[id] || pending.current.has(id)) return;
+    pending.current.add(id);
+    loadLooks(id)
+      .then((list) => setLooks((prev) => ({ ...prev, [id]: list })))
+      .catch(() => setLooks((prev) => ({ ...prev, [id]: [] })))
+      .finally(() => pending.current.delete(id));
+  };
 
   const people = useMemo(() => {
-    const map = new Map<string, LibraryAvatar[]>();
-    for (const a of avatars) {
-      if (gender !== "all" && a.gender !== gender) continue;
-      if (query && !`${a.person} ${a.look} ${a.label}`.toLowerCase().includes(query.toLowerCase())) continue;
-      map.set(a.person, [...(map.get(a.person) ?? []), a]);
-    }
-    return Array.from(map.entries()).sort((x, y) => x[0].localeCompare(y[0]));
-  }, [avatars, gender, query]);
+    const q = query.trim().toLowerCase();
+    return groups.filter((g) => (gender === "all" || g.gender === gender) && (kind === "all" || g.kind === kind) && (!q || g.name.toLowerCase().includes(q)));
+  }, [groups, gender, kind, query]);
 
-  const looks = person ? (avatars.filter((a) => a.person === person)) : [];
+  const wanted: "portrait" | "landscape" | "square" | null = ratio === "9:16" || ratio === "4:5" ? "portrait" : ratio === "1:1" ? "square" : ratio === "16:9" ? "landscape" : null;
+  const personLooksAll = person ? looks[person.id] : undefined;
+  const personLooks = personLooksAll && fitOnly && wanted ? personLooksAll.filter((l) => l.orientation === wanted) : personLooksAll;
+  const fitCount = personLooksAll && wanted ? personLooksAll.filter((l) => l.orientation === wanted).length : 0;
 
   return (
     <div className="pl-root">
@@ -39,12 +70,14 @@ export function PresenterLibrary({ avatars, selectedId, onSelect, onClose }: { a
         <div>
           <span className="cs-eyebrow">HeyGen presenter library</span>
           <h2 id="pl-title">Choose a presenter</h2>
-          <p>{avatars.length.toLocaleString()} looks across {new Set(avatars.map((a) => a.person)).size} people. Filmed actors, so gestures and body language are built in.</p>
+          <p>
+            {groups.length.toLocaleString()} people · {groups.reduce((n, g) => n + g.looksCount, 0).toLocaleString()} looks. Pick a person, then the outfit and setting.
+          </p>
         </div>
         <button type="button" className="cs-close" onClick={onClose} aria-label="Close">×</button>
       </div>
       <div className="pl-filters">
-        <input className="cs-input" placeholder="Search by name or setting — office, sofa, casual…" value={query} onChange={(e) => { setQuery(e.target.value); setPerson(null); }} aria-label="Search presenters" />
+        <input className="cs-input" placeholder="Search by name…" value={query} onChange={(e) => { setQuery(e.target.value); setPerson(null); }} aria-label="Search presenters" />
         <div className="pl-segment" role="group" aria-label="Filter by gender">
           {(["all", "female", "male"] as const).map((g) => (
             <button type="button" key={g} aria-pressed={gender === g} onClick={() => { setGender(g); setPerson(null); }}>
@@ -53,30 +86,54 @@ export function PresenterLibrary({ avatars, selectedId, onSelect, onClose }: { a
           ))}
         </div>
       </div>
+      <div className="pl-chips" role="group" aria-label="Avatar type">
+        {KINDS.map((k) => (
+          <button type="button" key={k.id} aria-pressed={kind === k.id} title={k.hint} onClick={() => { setKind(k.id); setPerson(null); }}>
+            {k.label}
+          </button>
+        ))}
+        <span className="pl-chips-hint">{KINDS.find((k) => k.id === kind)?.hint}</span>
+      </div>
+
       {person ? (
         <div className="pl-looks">
           <button type="button" className="cs-text-button" onClick={() => setPerson(null)}>← All presenters</button>
-          <h3>{person} <span>{looks.length} {looks.length === 1 ? "look" : "looks"}</span></h3>
-          <div className="pl-grid">
-            {looks.map((a) => (
-              <AvatarCard key={a.id} avatar={a} title={a.look} selected={a.id === selectedId} onClick={() => onSelect(a)} />
-            ))}
+          <div className="pl-looks-head">
+            <h3>
+              {person.name.trim() || "Unnamed presenter"} <span>{person.looksCount} {person.looksCount === 1 ? "look" : "looks"}</span>
+            </h3>
+            {wanted && personLooksAll ? (
+              <label className="pl-fit-toggle">
+                <input type="checkbox" checked={fitOnly} onChange={(e) => setFitOnly(e.target.checked)} /> Only looks that fit {ratio} <span>{fitCount}</span>
+              </label>
+            ) : null}
           </div>
+          {!personLooks ? (
+            <p className="pl-empty">Loading looks…</p>
+          ) : personLooks.length === 0 ? (
+            <p className="pl-empty">No {ratio} looks for {person.name} — untick the filter to see the rest.</p>
+          ) : (
+            <div className="pl-grid">
+              {personLooks.map((l) => (
+                <LookTile key={l.id} look={l} selected={l.id === selectedId} recommended={wanted !== null && l.orientation === wanted} onClick={() => onSelect({ look: l, person })} />
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="pl-grid">
-          {people.length === 0 ? <p className="pl-empty">No presenters match “{query}”.</p> : null}
-          {people.map(([name, list]) => (
-            <PersonCard key={name} name={name} looks={list} selected={list.some((a) => a.id === selectedId)} onClick={() => (list.length === 1 ? onSelect(list[0]!) : setPerson(name))} />
+          {people.length === 0 ? <p className="pl-empty">No presenters match.</p> : null}
+          {people.slice(0, 400).map((g) => (
+            <PersonTile key={g.id} group={g} looks={looks[g.id]} onVisible={() => fetchLooks(g.id)} selected={Boolean(looks[g.id]?.some((l) => l.id === selectedId))} onClick={() => { fetchLooks(g.id); setPerson(g); }} />
           ))}
+          {people.length > 400 ? <p className="pl-empty">Showing the first 400 — search to narrow down.</p> : null}
         </div>
       )}
     </div>
   );
 }
 
-function AvatarCard({ avatar, title, subtitle, selected, onClick }: { avatar: LibraryAvatar; title: string; subtitle?: string; selected?: boolean; onClick: () => void }) {
-  const [hover, setHover] = useState(false);
+function useHoverVideo(hover: boolean) {
   const video = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const v = video.current;
@@ -87,57 +144,74 @@ function AvatarCard({ avatar, title, subtitle, selected, onClick }: { avatar: Li
       v.currentTime = 0;
     }
   }, [hover]);
+  return video;
+}
+
+/** A person: hero portrait plus two stacked looks (filled in once the looks have loaded). */
+function PersonTile({ group, looks, selected, onVisible, onClick }: { group: PresenterGroup; looks?: PresenterLook[]; selected?: boolean; onVisible: () => void; onClick: () => void }) {
+  const [hover, setHover] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const video = useHoverVideo(hover);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        onVisible();
+        io.disconnect();
+      }
+    }, { rootMargin: "200px" });
+    io.observe(el);
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group.id]);
+  const hero = looks?.[0];
+  const heroImg = hero?.previewUrl ?? group.previewUrl;
+  const rest = (looks ?? []).filter((l) => l.previewUrl && l.previewUrl !== heroImg).slice(0, 2);
+  // Before the looks arrive, show skeleton cells for the thumbnails we expect; after, only real ones.
+  const n = looks ? rest.length : Math.min(2, Math.max(0, group.looksCount - 1));
   return (
-    // A div, not a <button>: buttons give their children a shrink-to-fit anonymous box in
-    // Chromium, which collapses aspect-ratio artwork to zero height.
-    <div role="button" tabIndex={0} className="pl-tile pl-look" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
-      <span className="pl-sheet solo">
+    <div ref={ref} role="button" tabIndex={0} className="pl-tile" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
+      <span className={`pl-sheet n${n}`}>
         <span className="pl-cell pl-hero">
-          {avatar.previewUrl ? <img src={avatar.previewUrl} alt="" loading="lazy" /> : <span className="pl-initial">{title.slice(0, 1)}</span>}
-          {avatar.previewVideoUrl ? <video ref={video} src={avatar.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
+          {heroImg ? <img src={heroImg} alt="" loading="lazy" /> : <span className="pl-initial">{group.name.slice(0, 1)}</span>}
+          {hero?.previewVideoUrl ? <video ref={video} src={hero.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
         </span>
+        {Array.from({ length: n }).map((_, i) => (
+          <span key={i} className="pl-cell">
+            {rest[i]?.previewUrl ? <img src={rest[i]!.previewUrl!} alt="" loading="lazy" /> : null}
+          </span>
+        ))}
         {selected ? <span className="pl-check">✓</span> : null}
+        <span className={`pl-kind ${group.kind}`}>{group.kind === "studio" ? "Filmed" : group.kind === "twin" ? "Twin" : "AI"}</span>
       </span>
       <span className="pl-caption">
-        <strong>{title}</strong>
-        {subtitle ? <small>{subtitle}</small> : null}
+        <strong>{group.name.trim() || "Unnamed presenter"}</strong>
+        <small>
+          {group.looksCount} {group.looksCount === 1 ? "look" : "looks"}
+        </small>
       </span>
     </div>
   );
 }
 
-/** A person: hero portrait plus two stacked looks — three tiles, like a contact sheet. */
-function PersonCard({ name, looks, selected, onClick }: { name: string; looks: LibraryAvatar[]; selected?: boolean; onClick: () => void }) {
+function LookTile({ look, selected, recommended, onClick }: { look: PresenterLook; selected?: boolean; recommended?: boolean; onClick: () => void }) {
   const [hover, setHover] = useState(false);
-  const video = useRef<HTMLVideoElement>(null);
-  const hero = looks[0]!;
-  const rest = looks.slice(1, 3);
-  useEffect(() => {
-    const v = video.current;
-    if (!v) return;
-    if (hover) void v.play().catch(() => {});
-    else {
-      v.pause();
-      v.currentTime = 0;
-    }
-  }, [hover]);
+  const video = useHoverVideo(hover);
+  const orientation = look.orientation === "portrait" ? "Portrait" : look.orientation === "landscape" ? "Landscape" : look.orientation === "square" ? "Square" : null;
   return (
-    <div role="button" tabIndex={0} className="pl-tile" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
-      <span className={`pl-sheet n${rest.length}`}>
+    <div role="button" tabIndex={0} className="pl-tile pl-look" aria-pressed={selected} onClick={onClick} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onFocus={() => setHover(true)} onBlur={() => setHover(false)}>
+      <span className={`pl-sheet solo ${look.orientation === "landscape" ? "wide" : ""}`}>
         <span className="pl-cell pl-hero">
-          {hero.previewUrl ? <img src={hero.previewUrl} alt="" loading="lazy" /> : <span className="pl-initial">{name.slice(0, 1)}</span>}
-          {hero.previewVideoUrl ? <video ref={video} src={hero.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
+          {look.previewUrl ? <img src={look.previewUrl} alt="" loading="lazy" /> : <span className="pl-initial">{look.name.slice(0, 1)}</span>}
+          {look.previewVideoUrl ? <video ref={video} src={look.previewVideoUrl} muted playsInline preload="none" loop className={hover ? "on" : ""} /> : null}
         </span>
-        {rest.map((l) => (
-          <span key={l.id} className="pl-cell">
-            {l.previewUrl ? <img src={l.previewUrl} alt="" loading="lazy" /> : null}
-          </span>
-        ))}
         {selected ? <span className="pl-check">✓</span> : null}
+        {recommended ? <span className="pl-fit">Fits this size</span> : null}
       </span>
       <span className="pl-caption">
-        <strong>{name}</strong>
-        <small>{looks.length} {looks.length === 1 ? "look" : "looks"}</small>
+        <strong>{look.name}</strong>
+        <small>{[orientation, look.engines.includes("avatar_v") ? "Avatar V" : null].filter(Boolean).join(" · ")}</small>
       </span>
     </div>
   );

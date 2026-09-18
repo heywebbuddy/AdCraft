@@ -31,7 +31,7 @@ export default async function NewVideoPage({
   if (!concept) notFound();
 
   const models = await videoModelChoices();
-  const { avatars, voices } = await presenterChoices();
+  const { groups, voices } = await presenterChoices();
   const defaultModel = models.find((m) => m.isDefault)?.id ?? models[0]!.id;
   const preview = (k: "video" | "ugc") => {
     const doc = buildVideoDocument(concept, {
@@ -102,15 +102,7 @@ export default async function NewVideoPage({
           label: r.label,
           hint: r.hint,
         }))}
-        avatars={avatars.map((a) => ({
-          id: a.id,
-          label: a.label,
-          person: a.person ?? a.label,
-          look: a.look ?? "Default",
-          gender: a.gender ?? null,
-          previewUrl: a.previewUrl ?? null,
-          previewVideoUrl: a.previewVideoUrl ?? null,
-        }))}
+        groups={groups}
         voices={voices}
         storyboards={{ video: preview("video"), ugc: preview("ugc") }}
         balance={ctx.credits.balance}

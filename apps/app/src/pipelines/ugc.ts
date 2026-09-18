@@ -5,6 +5,7 @@ import {
   downloadVideo,
   generatePresenter,
   generatePhotoPresenter,
+  generateLibraryPresenter,
   presenterMotionPrompt,
   generateVideo,
   getModel,
@@ -106,17 +107,25 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
               expressiveness: doc.presenter?.motion?.expressiveness ?? "high",
               motionPrompt: presenterMotionPrompt(doc.presenter?.motion?.prompt),
             })
-          : generatePresenter({
-            model: HEYGEN_MODEL,
-            avatarId: doc.presenter?.avatarId ?? "",
-            script,
-            ratio: doc.ratio,
-            voiceId: doc.voice?.voiceId,
-            audio: audioBytes ? { url: `data:audio/mpeg;base64,${audioBytes.toString("base64")}`, mimeType: "audio/mpeg", bytes: audioBytes, durationSec: total } : undefined,
-            background: { color: doc.brand.colors.background },
-            captions: total ? captionSegments(script, total) : undefined,
-            brand: { name: doc.brand.name, background: doc.brand.colors.background, text: doc.brand.colors.text, accent: doc.brand.colors.accent, font: doc.brand.fonts.heading },
-          }),
+          : audioBytes && doc.presenter?.avatarId
+            ? generateLibraryPresenter({
+                avatarId: doc.presenter.avatarId,
+                audio: audioBytes,
+                ratio: doc.ratio,
+                durationSec: total ?? 30,
+                motionPrompt: presenterMotionPrompt(doc.presenter?.motion?.prompt),
+              })
+            : generatePresenter({
+                model: HEYGEN_MODEL,
+                avatarId: doc.presenter?.avatarId ?? "",
+                script,
+                ratio: doc.ratio,
+                voiceId: doc.voice?.voiceId,
+                audio: audioBytes ? { url: `data:audio/mpeg;base64,${audioBytes.toString("base64")}`, mimeType: "audio/mpeg", bytes: audioBytes, durationSec: total } : undefined,
+                background: { color: doc.brand.colors.background },
+                captions: total ? captionSegments(script, total) : undefined,
+                brand: { name: doc.brand.name, background: doc.brand.colors.background, text: doc.brand.colors.text, accent: doc.brand.colors.accent, font: doc.brand.fonts.heading },
+              }),
         (r) => ({ durationSec: r.output.durationSec }),
       );
       const bytes = await downloadPresenter(res.output);

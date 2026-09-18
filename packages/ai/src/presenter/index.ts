@@ -14,3 +14,17 @@ export {
   type HeyGenPresenterRequest,
 } from "./heygen";
 export { generatePhotoPresenter, presenterMotionPrompt, type Expressiveness } from "./photo";
+export {
+  listAvatarGroups,
+  listGroupLooks,
+  getLook,
+  groupIdsByType,
+  seedAvatarGroups,
+  avatarGroupsSnapshot,
+  generateLibraryPresenter,
+  isHeyGenLibraryConfigured,
+  type AvatarGroup,
+  type AvatarLook,
+  type AvatarType,
+  type Orientation,
+} from "./library";

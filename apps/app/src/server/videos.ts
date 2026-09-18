@@ -15,7 +15,8 @@ import {
   variants,
   type BrandKitData,
 } from "@adcraft/db";
-import { listAvatars, listVoices } from "@adcraft/ai";
+import { listVoices } from "@adcraft/ai";
+import { getPresenterGroups } from "./presenter-library";
 import { getCatalog } from "./model-catalog";
 import { getPlacement } from "@adcraft/specs";
 import { documentDurationSec, normalizeVideoDocument, type VideoDocument, type VideoKind, type VideoRatio, type VideoScene } from "@adcraft/render/video";
@@ -248,8 +249,8 @@ export async function videoModelChoices() {
 }
 
 export async function presenterChoices() {
-  const [avatars, voices] = await Promise.all([listAvatars(), listVoices()]);
-  return { avatars: avatars.filter((a) => a.licensed), voices };
+  const [library, voices] = await Promise.all([getPresenterGroups(), listVoices()]);
+  return { groups: library.groups, libraryLoading: library.loading, voices };
 }
 
 // ---------- writes ----------
