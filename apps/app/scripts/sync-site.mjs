@@ -12,7 +12,7 @@ if (!existsSync(dist)) {
   process.exit(0);
 }
 mkdirSync(pub, { recursive: true });
-for (const entry of ["index.html", "style.css", "app.js", "favicon.svg", "assets", "showcase", "pricing"]) {
+for (const entry of ["index.html", "style.css", "character-studio.css", "app.js", "favicon.svg", "assets", "showcase", "pricing"]) {
   const from = path.join(dist, entry);
   const to = path.join(pub, entry);
   if (!existsSync(from)) continue;

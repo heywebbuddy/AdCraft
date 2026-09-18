@@ -6,6 +6,8 @@ import { loadPerformanceSummary } from "@/server/ads";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SectionHeader } from "@/components/workspace-ui";
 import { WallTile, wallPlaceholders as placeholders } from "@/components/wall-tile";
+import { StudioLaunchpad } from "./studio-launchpad";
+import "./dashboard.css";
 import {
   AlertIcon,
   ArrowIcon,
@@ -61,15 +63,14 @@ export default async function DashboardPage() {
   const complete = setup.filter((s) => s.done).length;
 
   return (
-    <>
+    <div className="dashboard-home">
       <AutoRefresh active={data.queue.length > 0} />
 
       <header className="home-header">
         <div>
           <span className="workspace-eyebrow">{dateLabel}</span>
-          <h1>
-            {greeting(now)}, {firstName}. <em>{headline}</em>
-          </h1>
+          <h1>{greeting(now)}, {firstName}.</h1>
+          <p className="dash-greeting-note">Your next great idea starts here. <span>{headline}</span></p>
         </div>
         <div className="workspace-page-actions">
           <Link href="/library/new" className="btn btn-outline">
@@ -81,34 +82,37 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <dl className="home-strip" aria-label="Workspace status">
+      <StudioLaunchpad />
+
+      <div className="dash-section-label"><h2>Your workspace at a glance</h2><span>{ctx.brand?.name ?? ctx.org.name}</span></div>
+      <div className="home-strip" role="group" aria-label="Workspace status">
         <Link href="/creatives?status=ready" className="home-stat">
-          <dt>Ready to review</dt>
-          <dd>{readyCount}</dd>
+          <span className="dash-stat-label">Recent ads ready</span>
+          <span className="dash-stat-value">{readyCount}</span>
         </Link>
         <Link href="/creatives?status=rendering" className="home-stat">
-          <dt>Generating</dt>
-          <dd>
+          <span className="dash-stat-label">Generating</span>
+          <span className="dash-stat-value">
             {data.queue.length}
             {data.queue.length ? <Spark size={14} animate="spin" className="text-orange" /> : null}
-          </dd>
+          </span>
         </Link>
         <Link href="/campaigns" className="home-stat">
-          <dt>Live campaigns</dt>
-          <dd>{perf.liveCampaigns}</dd>
+          <span className="dash-stat-label">Live campaigns</span>
+          <span className="dash-stat-value">{perf.liveCampaigns}</span>
         </Link>
         <Link href="/performance" className="home-stat">
-          <dt>Spend · 7 days</dt>
-          <dd>{perf.connected && perf.hasData ? money(perf.spend) : "—"}</dd>
+          <span className="dash-stat-label">Spend · 7 days</span>
+          <span className="dash-stat-value">{perf.connected && perf.hasData ? money(perf.spend) : "—"}</span>
         </Link>
         <Link href="/settings/billing" className="home-stat">
-          <dt>Credits</dt>
-          <dd>
+          <span className="dash-stat-label">Credits available</span>
+          <span className="dash-stat-value">
             {ctx.credits.balance}
             <small> / {ctx.credits.grant}</small>
-          </dd>
+          </span>
         </Link>
-      </dl>
+      </div>
 
       <div className="overview-columns">
         <div className="overview-primary">
@@ -140,7 +144,7 @@ export default async function DashboardPage() {
 
           <section className="home-section">
             <SectionHeader
-              title="Recent creative"
+              title="Recent creations"
               description={
                 data.tiles.length
                   ? `${readyCount} ready${failedCount ? ` · ${failedCount} failed` : ""} · live ones carry their numbers`
@@ -176,16 +180,16 @@ export default async function DashboardPage() {
                   <span style={{ aspectRatio: "1 / 1", background: placeholders[0] }} />
                 </div>
                 <div>
-                  <h3>Your wall is empty. That never lasts long.</h3>
+                  <h3>A little idea. Your first great ad.</h3>
                   <p>
-                    Add a product photo to {ctx.brand?.name ?? "your brand"}, write a two-line brief, and the first ads land here in every size.
+                    Start with a character and a story, or turn a product photo into a new campaign for {ctx.brand?.name ?? "your brand"}. Your creations will land here.
                   </p>
                   <div className="workspace-page-actions">
-                    <Link href="/briefs/new" className="btn btn-orange">
-                      Write the first brief <ArrowIcon width={14} height={14} />
+                    <Link href="/characters" className="btn btn-orange">
+                      Create a character ad <ArrowIcon width={14} height={14} />
                     </Link>
-                    <Link href="/library/new" className="btn btn-outline">
-                      <LibraryIcon width={15} height={15} /> Add a product
+                    <Link href="/briefs/new" className="btn btn-outline">
+                      <LibraryIcon width={15} height={15} /> Start with a brief
                     </Link>
                   </div>
                 </div>
@@ -230,6 +234,18 @@ export default async function DashboardPage() {
         </div>
 
         <aside className="overview-aside">
+          <section className="dash-inventory" aria-labelledby="cast-heading">
+            <div className="dash-inventory-head"><h2 id="cast-heading">Your brand cast</h2><Spark size={18} /></div>
+            <p>A growing collection, ready for your next story.</p>
+            <div className="dash-inventory-counts">
+              <Link href="/characters?view=characters"><strong>{data.studio.characters}</strong><span>Characters</span></Link>
+              <Link href="/characters?view=looks"><strong>{data.studio.looks}</strong><span>Looks</span></Link>
+              <Link href="/characters?view=voices"><strong>{data.studio.voices}</strong><span>Own voices</span></Link>
+            </div>
+            {data.studio.processing > 0 ? <p className="dash-inventory-note">{data.studio.processing} character or voice job{data.studio.processing === 1 ? "" : "s"} in progress. Open the studio for the latest status.</p> : null}
+            {data.studio.pendingConsent > 0 ? <Link className="dash-consent-note" href="/characters?view=characters"><AlertIcon width={15} height={15} /> {data.studio.pendingConsent} digital twin{data.studio.pendingConsent === 1 ? " needs" : "s need"} consent review <ArrowIcon width={13} height={13} /></Link> : null}
+            <Link href="/characters?view=characters" className="home-panel-link">{data.studio.characters ? "Manage your characters" : "Meet your first character"} <ArrowIcon width={13} height={13} /></Link>
+          </section>
           <section className="panel home-panel">
             <div className="home-panel-head">
               <span className="eyebrow">This week</span>
@@ -407,7 +423,7 @@ export default async function DashboardPage() {
           </section>
         </aside>
       </div>
-    </>
+    </div>
   );
 }
 

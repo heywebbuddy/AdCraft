@@ -1,6 +1,7 @@
 # Marketing site copies (source of truth is repo dist/; synced by scripts/sync-site.mjs)
 index.html
 style.css
+character-studio.css
 app.js
 favicon.svg
 assets/

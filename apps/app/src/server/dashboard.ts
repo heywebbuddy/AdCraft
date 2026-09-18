@@ -1,6 +1,6 @@
 import "server-only";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { db, briefs, concepts, creatives, generationEvents, projects, renders, variants, adAccounts, approvals, products } from "@adcraft/db";
+import { db, briefs, concepts, creatives, generationEvents, projects, renders, variants, adAccounts, approvals, products, characters, brandVoices } from "@adcraft/db";
 
 export type WallTile = {
   id: string;
@@ -24,7 +24,7 @@ export type QueueItem = {
 };
 
 export async function loadDashboard(orgId: string, brandId: string | null) {
-  const [running, tiles, counts, accounts, changes] = await Promise.all([
+  const [running, tiles, counts, accounts, changes, studio] = await Promise.all([
     loadQueue(orgId),
     loadWall(orgId, brandId),
     loadCounts(orgId, brandId),
@@ -36,6 +36,7 @@ export async function loadDashboard(orgId: string, brandId: string | null) {
       .where(and(eq(approvals.orgId, orgId), eq(approvals.status, "changes_requested")))
       .orderBy(desc(approvals.updatedAt))
       .limit(3),
+    loadStudioSummary(orgId, brandId),
   ]);
   return {
     queue: running,
@@ -44,7 +45,24 @@ export async function loadDashboard(orgId: string, brandId: string | null) {
     adAccountsConnected: accounts.length,
     sandboxOnly: accounts.length > 0 && accounts.every((a) => a.externalId.startsWith("sandbox")),
     changeRequests: changes,
+    studio,
   };
+}
+
+/** Local inventory only: opening the dashboard must not fetch the provider catalogues. */
+async function loadStudioSummary(orgId: string, brandId: string | null) {
+  if (!brandId) return { characters: 0, looks: 0, voices: 0, processing: 0, pendingConsent: 0 };
+  const [[people], [voices]] = await Promise.all([
+    db.select({
+      total: sql<number>`count(*)::int`,
+      looks: sql<number>`coalesce(sum(jsonb_array_length(${characters.looks})), 0)::int`,
+      processing: sql<number>`count(*) filter (where ${characters.status} in ('queued', 'generating'))::int`,
+      pendingConsent: sql<number>`count(*) filter (where ${characters.heygen}->>'type' = 'digital_twin' and coalesce(${characters.heygen}->>'consent', 'unknown') not in ('approved', 'not_required'))::int`,
+    }).from(characters).where(and(eq(characters.orgId, orgId), eq(characters.brandId, brandId))),
+    db.select({ total: sql<number>`count(*)::int`, processing: sql<number>`count(*) filter (where ${brandVoices.status} = 'processing')::int` })
+      .from(brandVoices).where(and(eq(brandVoices.orgId, orgId), eq(brandVoices.brandId, brandId))),
+  ]);
+  return { characters: people?.total ?? 0, looks: people?.looks ?? 0, voices: voices?.total ?? 0, processing: (people?.processing ?? 0) + (voices?.processing ?? 0), pendingConsent: people?.pendingConsent ?? 0 };
 }
 
 async function loadQueue(orgId: string): Promise<QueueItem[]> {
