@@ -10,8 +10,9 @@ app URL https://app-production-9ee2.up.railway.app.
 One always-on container built from the root `Dockerfile` (`railway.json` points at it): Node 22 on Debian
 bookworm with the Chromium libraries Remotion needs, Chrome Headless Shell downloaded at build time, and
 `scripts/start.sh` as the entrypoint — it runs `drizzle-kit migrate` against `DATABASE_URL`, then `next start`.
-Because the process is always on, pipelines run **inline** (no Inngest keys set) and video renders happen in
-the same container; uploads and renders live on the `/data` volume (`LOCAL_STORAGE_DIR=/data/files`) until
+Background jobs run on **Inngest Cloud** (`INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY` on the service, app id
+`adcraft`, synced by `curl -X PUT https://<domain>/api/inngest` after a deploy that changes functions — the SDK
+also re-syncs itself); the hourly `insights/cron` is registered there. Video renders happen in the same container; uploads and renders live on the `/data` volume (`LOCAL_STORAGE_DIR=/data/files`) until
 the `R2_*` variables are set.
 
 - Deploy: `railway up --service app --detach` from the repo root (the CLI is linked to the project), or
