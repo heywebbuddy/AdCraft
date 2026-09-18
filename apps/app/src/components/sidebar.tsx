@@ -43,10 +43,11 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
         label: "Character studio",
         Icon: PlayIcon,
         children: [
+          { href: "/characters", label: "Create an ad" },
+          { href: "/characters?view=characters", label: "My characters" },
           { href: "/characters?view=presenters", label: "Presenter library" },
           { href: "/characters?view=voices", label: "Voice library" },
           { href: "/characters?view=looks", label: "Design a look" },
-          { href: "/characters?view=avatars", label: "Create an avatar" },
         ],
       },
       { href: "/creatives", label: "All creatives", Icon: CreativesIcon },

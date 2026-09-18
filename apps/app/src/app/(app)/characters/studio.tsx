@@ -8,7 +8,7 @@ import { CHARACTER_TEMPLATES, estimatedStudioSeconds, hookVariations, studioScri
 import { applyLookPackAction, auditionVoiceAction, createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction, searchVoicesAction, setCharacterVoiceAction } from "./actions";
 import { VoiceTools } from "./voice-tools";
 import { LookPackGallery, type LookPackState } from "./look-packs";
-import { AvatarCreate } from "./avatar-create";
+import { PhotoForm, TwinForm } from "./heygen-forms";
 import { twinConsentAction } from "./actions";
 import { Spark } from "@/components/spark";
 import { MakerLogo, inferMaker } from "@/components/maker-logo";
@@ -16,16 +16,17 @@ import { PlayButton, VoiceField, VoicePicker, type CatalogVoice } from "@/compon
 import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
 
 type Props = { data: CharacterStudioData; brandName: string; balance: number; videoCredits: number; canEdit: boolean; planEnabled: boolean };
-type View = "studio" | "characters" | "presenters" | "voices" | "looks" | "avatars" | "templates";
-const TABS: Array<[View, string]> = [["studio", "Create an ad"], ["characters", "My characters"], ["templates", "Ad templates"]];
-const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices" || v === "looks" || v === "avatars";
+type View = "studio" | "characters" | "presenters" | "voices" | "looks" | "templates";
+const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices" || v === "looks";
+/** How a new character comes to be: a generated face (our image models) or HeyGen (photo / description / footage). */
+type NewSource = "generate" | "photo" | "twin";
 
 export function CharacterStudio({ data, brandName, balance, videoCredits, canEdit, planEnabled }: Props) {
   const router = useRouter();
   // The section lives in the URL (/characters?view=voices) so the sidebar can link to the
   // libraries; Next syncs replaceState into useSearchParams without a server round trip.
   const params = useSearchParams();
-  const paramView = params.get("view");
+  const paramView = params.get("view") === "avatars" ? "characters" : params.get("view");
   const view: View = isView(paramView) ? paramView : "studio";
   function setView(v: View) { window.history.replaceState(null, "", v === "studio" ? window.location.pathname : `${window.location.pathname}?view=${v}`); window.scrollTo({ top: 0 }); }
   const [characterId, setCharacterId] = useState(data.characters.find(c => c.portraitUrl)?.id ?? data.characters[0]?.id ?? "");
@@ -49,6 +50,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   const [videoModel, setVideoModel] = useState(data.videoModels.find(m => m.default)?.id ?? data.videoModels[0]?.id ?? "");
   const [modelTarget, setModelTarget] = useState<"portrait" | "scene">("portrait");
   const [dialogMode, setDialogMode] = useState<"new" | "look" | "profile">("new");
+  const [newSource, setNewSource] = useState<NewSource>("generate");
   // New looks: our image models from a description, or HeyGen look packs / templates / prompt.
   const [lookSource, setLookSource] = useState<"describe" | "heygen">("describe");
   const [pack, setPack] = useState<LookPackState>({ packId: data.lookPacks[0]?.id ?? "", gender: "female", ratio: "9:16", prompt: "", lookName: "", remix: null });
@@ -89,7 +91,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
   function pickTemplate(id: CharacterTemplateId) { setTemplate(id); setHook(hookVariations(name, id)[0]!); setScene(0); }
   function pickProduct(id: string) { setProductId(id); const item = data.products.find(p => p.id === id); setBody(item?.description ?? ""); setHook(hookVariations(item?.name || serviceName || "your service", template)[0]!); }
   function openCharacter(mode: "new" | "look" | "profile", preset?: CatalogVoice | null) {
-    setDialogMode(mode); setModalError(""); setDialogVoice(preset ?? (mode === "new" ? data.defaultVoice : character?.voice ?? data.defaultVoice));
+    setDialogMode(mode); setModalError(""); setDialogVoice(preset ?? (mode === "new" ? data.defaultVoice : character?.voice ?? data.defaultVoice)); if (mode === "new") setNewSource("generate");
     if (mode === "look") { setLookSource(character?.onHeyGen ? "heygen" : "describe"); setPack(prev => ({ ...prev, gender: character?.voice?.gender === "male" ? "male" : "female", ratio: ratio === "16:9" ? "16:9" : "9:16", prompt: "", lookName: "" })); }
     characterDialog.current?.showModal();
   }
@@ -153,7 +155,8 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     });
   }
 
-  const library = view === "presenters" || view === "voices" || view === "looks" || view === "avatars";
+  const library = view !== "studio";
+  const VIEW_TITLES: Record<View, string> = { studio: "Create an ad", characters: "My characters", presenters: "Presenter library", voices: "Voice library", looks: "Design a look", templates: "Ad templates" };
   const [consentBusy, setConsentBusy] = useState("");
   async function consentLink(c: { id: string; name: string }, refresh: boolean) {
     setConsentBusy(c.id); setError("");
@@ -164,9 +167,9 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     if (r.url) { void navigator.clipboard?.writeText(r.url).catch(() => undefined); setNotice(`Consent link copied. Send it to ${c.name} — it is valid for 24 hours.`); router.refresh(); }
   }
   return <div className="character-studio">
-    {library && <div className="cs-crumb"><button type="button" className="cs-text-button" onClick={() => setView("studio")}>← Character studio</button><span>{brandName}</span></div>}
-    {!library && <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> Create a character</button></header>}
-    {!library && <nav className="cs-tabs" aria-label="Character studio sections">{TABS.map(([id, label]) => <button type="button" key={id} aria-pressed={view === id} onClick={() => setView(id)}>{label}{id === "characters" && <span>{data.characters.length}</span>}</button>)}<span className="cs-tabs-note">Your characters, across every campaign</span></nav>}
+    {library && <div className="cs-crumb"><span><button type="button" className="cs-text-button" onClick={() => setView("studio")}>Character studio</button> / {VIEW_TITLES[view]}</span><span>{brandName}</span></div>}
+    {!library && <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> New character</button></header>}
+
     {!planEnabled && <div className="cs-banner">Character studio is not enabled for your plan. <Link href="/settings/billing">View plans →</Link></div>}
     {notice && <div className="cs-notice" role="status">{notice}<button type="button" aria-label="Dismiss notification" onClick={() => setNotice("")}>×</button></div>}
 
@@ -198,7 +201,31 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       <div className="cs-consistency"><span>◎</span><p><strong>A character you can come back to.</strong>Keep the same face and voice. Give each campaign a different story.</p></div>
     </aside></div>}
 
-    {view === "characters" && <section><div className="cs-view-heading"><div><h2>Your recurring cast</h2><p>Private to {brandName}. Reuse a character or create a new look.</p></div><span className="cs-badge">{data.characters.length} characters</span></div><div className="cs-character-grid">{data.characters.map(c => <article className="cs-character-card" key={c.id}><div className="cs-cast-photo">{c.portraitUrl ? <img src={c.portraitUrl} alt={c.name} /> : <div className="cs-cast-pending"><Spark size={32} animate={c.status === "failed" ? undefined : "spin"} /><span>{c.status === "failed" ? "Generation failed" : "Creating your character…"}</span></div>}<span className="cs-preview-label">{c.looks.length} {c.looks.length === 1 ? "LOOK" : "LOOKS"}</span></div><div className="cs-cast-info"><h3>{c.name}</h3><p>{c.personality}</p>{c.error && <p className="cs-error">{c.error}</p>}<button type="button" className="cs-secondary" onClick={() => { setCharacterId(c.id); setLookId(""); setView("studio"); }}>{c.portraitUrl ? "Use character ↗" : "View character ↗"}</button></div></article>)}<button type="button" className="cs-new-character-card" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span><strong>A new face for your brand</strong><small>Design a fictional character from a description.</small></button></div></section>}
+    {view === "characters" && <section className="cs-library">
+      <div className="pl-head">
+        <div><span className="cs-eyebrow">Your recurring cast</span><h2>My characters</h2><p>Private to {brandName}. Generate a face, start from a photo, or clone a real person — then give them looks and put them in ads.</p></div>
+        <button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> New character</button>
+      </div>
+      <div className="cs-character-grid">{data.characters.map(c => <article className={`cs-character-card ${["queued", "generating"].includes(c.status) ? "busy" : ""}`} key={c.id}>
+        <div className="cs-cast-photo">{c.portraitUrl ? <img src={c.portraitUrl} alt={c.name} /> : <div className="cs-cast-pending"><Spark size={32} animate={c.status === "failed" ? undefined : "spin"} /><span>{c.status === "failed" ? "Creation failed" : c.heygenType === "digital_twin" ? "HeyGen is training the twin…" : "Creating your character…"}</span></div>}
+          <span className="cs-preview-label">{c.looks.length} {c.looks.length === 1 ? "LOOK" : "LOOKS"}</span>
+          {c.heygenType && <span className={`cs-cast-kind ${c.heygenType}`}>{c.heygenType === "digital_twin" ? "Digital twin" : "HeyGen avatar"}</span>}
+        </div>
+        <div className="cs-cast-info">
+          <h3>{c.name}</h3>
+          <p>{c.personality}</p>
+          {c.heygenType === "digital_twin" && c.status === "ready" && <p className={`cs-consent ${c.consent ?? "pending"}`}>{c.consent === "approved" ? "Consent approved · ready for ads" : c.consent === "rejected" ? "Consent rejected — send a new link" : "Waiting for their consent recording"}</p>}
+          {c.error && <p className="cs-error">{c.error}</p>}
+          <div className="cs-cast-actions">
+            <button type="button" className="cs-secondary" disabled={!c.portraitUrl} onClick={() => { setCharacterId(c.id); setLookId(""); setStockAvatar(null); setView("studio"); }}>Use in an ad ↗</button>
+            {c.portraitUrl && <button type="button" className="cs-text-button" onClick={() => { setCharacterId(c.id); openCharacter("look"); }}>New look</button>}
+            {c.heygenType === "digital_twin" && c.status === "ready" && c.consent !== "approved" && <button type="button" className="cs-text-button" disabled={!canEdit || consentBusy === c.id} onClick={() => consentLink(c, !c.consentUrl)}>{consentBusy === c.id ? "Checking…" : c.consentUrl ? "Copy consent link" : "New consent link"}</button>}
+          </div>
+        </div>
+      </article>)}
+        <button type="button" className="cs-new-character-card" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span><strong>New character</strong><small>Generate a face, start from a photo, or clone a real person.</small></button>
+      </div>
+    </section>}
 
     {view === "presenters" && <section className="cs-library">
       {data.presenterLibraryLoading ? <div className="cs-library-indexing"><Spark size={28} animate="spin" /><div><strong>Indexing HeyGen's library</strong><p>About 1,400 people and 25,000 looks are being catalogued for the first time. This takes a couple of minutes and only happens once.</p></div></div>
@@ -263,33 +290,17 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
       </> : <div className="cs-library-indexing"><div><strong>Create a character first</strong><p>Look packs dress an existing character. Create one with a portrait, then come back here.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}>＋ Create a character</button></div>}
     </section>}
 
-    {view === "avatars" && <section className="cs-library ac-root">
-      <div className="pl-head">
-        <div>
-          <span className="cs-eyebrow">HeyGen avatars</span>
-          <h2>Create an avatar</h2>
-          <p>Create an identity that looks, moves and sounds consistently in any outfit and setting. Both become characters here — give them looks from the look packs, then put them in ads.</p>
-        </div>
-      </div>
-      <AvatarCreate canEdit={canEdit} connected={data.heygenConnected} balance={balance} credits={data.avatarCredits} defaultVoice={data.defaultVoice} onCreated={id => { setCharacterId(id); setNotice("HeyGen is building your avatar. It appears under My characters when it is ready."); setView("characters"); }} />
-      {data.characters.some(c => c.heygenType === "digital_twin" || c.heygenType === "prompt" || c.heygenType === "photo") && <>
-        <div className="ld-step"><span>✓</span><h3>Your HeyGen avatars</h3></div>
-        <div className="ac-list">
-          {data.characters.filter(c => c.heygenType).map(c => <div key={c.id} className="ac-row">
-            <div className="cs-pickbar-thumb">{c.portraitUrl ? <img src={c.portraitUrl} alt="" /> : <span>{c.name.slice(0, 1)}</span>}</div>
-            <div className="cs-pickbar-text"><strong>{c.name} <span>· {c.heygenType === "digital_twin" ? "Digital twin" : c.heygenType === "prompt" ? "Virtual character · from a description" : "Virtual character · from a photo"}</span></strong><small>{["queued", "generating"].includes(c.status) ? "HeyGen is still training this avatar…" : c.status === "failed" ? c.error ?? "Failed" : c.heygenType === "digital_twin" ? (c.consent === "approved" ? "Consent approved · ready for ads" : c.consent === "rejected" ? "Consent was rejected — re-record it" : "Waiting for the person's consent recording") : `${c.looks.length} ${c.looks.length === 1 ? "look" : "looks"} · ready for ads`}</small></div>
-            {c.heygenType === "digital_twin" && c.status === "ready" && c.consent !== "approved" && <button type="button" className="cs-secondary" disabled={!canEdit || consentBusy === c.id} onClick={() => consentLink(c, !c.consentUrl)}>{consentBusy === c.id ? "Checking…" : c.consentUrl ? "Copy consent link" : "New consent link"}</button>}
-            {c.heygenType === "digital_twin" && c.status === "ready" && c.consent !== "approved" && <button type="button" className="cs-text-button" disabled={consentBusy === c.id} onClick={() => consentLink(c, false)}>Check status</button>}
-            {c.status === "ready" && <button type="button" className="cs-primary" onClick={() => { setCharacterId(c.id); setLookId(""); setStockAvatar(null); setView("studio"); }}>Use in an ad <span>→</span></button>}
-          </div>)}
-        </div>
-      </>}
-    </section>}
+    {view === "templates" && <section className="cs-library"><div className="pl-head"><div><span className="cs-eyebrow">Ad formats</span><h2>Start with a story that fits</h2><p>Six editable ad structures. Your character, product and voice.</p></div></div><div className="cs-template-grid">{CHARACTER_TEMPLATES.map((t, i) => <button type="button" key={t.id} className="cs-template-card" onClick={() => { pickTemplate(t.id); setView("studio"); }}><div className={`cs-template-art cs-art-${i % 3}`}><span>{t.icon}</span><small>FORMAT 0{i + 1}</small></div><div><h3>{t.name}</h3><p>{t.description}</p><span className="cs-text-button">Use this format ↗</span></div></button>)}</div></section>}
 
-    {view === "templates" && <section><div className="cs-view-heading"><div><h2>Start with a story that fits.</h2><p>Six editable ad structures. Your character, product and voice.</p></div></div><div className="cs-template-grid">{CHARACTER_TEMPLATES.map((t, i) => <button type="button" key={t.id} className="cs-template-card" onClick={() => { pickTemplate(t.id); setView("studio"); }}><div className={`cs-template-art cs-art-${i % 3}`}><span>{t.icon}</span><small>FORMAT 0{i + 1}</small></div><div><h3>{t.name}</h3><p>{t.description}</p><span className="cs-text-button">Use this format ↗</span></div></button>)}</div></section>}
-
-    <dialog ref={characterDialog} className="cs-dialog" aria-labelledby="cs-dialog-title" onCancel={e => { if (modalPending) e.preventDefault(); }} onClick={e => { if (e.target === e.currentTarget && !modalPending) characterDialog.current?.close(); }}><div className="cs-dialog-heading"><div><span className="cs-eyebrow">Your brand's recurring cast</span><h2 id="cs-dialog-title">{dialogMode === "new" ? "Create a character" : dialogMode === "look" ? `A new look for ${character?.name}` : "Character profile"}</h2></div><button className="cs-close" type="button" aria-label="Close character dialog" disabled={modalPending} onClick={() => characterDialog.current?.close()}>×</button></div>
-      <form ref={characterForm} key={`${dialogMode}-${character?.id ?? "new"}`} onSubmit={submitCharacter} className="cs-character-form">
+    <dialog ref={characterDialog} className="cs-dialog" aria-labelledby="cs-dialog-title" onCancel={e => { if (modalPending) e.preventDefault(); }} onClick={e => { if (e.target === e.currentTarget && !modalPending) characterDialog.current?.close(); }}><div className="cs-dialog-heading"><div><span className="cs-eyebrow">Your brand's recurring cast</span><h2 id="cs-dialog-title">{dialogMode === "new" ? "New character" : dialogMode === "look" ? `A new look for ${character?.name}` : "Character profile"}</h2>{dialogMode === "new" && <p>{newSource === "generate" ? "A fictional presenter, generated from a description with your image model." : newSource === "photo" ? "A HeyGen avatar from one photo, or from a description." : "A digital twin of a real person, trained from footage — looks, moves and sounds like them."}</p>}</div><button className="cs-close" type="button" aria-label="Close character dialog" disabled={modalPending} onClick={() => characterDialog.current?.close()}>×</button></div>
+      {dialogMode === "new" && <div className="cs-source lp-source ns-source" role="tablist" aria-label="How to create the character">
+        <button type="button" role="tab" aria-selected={newSource === "generate"} onClick={() => setNewSource("generate")}>Generate a face <span>image model</span></button>
+        <button type="button" role="tab" aria-selected={newSource === "photo"} disabled={!data.heygenConnected} onClick={() => setNewSource("photo")}>From a photo <span>HeyGen · {data.avatarCredits.heygenAvatar} cr</span></button>
+        <button type="button" role="tab" aria-selected={newSource === "twin"} disabled={!data.heygenConnected} onClick={() => setNewSource("twin")}>Clone a real person <span>HeyGen · {data.avatarCredits.digitalTwin} cr</span></button>
+      </div>}
+      {dialogMode === "new" && newSource === "photo" && <PhotoForm balance={balance} credits={data.avatarCredits.heygenAvatar} canSubmit={canEdit} defaultVoice={data.defaultVoice} onCreated={id => { setCharacterId(id); setNotice("HeyGen is building your character. It appears under My characters when it is ready."); characterDialog.current?.close(); setView("characters"); }} />}
+      {dialogMode === "new" && newSource === "twin" && <TwinForm balance={balance} credits={data.avatarCredits.digitalTwin} canSubmit={canEdit} onCreated={id => { setCharacterId(id); setNotice("HeyGen is training the twin. A consent link is issued for the person to record — you'll find it on their card."); characterDialog.current?.close(); setView("characters"); }} />}
+      {(dialogMode !== "new" || newSource === "generate") && <form ref={characterForm} key={`${dialogMode}-${character?.id ?? "new"}`} onSubmit={submitCharacter} className="cs-character-form">
         {dialogMode !== "look" && <><div className="cs-form-pair"><label className="cs-field">Character name<input className="cs-input" name="name" required maxLength={60} placeholder="e.g. Maya" defaultValue={dialogMode === "profile" ? character?.name : ""} /></label><label className="cs-field">Personality<input className="cs-input" name="personality" maxLength={300} defaultValue={dialogMode === "profile" ? character?.personality : "Warm and conversational"} /></label></div><div className="cs-form-pair"><label className="cs-field">On-camera energy<select className="cs-input" name="expressiveness" defaultValue={dialogMode === "profile" ? character?.motion?.expressiveness ?? "high" : "high"}><option value="high">Energetic</option><option value="medium">Natural</option><option value="low">Calm</option></select><span className="cs-field-hint">Energetic: expressive hands · Natural: relaxed gestures · Calm: mostly still</span></label><label className="cs-field"><span className="cs-field-row">Gesture notes <span className="cs-optional">optional</span></span><input className="cs-input" name="motionPrompt" maxLength={300} placeholder="e.g. holds the product up at the second sentence, leans in slightly" defaultValue={dialogMode === "profile" ? character?.motion?.prompt ?? "" : ""} /></label></div>{dialogMode === "new" && <label className="cs-field">Describe your fictional adult character<textarea className="cs-input" name="description" minLength={15} maxLength={1500} required rows={3} placeholder="A friendly presenter in their thirties, curly dark hair, relaxed linen clothing, natural skin texture…" /></label>}<div className="cs-field"><VoiceField voice={dialogVoice} search={searchVoicesAction} audition={auditionVoiceAction} onChange={setDialogVoice} label="Recurring voice" labelClassName="cs-field-label" /></div></>}
         {dialogMode === "look" && <div className="cs-source lp-source" role="tablist" aria-label="How to create the look">
           <button type="button" role="tab" aria-selected={lookSource === "describe"} onClick={() => setLookSource("describe")}>Describe it <span>your image model</span></button>
@@ -303,7 +314,7 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
         {modalError && <p className="cs-error" role="alert">{modalError}</p>}
         {dialogMode === "look" && lookSource === "heygen" ? <div className="cs-dialog-footer"><span>{packCost} credits · {balance} available{!data.heygenConnected ? " · connect HeyGen" : ""}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || !data.heygenConnected || balance < packCost || !packReady}>{modalPending ? "Starting…" : packCount === 1 ? "Generate look ↗" : `Generate ${packCount} looks ↗`}</button></div> :
         <div className="cs-dialog-footer"><span>{dialogMode === "profile" ? "Applies to future ads" : `${selectedPortraitModel?.creditsPerUnit ?? 0} credits · ${balance} available`}</span><button type="submit" className="cs-primary" disabled={modalPending || !canEdit || (dialogMode !== "profile" && (!selectedPortraitModel?.connected || !selectedPortraitModel.enabled || balance < selectedPortraitModel.creditsPerUnit))}>{modalPending ? "Saving…" : dialogMode === "profile" ? "Save profile" : "Generate portrait ↗"}</button></div>}{dialogMode !== "profile" && !(dialogMode === "look" && lookSource === "heygen") && !selectedPortraitModel?.connected && <p className="cs-error">{selectedPortraitModel?.provider === "fal" ? "fal.ai" : "OpenAI"} is not connected. Choose a connected model or ask your administrator to connect this provider.</p>}
-      </form>
+      </form>}
     </dialog>
 
     <dialog ref={remixDialog} className="cs-dialog cs-library-dialog" aria-label="Choose a look to remix" onClick={e => { if (e.target === e.currentTarget) remixDialog.current?.close(); }}>

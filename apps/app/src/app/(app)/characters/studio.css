@@ -194,3 +194,22 @@
 .ac-row .cs-secondary{min-height:38px;white-space:nowrap}
 .ac-row .cs-text-button{margin-left:0;white-space:nowrap}
 @media(max-width:760px){.ac-cards{grid-template-columns:1fr}.ac-row{flex-wrap:wrap}.ac-row .cs-pickbar-text{flex-basis:calc(100% - 66px)}}
+/* ---------- Studio IA: cast cards, new-character sources ---------- */
+.cs-crumb>span:first-child{display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font-size:12px}
+.cs-cast-kind{position:absolute;left:10px;bottom:10px;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:#242521cc;color:#fff;backdrop-filter:blur(4px)}
+.cs-cast-kind.digital_twin{background:#c94823e6}
+.cs-consent{font-size:11px;margin-top:6px;padding:4px 8px;border-radius:6px;background:#f4f5f0;color:var(--cs-muted)}
+.cs-consent.approved{background:#eef0e6;color:#4e5943}
+.cs-consent.rejected{background:#fbeee8;color:var(--cs-green)}
+.cs-cast-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.cs-cast-actions .cs-text-button{margin-left:0;font-size:12px}
+.cs-character-card.busy .cs-cast-actions{display:none}
+.ns-source{margin-bottom:18px}
+.ns-source button[disabled]{opacity:.45;cursor:not-allowed}
+.ac-intro{margin:0 0 4px}
+.ac-mode{align-self:flex-start}
+.cs-cast-actions .cs-secondary{width:auto;flex:1}
+.cs-cast-actions .cs-text-button{width:auto}
+.ns-source{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.ns-source button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;white-space:nowrap;padding:10px 8px;line-height:1.2}
+.ns-source button span{margin:0}

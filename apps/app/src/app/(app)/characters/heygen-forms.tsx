@@ -5,49 +5,11 @@ import { VoiceField, type CatalogVoice } from "@/components/voice-picker";
 import { auditionVoiceAction, createAvatarAction, searchVoicesAction } from "./actions";
 
 /**
- * "Create an avatar" — two ways to bring a character onto HeyGen:
- *  - Clone a real person: footage → digital twin (+ voice cloned from the footage, + consent).
- *  - Create a virtual character: a photo or a description → photo / prompt avatar.
- * Styles: studio.css (.ac-*).
+ * The two HeyGen ways to make a character, as form bodies for the "New character" dialog:
+ *  - PhotoForm: a photo or a description → virtual character (photo / prompt avatar).
+ *  - TwinForm: footage of a real person → digital twin (+ voice cloned from the footage, + consent).
+ * Uploads go through /api/uploads (server actions cap at 16 MB). Styles: studio.css (.ac-*).
  */
-export function AvatarCreate({ canEdit, connected, balance, credits, defaultVoice, onCreated }: { canEdit: boolean; connected: boolean; balance: number; credits: { digitalTwin: number; heygenAvatar: number }; defaultVoice: CatalogVoice | null; onCreated: (id: string) => void }) {
-  const twinDialog = useRef<HTMLDialogElement>(null);
-  const virtualDialog = useRef<HTMLDialogElement>(null);
-  return (
-    <>
-      <div className="ac-cards">
-        <button type="button" className="ac-card" disabled={!canEdit || !connected} onClick={() => twinDialog.current?.showModal()}>
-          <span className="ac-art ac-art-twin" aria-hidden="true">
-            <img src="https://resource2.heygen.ai/avatar_remix_template/modern_corporate_female/profile.png" alt="" loading="lazy" />
-            <img src="https://resource2.heygen.ai/avatar_remix_template/cool_tech_slate_male/profile.png" alt="" loading="lazy" />
-            <img src="https://resource2.heygen.ai/avatar_remix_template/stylish_business_casual_female/profile.png" alt="" loading="lazy" />
-          </span>
-          <span className="ac-card-text">
-            <span className="ac-card-title"><strong>Clone a real person</strong><span className="ac-badge">Avatar V</span></span>
-            <small>Upload real footage. HeyGen trains a twin that looks, moves and sounds like them — voice included.</small>
-            <span className="ac-card-meta">{credits.digitalTwin} credits · consent recorded by the person</span>
-          </span>
-        </button>
-        <button type="button" className="ac-card" disabled={!canEdit || !connected} onClick={() => virtualDialog.current?.showModal()}>
-          <span className="ac-art ac-art-virtual" aria-hidden="true">
-            <img src="https://resource2.heygen.ai/avatar_remix_template/keynote_power_presenter_female/profile.png" alt="" loading="lazy" />
-            <img src="https://resource2.heygen.ai/avatar_remix_template/healthcare_male_ren/profile.png" alt="" loading="lazy" />
-            <img src="https://resource2.heygen.ai/avatar_remix_template/fitness_nutrition_female/profile.png" alt="" loading="lazy" />
-          </span>
-          <span className="ac-card-text">
-            <span className="ac-card-title"><strong>Create a virtual character</strong></span>
-            <small>Start with a photo or a description, and bring it to life with motion and a voice of your choice.</small>
-            <span className="ac-card-meta">{credits.heygenAvatar} credits · no consent step</span>
-          </span>
-        </button>
-      </div>
-      {!connected && <p className="cs-modal-note">Connect HeyGen to create avatars.</p>}
-      <TwinDialog ref={twinDialog} balance={balance} credits={credits.digitalTwin} onCreated={onCreated} />
-      <VirtualDialog ref={virtualDialog} balance={balance} credits={credits.heygenAvatar} defaultVoice={defaultVoice} onCreated={onCreated} />
-    </>
-  );
-}
-
 /** Upload through /api/uploads (server actions cap at 16 MB) and return the storage key. */
 async function upload(file: File, onProgress: (pct: number) => void): Promise<{ key: string }> {
   return new Promise((resolve, reject) => {
@@ -77,14 +39,13 @@ function FileDrop({ file, onFile, accept, label, hint }: { file: File | null; on
   );
 }
 
-function TwinDialog({ ref, balance, credits, onCreated }: { ref: React.RefObject<HTMLDialogElement | null>; balance: number; credits: number; onCreated: (id: string) => void }) {
+export function TwinForm({ balance, credits, canSubmit, onCreated }: { balance: number; credits: number; canSubmit: boolean; onCreated: (id: string) => void }) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
   const form = useRef<HTMLFormElement>(null);
-  const close = () => { if (pending) return; ref.current?.close(); setFile(null); setProgress(null); setError(""); form.current?.reset(); };
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) return;
@@ -104,14 +65,13 @@ function TwinDialog({ ref, balance, credits, onCreated }: { ref: React.RefObject
         const r = await createAvatarAction(data);
         if (r.error || !r.id) { setError(r.error ?? "Could not start the twin."); return; }
         onCreated(r.id);
-        ref.current?.close(); setFile(null); form.current?.reset(); router.refresh();
+        setFile(null); form.current?.reset(); router.refresh();
       });
     })();
   };
   return (
-    <dialog ref={ref} className="cs-dialog vt-dialog" aria-labelledby="ac-twin-title" onCancel={(e) => { if (pending) e.preventDefault(); }} onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
-      <div className="cs-dialog-heading"><div><span className="cs-eyebrow">HeyGen digital twin</span><h2 id="ac-twin-title">Clone a real person</h2><p>One person, facing the camera, speaking naturally for 15 seconds to 10 minutes. HeyGen trains the twin and clones their voice from the same recording.</p></div><button type="button" className="cs-close" aria-label="Close" disabled={pending} onClick={close}>×</button></div>
       <form ref={form} onSubmit={submit} className="cs-character-form">
+        <p className="cs-modal-note ac-intro">One person, facing the camera, speaking naturally for 15 seconds to 10 minutes. HeyGen trains a twin that looks, moves and sounds like them — the voice is cloned from the same recording.</p>
         <div className="cs-form-pair">
           <label className="cs-field">Character name<input className="cs-input" name="name" required maxLength={60} placeholder="e.g. Priya" /></label>
           <label className="cs-field">Personality<input className="cs-input" name="personality" maxLength={300} defaultValue="Warm and conversational" /></label>
@@ -121,13 +81,12 @@ function TwinDialog({ ref, balance, credits, onCreated }: { ref: React.RefObject
         <label className="vt-consent"><input type="checkbox" name="consent" value="yes" required /> The person in this footage has agreed to be cloned. HeyGen will send them a link to record a short consent statement before the twin can be used.</label>
         {progress !== null && <div className="ac-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /><small>Uploading… {progress}%</small></div>}
         {error ? <p className="cs-error" role="alert">{error}</p> : null}
-        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available · training takes a while</span><button type="submit" className="cs-primary" disabled={pending || progress !== null || !file || balance < credits}>{progress !== null ? "Uploading…" : pending ? "Starting…" : "Train the twin ↗"}</button></div>
+        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available · training takes a while</span><button type="submit" className="cs-primary" disabled={!canSubmit || pending || progress !== null || !file || balance < credits}>{progress !== null ? "Uploading…" : pending ? "Starting…" : "Train the twin ↗"}</button></div>
       </form>
-    </dialog>
   );
 }
 
-function VirtualDialog({ ref, balance, credits, defaultVoice, onCreated }: { ref: React.RefObject<HTMLDialogElement | null>; balance: number; credits: number; defaultVoice: CatalogVoice | null; onCreated: (id: string) => void }) {
+export function PhotoForm({ balance, credits, canSubmit, defaultVoice, onCreated }: { balance: number; credits: number; canSubmit: boolean; defaultVoice: CatalogVoice | null; onCreated: (id: string) => void }) {
   const router = useRouter();
   const [mode, setMode] = useState<"photo" | "prompt">("photo");
   const [file, setFile] = useState<File | null>(null);
@@ -138,7 +97,6 @@ function VirtualDialog({ ref, balance, credits, defaultVoice, onCreated }: { ref
   const [pending, start] = useTransition();
   const form = useRef<HTMLFormElement>(null);
   const pickFile = (f: File | null) => { setFile(f); if (preview) URL.revokeObjectURL(preview); setPreview(f ? URL.createObjectURL(f) : null); };
-  const close = () => { if (pending) return; ref.current?.close(); pickFile(null); setProgress(null); setError(""); form.current?.reset(); };
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
@@ -159,17 +117,16 @@ function VirtualDialog({ ref, balance, credits, defaultVoice, onCreated }: { ref
         const r = await createAvatarAction(data);
         if (r.error || !r.id) { setError(r.error ?? "Could not create the character."); return; }
         onCreated(r.id);
-        ref.current?.close(); pickFile(null); form.current?.reset(); router.refresh();
+        pickFile(null); form.current?.reset(); router.refresh();
       });
     })();
   };
   return (
-    <dialog ref={ref} className="cs-dialog vt-dialog" aria-labelledby="ac-virtual-title" onCancel={(e) => { if (pending) e.preventDefault(); }} onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
-      <div className="cs-dialog-heading"><div><span className="cs-eyebrow">HeyGen virtual character</span><h2 id="ac-virtual-title">Create a virtual character</h2><p>Start from one photo, or describe someone who doesn't exist. The result is a HeyGen avatar with Avatar V motion, ready for looks and ads.</p></div><button type="button" className="cs-close" aria-label="Close" disabled={pending} onClick={close}>×</button></div>
       <form ref={form} onSubmit={submit} className="cs-character-form">
-        <div className="cs-source" role="tablist" aria-label="Start from">
-          <button type="button" role="tab" aria-selected={mode === "photo"} onClick={() => setMode("photo")}>From a photo</button>
-          <button type="button" role="tab" aria-selected={mode === "prompt"} onClick={() => setMode("prompt")}>From a description</button>
+        <p className="cs-modal-note ac-intro">A real photo becomes a HeyGen avatar of that person (have their permission); a description becomes someone who doesn't exist. Either way: Avatar V motion, ready for looks and ads.</p>
+        <div className="pl-segment ac-mode" role="group" aria-label="Start from">
+          <button type="button" aria-pressed={mode === "photo"} onClick={() => setMode("photo")}>From a photo</button>
+          <button type="button" aria-pressed={mode === "prompt"} onClick={() => setMode("prompt")}>Describe them for HeyGen</button>
         </div>
         <div className="cs-form-pair">
           <label className="cs-field">Character name<input className="cs-input" name="name" required maxLength={60} placeholder="e.g. Maya" /></label>
@@ -186,8 +143,7 @@ function VirtualDialog({ ref, balance, credits, defaultVoice, onCreated }: { ref
         <div className="cs-field"><VoiceField voice={voice} search={searchVoicesAction} audition={auditionVoiceAction} onChange={setVoice} label="Voice" labelClassName="cs-field-label" /></div>
         {progress !== null && <div className="ac-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /><small>Uploading… {progress}%</small></div>}
         {error ? <p className="cs-error" role="alert">{error}</p> : null}
-        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available</span><button type="submit" className="cs-primary" disabled={pending || progress !== null || balance < credits || (mode === "photo" && !file) || !voice}>{progress !== null ? "Uploading…" : pending ? "Creating…" : "Create character ↗"}</button></div>
+        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available</span><button type="submit" className="cs-primary" disabled={!canSubmit || pending || progress !== null || balance < credits || (mode === "photo" && !file) || !voice}>{progress !== null ? "Uploading…" : pending ? "Creating…" : "Create character ↗"}</button></div>
       </form>
-    </dialog>
   );
 }
