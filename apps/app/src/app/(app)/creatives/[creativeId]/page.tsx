@@ -6,6 +6,7 @@ import { requireOrg } from "@/server/org";
 import { getCreative, imageModelChoices, STATIC_SCENE_CREDITS, type CreativeStatus } from "@/server/creatives";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ReviewPanel } from "@/components/review-panel";
+import { NextStep } from "@/components/next-step";
 import { AlertIcon } from "@/components/icons";
 import { regenerateScene, rerender, updateCreativeDocument } from "../actions";
 import { Editor } from "./editor";
@@ -244,6 +245,7 @@ export default async function CreativePage({
 
         {/* Editor */}
         <aside className="side-sticky flex flex-col gap-4">
+          <NextStep orgId={ctx.org.id} creativeId={c.id} renderStatus={c.status} kind={c.kind} canEdit={ctx.role !== "viewer"} conceptId={c.concept.id} />
           {!isAi && <section className="panel flex flex-col gap-4 p-4">
             <div className="flex items-baseline justify-between">
               <span className="eyebrow">Edit</span>

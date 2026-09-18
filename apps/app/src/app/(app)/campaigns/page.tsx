@@ -32,10 +32,12 @@ export default async function CampaignsPage({
     connected?: string;
     accounts?: string;
     error?: string;
+    connect?: string;
+    creative?: string;
   }>;
 }) {
   const ctx = await requireOrg();
-  const { connected, accounts, error } = await searchParams;
+  const { connected, accounts, error, connect, creative } = await searchParams;
   const [cards, campaignRows] = await Promise.all([
     platformCards(ctx.org.id, ctx.brand?.id ?? null),
     listCampaigns(ctx.org.id, ctx.brand?.id ?? null),
@@ -83,6 +85,11 @@ export default async function CampaignsPage({
         </div>
       </div>
 
+      {connect && !connected ? (
+        <Notice tone="info">
+          <strong>Connect an ad account first.</strong> Pick a platform below — a sandbox account works for a dry run — and Adcraft brings you straight back to publishing{creative ? " that creative" : ""}.
+        </Notice>
+      ) : null}
       {connected ? (
         <Notice tone="ok">
           {PLATFORM_NAMES[connected as keyof typeof PLATFORM_NAMES] ??

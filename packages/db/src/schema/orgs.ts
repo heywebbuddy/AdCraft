@@ -1,4 +1,16 @@
 import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+
+/** Per-workspace guardrails, edited by owners in Settings; null means "use the platform default". */
+export type OrgSettings = {
+  /** Daily ad budget (major units) above which only an owner may publish active. */
+  spendApprovalAbove?: number | null;
+  /** Generation credits a workspace may spend per calendar month; null = its plan grant only. */
+  monthlyCreditCap?: number | null;
+  /** Require an approved review before a creative can be added to a campaign. */
+  approvalBeforePublish?: boolean;
+  /** Email the workspace when long jobs finish (videos, characters, twins). */
+  notifyOnFinish?: boolean;
+};
 import { id, timestamps } from "./_shared";
 import { creditReason, membershipRole, subscriptionStatus } from "./enums";
 import { users } from "./auth";
@@ -10,6 +22,7 @@ export const organizations = pgTable("organizations", {
   stripeCustomerId: text("stripe_customer_id").unique(),
   /** Set by a platform admin; members are locked out of the workspace while set. */
   suspendedAt: timestamp("suspended_at", { withTimezone: true }),
+  settings: jsonb("settings").$type<OrgSettings>().notNull().default({}),
   ...timestamps,
 });
 

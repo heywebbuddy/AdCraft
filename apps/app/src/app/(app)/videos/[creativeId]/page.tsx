@@ -4,6 +4,7 @@ import { SizeTile } from "@/components/size-tile";
 import { Spark } from "@/components/spark";
 import { notFound } from "next/navigation";
 import { requireOrg } from "@/server/org";
+import { NextStep } from "@/components/next-step";
 import { STEPS, getVideo, videoModelChoices, type VideoEvent } from "@/server/videos";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { PlayIcon } from "@/components/icons";
@@ -345,6 +346,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
 
         {/* Activity */}
         <aside className="side-sticky flex flex-col gap-3">
+          <NextStep orgId={ctx.org.id} creativeId={v.id} renderStatus={v.status === "ready" ? "ready" : v.status === "failed" ? "failed" : "rendering"} kind={v.kind} canEdit={ctx.role !== "viewer"} conceptId={v.concept.id} />
           <div className="eyebrow">Activity</div>
           <div className="panel flex flex-col divide-y divide-line">
             {v.events.length === 0 ? <div className="p-3.5 text-[12px] text-muted">Nothing yet.</div> : null}

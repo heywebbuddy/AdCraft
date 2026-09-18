@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { Spark } from "@/components/spark";
+import { StepFooter, StepNav, StepPanel } from "@/components/stepper";
 import { useFormStatus } from "react-dom";
 import type { Platform, ValidationIssue } from "@adcraft/ads";
 import type { PublishableCreative } from "@/server/ads";
 import { createCampaignAction } from "@/server/ads-actions";
-import { Field, PlatformMark, StatusChip, chipClass, fieldClass, money } from "../ui";
+import { Field, Notice, PlatformMark, chipClass, fieldClass, money } from "../ui";
 
 export type BuilderPlacement = { id: string; platform: Platform; label: string; ratio: string; media: string[]; specPlatform: string };
 type Account = { id: string; platform: Platform; name: string; currency: string; sandbox: boolean };
@@ -35,18 +36,18 @@ const COUNTRIES: Array<[string, string]> = [
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "SGD", "AED", "BRL", "MXN", "JPY"];
 
-function SubmitButtons({ disabled, sandbox }: { disabled: boolean; sandbox: boolean }) {
+function SubmitButtons({ disabled, sandbox, needsApproval }: { disabled: boolean; sandbox: boolean; needsApproval: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button type="submit" name="mode" value="paused" disabled={disabled || pending} className="btn btn-dark h-11 disabled:cursor-not-allowed disabled:opacity-40">
         {pending ? <><Spark size={14} animate="spin" /> Publishing…</> : "Publish as paused"}
       </button>
-      <button type="submit" name="mode" value="active" disabled={disabled || pending} className="btn btn-orange h-11 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none">
+      <button type="submit" name="mode" value="active" disabled={disabled || pending || needsApproval} title={needsApproval ? "Above the daily-spend limit an owner must switch the campaign on" : undefined} className="btn btn-orange h-11 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none">
         {pending ? <><Spark size={14} animate="spin" /> Publishing…</> : "Publish active"}
       </button>
-      <span className="text-[11px] text-muted">
-        {sandbox ? "Sandbox account: nothing leaves Adcraft, but every step runs for real." : "Paused campaigns are created on the platform without spend; switch them on from the campaign page."}
+      <span className="basis-full text-[11px] text-muted">
+        {sandbox ? "Sandbox account: nothing leaves Adcraft, but every step runs for real and the numbers you will see are simulated." : needsApproval ? "Publish as paused; an owner can switch it on from the campaign page." : "Paused campaigns are created on the platform without spend; switch them on from the campaign page."}
       </span>
     </div>
   );
@@ -74,17 +75,35 @@ export function CampaignBuilder(props: {
   brandName: string;
   brandWebsite: string;
   initialAccountId: string | null;
+  /** Arriving from a creative: preselect its valid sizes and open the Creatives step. */
+  initialCreativeId: string | null;
+  /** Daily budget (major units) above which only an owner may publish active. */
+  spendApprovalAbove: number | null;
+  isOwner: boolean;
 }) {
   const first = props.accounts.find((a) => a.id === props.initialAccountId) ?? props.accounts[0]!;
   const [accountId, setAccountId] = useState(first.id);
   const account = props.accounts.find((a) => a.id === accountId) ?? first;
   const platformPlacements = useMemo(() => props.placements.filter((p) => p.platform === account.platform), [props.placements, account.platform]);
   const [placementIds, setPlacementIds] = useState<string[]>(() => platformPlacements.map((p) => p.id));
-  const [variantIds, setVariantIds] = useState<string[]>([]);
+  const seed = props.initialCreativeId ? props.creatives.find((c) => c.id === props.initialCreativeId) : null;
+  const [variantIds, setVariantIds] = useState<string[]>(() => (seed ? seed.variants.filter((v) => !v.issues.some((i) => i.level === "error") && platformPlacements.some((p) => p.id === v.placementId)).map((v) => v.variantId) : []));
   const [objective, setObjective] = useState(props.objectives[1]?.id ?? "traffic");
   const [budget, setBudget] = useState("25");
   const [currency, setCurrency] = useState(account.currency);
   const [landingUrl, setLandingUrl] = useState(props.brandWebsite);
+  const [name, setName] = useState(seed ? `${seed.name} · ${new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : "");
+  const [step, setStep] = useState(seed ? 3 : 0);
+  const [countries, setCountries] = useState<string[]>(["US"]);
+  const [ageMin, setAgeMin] = useState("18");
+  const [ageMax, setAgeMax] = useState("65");
+  const [genders, setGenders] = useState<string[]>([]);
+  const [startAt, setStartAt] = useState("");
+  const [endAt, setEndAt] = useState("");
+  const countriesSummary = countries.length ? countries.join(", ") : "US";
+  const ageSummary = `${ageMin}–${ageMax}`;
+  const gendersSummary = genders.length === 0 ? "" : genders.map((g) => (g === "female" ? "women" : "men")).join(" and ");
+  const scheduleSummary = startAt || endAt ? ` · ${startAt ? new Date(startAt).toLocaleDateString() : "now"} → ${endAt ? new Date(endAt).toLocaleDateString() : "ongoing"}` : "";
   const landingOk = /^https?:\/\/\S+$/i.test(landingUrl);
 
   function pickAccount(id: string) {
@@ -129,11 +148,28 @@ export function CampaignBuilder(props: {
   const chosen = matching.flatMap((c) => c.variants).filter((v) => variantIds.includes(v.variantId));
   const warnings = chosen.reduce((n, v) => n + v.issues.filter((i) => i.level === "warning").length, 0);
   const dailyMinor = Math.round((Number(budget) || 0) * 100);
+  const needsApproval = props.spendApprovalAbove !== null && !props.isOwner && (Number(budget) || 0) > props.spendApprovalAbove;
+  const objectiveLabel = props.objectives.find((o) => o.id === objective)?.label ?? objective;
+  const platformName = account.platform === "meta" ? "Meta" : account.platform === "tiktok" ? "TikTok" : "Google";
+
+  const step1Error = !name.trim() ? "Give the campaign a name" : landingUrl && !landingOk ? "Landing page must be a full URL" : null;
+  const step3Error = placementIds.length === 0 ? "Pick at least one placement" : !(Number(budget) > 0) ? "Set a daily budget" : null;
+  const step4Error = chosen.length === 0 ? "Pick at least one creative" : null;
+  const steps = [
+    { id: "where", title: "Account & objective", summary: `${platformName} · ${objectiveLabel}${name ? ` · ${name}` : ""}`, done: !step1Error, error: step > 0 ? step1Error : null },
+    { id: "who", title: "Audience", summary: "Countries, age, interests", done: step > 1 },
+    { id: "budget", title: "Placements & budget", summary: `${placementIds.length} placement${placementIds.length === 1 ? "" : "s"} · ${money(dailyMinor, currency)} / day`, done: !step3Error && step > 2, error: step > 2 ? step3Error : null },
+    { id: "what", title: "Creatives", summary: chosen.length ? `${chosen.length} ad${chosen.length === 1 ? "" : "s"}${warnings ? ` · ${warnings} warning${warnings === 1 ? "" : "s"}` : ""}` : `${allValid.length} available`, done: !step4Error, error: step > 3 ? step4Error : null },
+    { id: "review", title: "Review & publish", summary: chosen.length ? "Check, then publish" : undefined, done: false },
+  ];
+  const next = () => setStep((s) => Math.min(steps.length - 1, s + 1));
+  const back = () => setStep((s) => Math.max(0, s - 1));
 
   return (
-    <form action={createCampaignAction} className="grid grid-cols-1 items-start gap-[26px] xl:grid-cols-[minmax(0,1fr)_316px]">
+    <form action={createCampaignAction} className="stp-layout">
+      <StepNav steps={steps} current={step} onSelect={setStep} />
       <div className="flex min-w-0 flex-col gap-4">
-        {/* 1. Where */}
+        <StepPanel active={step === 0} title="Where does it run?" lede="The ad account decides the platform and the placements you can use.">
         <section className="panel flex flex-col gap-6 p-6">
           <div className="grid gap-6 md:grid-cols-2">
             <Field label="Ad account" hint="Meta covers Instagram · Google covers YouTube">
@@ -150,7 +186,7 @@ export function CampaignBuilder(props: {
               </div>
             </Field>
             <Field label="Campaign name">
-              <input name="name" required placeholder="Q4 launch · Everyday Serum" className={`${fieldClass} h-11`} />
+              <input name="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Q4 launch · Everyday Serum" className={`${fieldClass} h-11`} />
             </Field>
           </div>
 
@@ -184,19 +220,16 @@ export function CampaignBuilder(props: {
             </Field>
           ) : null}
         </section>
+        <StepFooter index={0} count={steps.length} onBack={back} onNext={next} nextDisabled={Boolean(step1Error)} note={step1Error ?? "Next: who sees it"} />
+        </StepPanel>
 
-        {/* 2. Who */}
+        <StepPanel active={step === 1} title="Who sees it?" lede="Keep it broad on a first run; the platform's delivery does the narrowing.">
         <section className="panel flex flex-col gap-6 p-6">
-          <div className="flex items-baseline justify-between">
-            <h2 className="m-0 text-[20px] font-medium tracking-[-0.6px]">
-              Audience <span className="font-serif italic text-muted">who sees it</span>
-            </h2>
-          </div>
           <Field label="Countries" hint="Pick one or more">
             <div className="flex flex-wrap gap-2">
               {COUNTRIES.map(([code, label]) => (
                 <label key={code} className={chipClass} title={label}>
-                  <input type="checkbox" name="countries" value={code} defaultChecked={code === "US"} className="sr-only" />
+                  <input type="checkbox" name="countries" value={code} checked={countries.includes(code)} onChange={() => setCountries((c) => (c.includes(code) ? c.filter((x) => x !== code) : [...c, code]))} className="sr-only" />
                   {code}
                 </label>
               ))}
@@ -205,16 +238,16 @@ export function CampaignBuilder(props: {
           <div className="grid gap-6 md:grid-cols-3">
             <Field label="Age range">
               <div className="flex items-center gap-2">
-                <input name="ageMin" type="number" min={13} max={100} defaultValue={18} className={`${fieldClass} h-11 tabular`} />
+                <input name="ageMin" type="number" min={13} max={100} value={ageMin} onChange={(e) => setAgeMin(e.target.value)} className={`${fieldClass} h-11 tabular`} />
                 <span className="text-muted">–</span>
-                <input name="ageMax" type="number" min={13} max={100} defaultValue={65} className={`${fieldClass} h-11 tabular`} />
+                <input name="ageMax" type="number" min={13} max={100} value={ageMax} onChange={(e) => setAgeMax(e.target.value)} className={`${fieldClass} h-11 tabular`} />
               </div>
             </Field>
             <Field label="Genders" hint="None checked = everyone">
               <div className="flex gap-2">
                 {(["female", "male"] as const).map((g) => (
                   <label key={g} className={chipClass}>
-                    <input type="checkbox" name="genders" value={g} className="sr-only" />
+                    <input type="checkbox" name="genders" value={g} checked={genders.includes(g)} onChange={() => setGenders((c) => (c.includes(g) ? c.filter((x) => x !== g) : [...c, g]))} className="sr-only" />
                     {g === "female" ? "Women" : "Men"}
                   </label>
                 ))}
@@ -225,12 +258,11 @@ export function CampaignBuilder(props: {
             </Field>
           </div>
         </section>
+        <StepFooter index={1} count={steps.length} onBack={back} onNext={next} note="Next: placements and budget" />
+        </StepPanel>
 
-        {/* 3. Where on the platform */}
+        <StepPanel active={step === 2} title="Placements and budget" lede="Only creatives rendered in a chosen placement's size can be added in the next step.">
         <section className="panel flex flex-col gap-6 p-6">
-          <h2 className="m-0 text-[20px] font-medium tracking-[-0.6px]">
-            Placements <span className="font-serif italic text-muted">and budget</span>
-          </h2>
           <Field label="Placements" hint={`${placementIds.length} of ${platformPlacements.length}`}>
             <div className="flex flex-wrap gap-2">
               {platformPlacements.map((p) => (
@@ -255,20 +287,21 @@ export function CampaignBuilder(props: {
               </div>
             </Field>
             <Field label="Start" hint="Blank = now">
-              <input name="startAt" type="datetime-local" className={`${fieldClass} h-11`} />
+              <input name="startAt" type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} className={`${fieldClass} h-11`} />
             </Field>
             <Field label="End" hint="Optional">
-              <input name="endAt" type="datetime-local" className={`${fieldClass} h-11`} />
+              <input name="endAt" type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className={`${fieldClass} h-11`} />
             </Field>
           </div>
+          {needsApproval ? <Notice tone="info">Budgets above {money(props.spendApprovalAbove! * 100, currency)} / day can be published as paused; an owner switches them on.</Notice> : null}
         </section>
+        <StepFooter index={2} count={steps.length} onBack={back} onNext={next} nextDisabled={Boolean(step3Error)} note={step3Error ?? "Next: pick the ads"} />
+        </StepPanel>
 
-        {/* 4. What */}
+        <StepPanel active={step === 3} title="Which ads?" lede="Finished renders that fit the placements you chose. Hard spec failures can't be selected; warnings are yours to judge.">
         <section className="panel flex flex-col gap-4 p-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <h2 className="m-0 text-[20px] font-medium tracking-[-0.6px]">
-              Creatives <span className="font-serif italic text-muted">finished renders that fit the placements</span>
-            </h2>
+            <span className="text-[13px] text-muted">{matching.length} creative{matching.length === 1 ? "" : "s"} · {allValid.length} valid size{allValid.length === 1 ? "" : "s"}</span>
             <div className="flex items-center gap-3 text-[12px]">
               <button type="button" onClick={() => setVariantIds(allValid.map((v) => v.variantId))} className="font-semibold text-orange">
                 Select all valid ({allValid.length})
@@ -332,40 +365,32 @@ export function CampaignBuilder(props: {
             </div>
           )}
         </section>
-      </div>
+        <StepFooter index={3} count={steps.length} onBack={back} onNext={next} nextDisabled={Boolean(step4Error)} note={step4Error ?? "Next: review and publish"} />
+        </StepPanel>
 
-      {/* Summary */}
-      <aside className="side-sticky flex flex-col gap-4">
-        <section className="panel flex flex-col gap-3 p-5">
-          <span className="eyebrow">Summary</span>
-          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[13px]">
-            <dt className="text-muted">Account</dt>
-            <dd className="m-0 truncate font-semibold">{account.name}</dd>
-            <dt className="text-muted">Objective</dt>
-            <dd className="m-0 font-semibold">{props.objectives.find((o) => o.id === objective)?.label}</dd>
-            <dt className="text-muted">Placements</dt>
-            <dd className="m-0 font-semibold">{placementIds.length}</dd>
-            <dt className="text-muted">Ads</dt>
-            <dd className="m-0 font-semibold">
-              {chosen.length}
-              {warnings ? <span className="ml-1.5 font-normal text-[#b7791f]">{warnings} warning{warnings === 1 ? "" : "s"}</span> : null}
-            </dd>
-            <dt className="text-muted">Daily budget</dt>
-            <dd className="tabular m-0 font-semibold">{money(dailyMinor, currency)}</dd>
-            <dt className="text-muted">Advertiser</dt>
-            <dd className="m-0 truncate font-semibold">{props.brandName}</dd>
+        <StepPanel active={step === 4} title="Review and publish" lede={`This is exactly what Adcraft will create on ${platformName}. Nothing runs until you say so.`}>
+        <section className="panel flex flex-col gap-5 p-6">
+          {account.sandbox ? <Notice tone="info"><strong>Sandbox account.</strong> Every step runs for real inside Adcraft, but nothing reaches {platformName} and the performance numbers will be simulated.</Notice> : null}
+          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 text-[13px]">
+            <dt className="text-muted">Account</dt><dd className="m-0 font-semibold"><span className="inline-flex items-center gap-2"><PlatformMark platform={account.platform} sandbox={account.sandbox} /> {account.name}</span></dd>
+            <dt className="text-muted">Campaign</dt><dd className="m-0 font-semibold">{name || "—"} · {objectiveLabel}</dd>
+            <dt className="text-muted">Audience</dt><dd className="m-0 font-semibold">{countriesSummary} · {ageSummary}{gendersSummary ? ` · ${gendersSummary}` : ""}</dd>
+            <dt className="text-muted">Placements</dt><dd className="m-0 font-semibold">{platformPlacements.filter((p) => placementIds.includes(p.id)).map((p) => p.label).join(", ") || "—"}</dd>
+            <dt className="text-muted">Budget</dt><dd className="tabular m-0 font-semibold">{money(dailyMinor, currency)} / day{scheduleSummary}</dd>
+            <dt className="text-muted">Landing page</dt><dd className="m-0 truncate font-semibold">{landingOk ? landingUrl : "per creative"}</dd>
+            <dt className="text-muted">Creates</dt><dd className="m-0 font-semibold">1 campaign · 1 ad set · {chosen.length} ad{chosen.length === 1 ? "" : "s"}{warnings ? <span className="ml-1.5 font-normal text-[#b7791f]">· {warnings} warning{warnings === 1 ? "" : "s"}</span> : null}</dd>
           </dl>
-          <div className="flex items-center gap-2 text-[11px] text-muted">
-            <StatusChip status={chosen.length ? "connected" : "unknown"} label={chosen.length ? "Ready to publish" : "Pick creatives"} />
+          <div className="flex flex-wrap gap-2">
+            {chosen.map((v) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={v.variantId} src={v.previewUrl} alt="" title={`${v.placementLabel} · ${v.ratio}`} className="h-[72px] w-[56px] rounded-[5px] border border-line object-cover" />
+            ))}
           </div>
+          <SubmitButtons disabled={chosen.length === 0 || Boolean(step1Error) || Boolean(step3Error)} sandbox={account.sandbox} needsApproval={needsApproval} />
         </section>
-        <section className="panel p-5">
-          <SubmitButtons disabled={chosen.length === 0} sandbox={account.sandbox} />
-        </section>
-        <p className="m-0 px-1 text-[11px] text-muted">
-          Adcraft stores every platform id it creates and never duplicates on retry. Ad spend is billed by the platform to your own account.
-        </p>
-      </aside>
+        <StepFooter index={4} count={steps.length} onBack={back} onNext={next} note="Adcraft stores every platform id it creates and never duplicates on retry. Ad spend is billed by the platform to your own account."><span /></StepFooter>
+        </StepPanel>
+      </div>
     </form>
   );
 }

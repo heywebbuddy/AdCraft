@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { spendApprovalThreshold } from "./platform-settings";
 import { revalidatePath } from "next/cache";
 import { db, dbReady, adAccounts, adSets, ads, campaigns } from "@adcraft/db";
 import { hasErrors, isObjective, type Gender, type LiveStatus, type Targeting } from "@adcraft/ads";
@@ -59,6 +60,9 @@ export async function createCampaignAction(formData: FormData) {
   const landingUrl = str(formData, "landingUrl");
 
   const back: (error: string) => never = (error) => redirect(`/campaigns/new?error=${encodeURIComponent(error)}&account=${encodeURIComponent(adAccountId)}`);
+  // Guardrail: above the workspace's daily-spend threshold, only an owner may publish active.
+  const threshold = await spendApprovalThreshold(ctx.org.id);
+  if (mode === "active" && threshold !== null && ctx.role !== "owner" && dailyBudget > threshold) back(`Daily budgets above ${threshold} need an owner to switch the campaign on. Publish it as paused and ask an owner to resume it.`);
 
   const [account] = await db
     .select()
@@ -190,6 +194,10 @@ export async function setCampaignStatusAction(campaignId: string, status: LiveSt
   requireEditor(ctx.role);
   const { c, a } = await loadOwnedCampaign(ctx.org.id, campaignId);
   const raw = (c.raw ?? {}) as CampaignRaw;
+  if (status === "active" && ctx.role !== "owner") {
+    const threshold = await spendApprovalThreshold(ctx.org.id);
+    if (threshold !== null && (c.dailyBudgetMinor ?? 0) > threshold * 100) throw new Error(`Daily budgets above ${threshold} need an owner to switch the campaign on.`);
+  }
   if (isPending(c.externalId)) {
     if (status === "archived") {
       await db.update(campaigns).set({ status: "archived", raw: { ...raw, error: null } }).where(eq(campaigns.id, c.id));
