@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { CharacterStudioData } from "@/server/character-studio";
 import { CHARACTER_TEMPLATES, estimatedStudioSeconds, hookVariations, studioScript, type CharacterTemplateId } from "@/lib/character-studio";
 import { auditionVoiceAction, createCharacterAdAction, generateCharacterAction, loadPresenterLooks, saveCharacterAction, searchVoicesAction, setCharacterVoiceAction } from "./actions";
@@ -13,15 +13,17 @@ import { PresenterLibrary, type PresenterChoice } from "./presenter-library";
 
 type Props = { data: CharacterStudioData; brandName: string; balance: number; videoCredits: number; canEdit: boolean; planEnabled: boolean };
 type View = "studio" | "characters" | "presenters" | "voices" | "templates";
-const VIEWS: Array<[View, string]> = [["studio", "Create an ad"], ["characters", "My characters"], ["presenters", "Presenter library"], ["voices", "Voice library"], ["templates", "Ad templates"]];
-const isView = (v: string): v is View => VIEWS.some(([id]) => id === v);
+const TABS: Array<[View, string]> = [["studio", "Create an ad"], ["characters", "My characters"], ["templates", "Ad templates"]];
+const isView = (v: string | null): v is View => v === "studio" || v === "characters" || v === "templates" || v === "presenters" || v === "voices";
 
 export function CharacterStudio({ data, brandName, balance, videoCredits, canEdit, planEnabled }: Props) {
   const router = useRouter();
-  // The section is also in the URL hash (/characters#voices) so the libraries can be linked to.
-  const [view, setViewState] = useState<View>("studio");
-  useEffect(() => { const h = window.location.hash.slice(1); if (isView(h)) setViewState(h); }, []);
-  function setView(v: View) { setViewState(v); window.history.replaceState(null, "", v === "studio" ? window.location.pathname : `#${v}`); window.scrollTo({ top: 0 }); }
+  // The section lives in the URL (/characters?view=voices) so the sidebar can link to the
+  // libraries; Next syncs replaceState into useSearchParams without a server round trip.
+  const params = useSearchParams();
+  const paramView = params.get("view");
+  const view: View = isView(paramView) ? paramView : "studio";
+  function setView(v: View) { window.history.replaceState(null, "", v === "studio" ? window.location.pathname : `${window.location.pathname}?view=${v}`); window.scrollTo({ top: 0 }); }
   const [characterId, setCharacterId] = useState(data.characters.find(c => c.portraitUrl)?.id ?? data.characters[0]?.id ?? "");
   const character = data.characters.find(c => c.id === characterId) ?? data.characters[0];
   const [lookId, setLookId] = useState("");
@@ -116,9 +118,11 @@ export function CharacterStudio({ data, brandName, balance, videoCredits, canEdi
     });
   }
 
+  const library = view === "presenters" || view === "voices";
   return <div className="character-studio">
-    <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> Create a character</button></header>
-    <nav className="cs-tabs" aria-label="Character studio sections">{VIEWS.map(([id, label]) => <button type="button" key={id} aria-pressed={view === id} onClick={() => setView(id)}>{label}{id === "characters" && <span>{data.characters.length}</span>}{id === "presenters" && data.presenterGroups.length > 0 && <span>{data.presenterGroups.length.toLocaleString()}</span>}{id === "voices" && data.voiceStats.total > 0 && <span>{data.voiceStats.total.toLocaleString()}</span>}</button>)}<span className="cs-tabs-note">Your characters, across every campaign</span></nav>
+    {library && <div className="cs-crumb"><button type="button" className="cs-text-button" onClick={() => setView("studio")}>← Character studio</button><span>{brandName}</span></div>}
+    {!library && <header className="cs-header"><div><span className="cs-eyebrow">{brandName} / Character studio</span><h1>A familiar face.<br /><em>A fresh story.</em></h1><p>Build your cast. Find your angle. Make your next ad.</p></div><button type="button" className="cs-primary" disabled={!canEdit} onClick={() => openCharacter("new")}><span>＋</span> Create a character</button></header>}
+    {!library && <nav className="cs-tabs" aria-label="Character studio sections">{TABS.map(([id, label]) => <button type="button" key={id} aria-pressed={view === id} onClick={() => setView(id)}>{label}{id === "characters" && <span>{data.characters.length}</span>}</button>)}<span className="cs-tabs-note">Your characters, across every campaign</span></nav>}
     {!planEnabled && <div className="cs-banner">Character studio is not enabled for your plan. <Link href="/settings/billing">View plans →</Link></div>}
     {notice && <div className="cs-notice" role="status">{notice}<button type="button" aria-label="Dismiss notification" onClick={() => setNotice("")}>×</button></div>}
 

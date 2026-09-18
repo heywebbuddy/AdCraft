@@ -249,6 +249,35 @@
 .workspace-nav-item.active svg {
   color: var(--orange);
 }
+/* Sub-items under a nav item (Character studio → libraries): indented, with a rail. */
+.workspace-nav-children {
+  display: flex;
+  flex-direction: column;
+  margin: -1px 0 4px 19px;
+  padding-left: 9px;
+  border-left: 1px solid var(--line);
+}
+.workspace-nav-child {
+  display: block;
+  padding: 7px 10px;
+  margin: 1px 0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6f746a;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.workspace-nav-child:hover {
+  background: #f0f1ea;
+  color: #252b22;
+}
+.workspace-nav-child.active {
+  background: #fceee7;
+  color: #c44c27;
+  font-weight: 600;
+}
 .nav-count {
   margin-left: auto;
   font-size: 10px;

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Spark } from "./spark";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
   BriefIcon,
@@ -31,13 +31,22 @@ export type SidebarProps = {
   onSwitchBrand: (brandId: string) => Promise<void>;
   onSignOut: () => Promise<void>;
 };
-const groups = [
+type NavItem = { href: string; label: string; Icon: React.ComponentType; children?: Array<{ href: string; label: string }> };
+const groups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "WORKSPACE",
     items: [
       { href: "/dashboard", label: "Overview", Icon: HomeIcon },
       { href: "/briefs", label: "Creative briefs", Icon: BriefIcon },
-      { href: "/characters", label: "Character studio", Icon: PlayIcon },
+      {
+        href: "/characters",
+        label: "Character studio",
+        Icon: PlayIcon,
+        children: [
+          { href: "/characters?view=presenters", label: "Presenter library" },
+          { href: "/characters?view=voices", label: "Voice library" },
+        ],
+      },
       { href: "/creatives", label: "All creatives", Icon: CreativesIcon },
       { href: "/library", label: "Product library", Icon: LibraryIcon },
       { href: "/brands", label: "Brand kits", Icon: BrandIcon },
@@ -53,6 +62,8 @@ const groups = [
 ];
 export function Sidebar(props: SidebarProps) {
   const pathname = usePathname();
+  const params = useSearchParams();
+  const current = pathname + (params.size ? `?${params.toString()}` : "");
   const [pending, start] = useTransition();
   const [error, setError] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
@@ -122,25 +133,42 @@ export function Sidebar(props: SidebarProps) {
         {groups.map((group) => (
           <nav key={group.label} aria-label={group.label.toLowerCase()}>
             <span className="workspace-nav-label">{group.label}</span>
-            {group.items.map(({ href, label, Icon }) => {
+            {group.items.map(({ href, label, Icon, children }) => {
+              const childActive = children?.find((c) => c.href === current);
               const active =
-                pathname === href ||
-                (href !== "/dashboard" && pathname.startsWith(href));
+                !childActive &&
+                (pathname === href ||
+                  (href !== "/dashboard" && pathname.startsWith(href)));
               return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`workspace-nav-item ${active ? "active" : ""}`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <Icon />
-                  {label}
-                  {href === "/creatives" && !!props.counts?.needsReview && (
-                    <span className="nav-count">
-                      {props.counts.needsReview}
-                    </span>
+                <div key={href} className={children ? "workspace-nav-group" : undefined}>
+                  <Link
+                    href={href}
+                    className={`workspace-nav-item ${active ? "active" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon />
+                    {label}
+                    {href === "/creatives" && !!props.counts?.needsReview && (
+                      <span className="nav-count">
+                        {props.counts.needsReview}
+                      </span>
+                    )}
+                  </Link>
+                  {children && (
+                    <div className="workspace-nav-children">
+                      {children.map((c) => (
+                        <Link
+                          key={c.href}
+                          href={c.href}
+                          className={`workspace-nav-child ${childActive?.href === c.href ? "active" : ""}`}
+                          aria-current={childActive?.href === c.href ? "page" : undefined}
+                        >
+                          {c.label}
+                        </Link>
+                      ))}
+                    </div>
                   )}
-                </Link>
+                </div>
               );
             })}
           </nav>

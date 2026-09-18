@@ -8,6 +8,8 @@ const destinations: Array<{ name: string; href: string; match?: string; group: s
   { name: "Overview", href: "/dashboard", group: "Workspace" },
   { name: "Creative briefs", href: "/briefs", group: "Create" },
   { name: "Character studio", href: "/characters", group: "Create" },
+  { name: "Presenter library", href: "/characters?view=presenters", group: "Create" },
+  { name: "Voice library", href: "/characters?view=voices", group: "Create" },
   { name: "All creatives", href: "/creatives", group: "Create" },
   { name: "Videos", href: "/creatives?kind=video", match: "/videos", group: "Create" },
   { name: "Product library", href: "/library", group: "Assets" },

@@ -29,6 +29,7 @@
 .pl-looks-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.pl-fit-toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:#242521;cursor:pointer}.pl-fit-toggle input{accent-color:#e65c32;width:14px;height:14px;margin:0}.pl-fit-toggle span{font-size:10px;color:var(--cs-muted);background:#f4f5f0;padding:2px 6px;border-radius:4px}
 .cs-field-label{font-size:11px;font-weight:500;color:#4e5943}.cs-field-row{display:flex;align-items:baseline;gap:6px}.cs-field-hint{font-size:10px;font-weight:400;color:var(--cs-muted);line-height:1.5}.cs-field .vf-field{gap:8px}
 /* ---------- Libraries as pages (Presenter library / Voice library tabs) ---------- */
+.cs-crumb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;font-size:11px;color:var(--cs-muted);letter-spacing:.4px;text-transform:uppercase}.cs-crumb>.cs-text-button{margin-left:0;font-size:12px;text-transform:none;letter-spacing:0}
 .cs-library{position:relative;--cs-green:#c94823;--cs-pale:#fbeee8;--cs-muted:#66685f;--cs-border:#e7e8e2}
 .pl-root.pl-page{max-height:none}
 .pl-page .pl-head{padding:0 0 18px;align-items:flex-end}
