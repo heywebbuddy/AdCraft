@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/pending-button";
 import { requireOrg } from "@/server/org";
+import { briefPrefillFromCreative } from "@/server/briefs";
 import {
   FORMATS,
   OBJECTIVES,
@@ -48,13 +49,15 @@ function Field({
 export default async function NewBriefPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; format?: string; product?: string }>;
+  searchParams: Promise<{ error?: string; format?: string; product?: string; from?: string }>;
 }) {
   const ctx = await requireOrg();
-  const { error, format, product } = await searchParams;
+  const { error, format, product: productParam, from } = await searchParams;
+  const prefill = from ? await briefPrefillFromCreative(ctx.org.id, from) : null;
+  const product = prefill?.productId ?? productParam;
   const initialFormat = FORMATS.some((f) => f.id === format)
     ? format
-    : "static";
+    : prefill?.formats[0] ?? "static";
   const productList = await listProductsForBrand(
     ctx.org.id,
     ctx.brand?.id ?? null,
@@ -86,6 +89,11 @@ export default async function NewBriefPage({
         </span>
       </header>
 
+      {prefill ? (
+        <div className="rounded-[7px] border border-[#cfe3d6] bg-[#e9f3ec] px-4 py-3 text-[13px] text-[#3f7a55]">
+          {prefill.note}
+        </div>
+      ) : null}
       {missing.length ? (
         <div className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">
           Add {missing.join(", ")} and try again.
@@ -103,6 +111,7 @@ export default async function NewBriefPage({
               aria-label="Brief title"
               required
               autoFocus
+              defaultValue={prefill?.title ?? ""}
               placeholder="Q4 launch: Everyday Serum"
               className={`${fieldClass} h-11`}
             />
@@ -144,7 +153,7 @@ export default async function NewBriefPage({
                       type="radio"
                       name="objective"
                       value={o.id}
-                      defaultChecked={i === 2}
+                      defaultChecked={prefill ? prefill.objective === o.id : i === 2}
                       className="sr-only"
                     />
                     {o.label}
@@ -160,6 +169,7 @@ export default async function NewBriefPage({
               aria-label="Audience"
               required
               rows={2}
+              defaultValue={prefill?.audience ?? ""}
               placeholder="women 25–40 who care about clean skincare and already buy from DTC brands"
               className={`${fieldClass} min-h-[72px] resize-y py-3`}
             />
@@ -173,6 +183,7 @@ export default async function NewBriefPage({
               name="offer"
               aria-label="Offer or key message"
               rows={2}
+              defaultValue={prefill?.offer ?? ""}
               placeholder="20% off the first order · a morning routine that takes two minutes"
               className={`${fieldClass} min-h-[72px] resize-y py-3`}
             />
@@ -186,8 +197,8 @@ export default async function NewBriefPage({
                     <input
                       type="checkbox"
                       name="platforms"
+                      defaultChecked={prefill ? prefill.platforms.includes(p.id) : p.id === "meta" || p.id === "instagram"}
                       value={p.id}
-                      defaultChecked={p.id === "meta" || p.id === "instagram"}
                       className="sr-only"
                     />
                     {p.label}
@@ -218,6 +229,7 @@ export default async function NewBriefPage({
               <input
                 name="tone"
                 aria-label="Tone"
+                defaultValue={prefill?.tone ?? ""}
                 placeholder="playful, direct, no jargon"
                 className={`${fieldClass} h-11`}
               />
@@ -227,6 +239,7 @@ export default async function NewBriefPage({
                 name="constraints"
                 aria-label="Constraints"
                 rows={2}
+                defaultValue={prefill?.constraints.join("\n") ?? ""}
                 placeholder={"no medical claims\nalways show the bottle"}
                 className={`${fieldClass} min-h-[72px] resize-y py-3`}
               />

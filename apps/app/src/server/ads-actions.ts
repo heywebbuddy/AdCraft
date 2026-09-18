@@ -248,6 +248,18 @@ export async function setAdStatusAction(adId: string, status: LiveStatus) {
   revalidatePath(`/campaigns/${row.c.id}`);
 }
 
+/** Pause every ad of one creative from the performance table (each ad through its own platform). */
+export async function pauseAdsAction(adIds: string[]) {
+  for (const id of adIds.slice(0, 20)) {
+    try {
+      await setAdStatusAction(id, "paused");
+    } catch (err) {
+      console.warn("[ads] pause failed", id, err instanceof Error ? err.message : err);
+    }
+  }
+  revalidatePath("/performance");
+}
+
 /** "Sync now": pull review outcomes and metrics for the campaign's account. */
 export async function syncCampaignAction(campaignId: string) {
   const ctx = await requireOrg();

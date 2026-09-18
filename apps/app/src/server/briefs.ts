@@ -9,6 +9,7 @@ import {
   products,
   projects,
   type BriefData,
+  creatives,
 } from "@adcraft/db";
 import { SAMPLE_MODEL } from "@adcraft/ai";
 import { getCatalog } from "./model-catalog";
@@ -187,4 +188,35 @@ export async function startConceptsRun(input: {
     .returning();
   await dispatch("concepts.generate", { orgId: input.orgId, briefId: input.briefId, count: input.count });
   return event;
+}
+
+/**
+ * Prefill for "start from a winner" / "refresh a tired creative": the source brief's
+ * fields plus the concept's angle, so the next brief keeps what worked and asks for a
+ * fresh execution.
+ */
+export async function briefPrefillFromCreative(orgId: string, creativeId: string): Promise<{ title: string; productId: string | null; objective: string; audience: string; offer: string; platforms: string[]; formats: string[]; tone: string; constraints: string[]; note: string } | null> {
+  await dbReady;
+  const [row] = await db
+    .select({ creative: creatives, concept: concepts, brief: briefs })
+    .from(creatives)
+    .innerJoin(concepts, eq(concepts.id, creatives.conceptId))
+    .innerJoin(briefs, eq(briefs.id, concepts.briefId))
+    .where(and(eq(creatives.id, creativeId), eq(creatives.orgId, orgId)))
+    .limit(1);
+  if (!row) return null;
+  const d = row.brief.data;
+  const angle = row.concept.data.angle ?? row.concept.title;
+  return {
+    title: `${row.brief.title} · next round`,
+    productId: row.brief.productId ?? null,
+    objective: d.objective,
+    audience: d.audience,
+    offer: d.offer ?? "",
+    platforms: d.platforms,
+    formats: d.formats,
+    tone: d.tone ?? "",
+    constraints: [...(d.constraints ?? []), `Build on what worked: "${row.concept.data.hook ?? row.creative.name}" (${angle}). New hooks and visuals, same promise.`],
+    note: `Starting from “${row.creative.name}” — the ${angle} angle. Concepts will keep the promise and change the execution.`,
+  };
 }

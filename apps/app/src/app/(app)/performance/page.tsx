@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/workspace-ui";
 import Link from "next/link";
 import { requireOrg } from "@/server/org";
 import { loadPerformance } from "@/server/ads";
-import { syncAllAction } from "@/server/ads-actions";
+import { pauseAdsAction as pauseAds, syncAllAction } from "@/server/ads-actions";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { AlertIcon, TrendDownIcon } from "@/components/icons";
 import {
@@ -35,6 +35,7 @@ export default async function PerformancePage({
   const cur = p.currency;
   const fmtMoney = (v: number) => money(v, cur, { compact: true });
   const top = p.creatives[0];
+  const canEdit = ctx.role !== "viewer";
 
   return (
     <>
@@ -205,7 +206,8 @@ export default async function PerformancePage({
                   <th className="px-3 py-3 text-right font-semibold">CTR</th>
                   <th className="px-3 py-3 text-right font-semibold">CPA</th>
                   <th className="px-3 py-3 text-right font-semibold">ROAS</th>
-                  <th className="px-4 py-3 text-right font-semibold">Trend</th>
+                  <th className="px-3 py-3 text-right font-semibold">Trend</th>
+                  <th className="px-4 py-3 text-right font-semibold"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -256,10 +258,22 @@ export default async function PerformancePage({
                     <td className="tabular px-3 py-2.5 text-right">
                       {multiple(c.roas)}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-3 py-2.5">
                       <div className="flex justify-end">
                         <Sparkline values={c.trend} />
                       </div>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {c.creativeId.startsWith("ad:") ? null : (
+                        <div className="flex items-center justify-end gap-3 whitespace-nowrap text-[12px]">
+                          <Link href={`/briefs/new?from=${c.creativeId}`} className="font-semibold text-orange" title="A new round of concepts that keep this promise">Refresh ↗</Link>
+                          {c.adIds.length && canEdit ? (
+                            <form action={pauseAds.bind(null, c.adIds)}>
+                              <button type="submit" className="text-muted hover:text-ink">Pause</button>
+                            </form>
+                          ) : null}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -299,10 +313,10 @@ export default async function PerformancePage({
                         "make a fresh variation"
                       ) : (
                         <Link
-                          href={`/creatives/${a.creativeId}`}
+                          href={`/briefs/new?from=${a.creativeId}`}
                           className="font-semibold text-orange"
                         >
-                          Make more like this, fresher ↗
+                          Refresh this creative ↗
                         </Link>
                       )}
                     </span>
