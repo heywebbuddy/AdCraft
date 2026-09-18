@@ -75,8 +75,9 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
 
   try {
     if (doc.meta?.characterStudio) await reserveGenerationCredits(orgId, credits, rootEventId);
-    // 1. Voice-over.
-    if (needsVoice) {
+    // 1. Voice-over. HeyGen voices are spoken by HeyGen itself inside the presenter step.
+    const heygenVoice = doc.voice?.provider === "heygen";
+    if (needsVoice && !heygenVoice) {
       await setEventStep(rootEventId, "voice", "Synthesising voice-over");
       const voiceId = doc.voice?.voiceId ?? "";
       const res = await withEvent(
@@ -95,22 +96,23 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
       const audioBytes = doc.voice?.audio ? await loadVideoAsset(doc.voice.audio) : null;
       const total = doc.voice?.audio?.durationSec;
       const portrait = doc.presenter?.image ? await loadVideoAsset(doc.presenter.image) : null;
-      if (doc.presenter?.image && (!portrait || !audioBytes)) throw new Error("The saved character image or voice track is unavailable.");
+      if (doc.presenter?.image && (!portrait || (!audioBytes && !heygenVoice))) throw new Error("The saved character image or voice track is unavailable.");
+      const spoken = heygenVoice ? { script, voiceId: doc.voice?.voiceId } : { audio: audioBytes ?? undefined };
       const res = await withEvent(
         { orgId, creativeId, capability: "presenter", provider: "heygen", model: HEYGEN_MODEL, label: "Presenter", detail: doc.presenter?.avatarId ?? "stock avatar", step: "presenter" },
-        () => portrait && audioBytes
+        () => portrait && (audioBytes || heygenVoice)
           ? generatePhotoPresenter({
               image: portrait,
-              audio: audioBytes,
+              ...spoken,
               ratio: doc.ratio,
               durationSec: total ?? 30,
               expressiveness: doc.presenter?.motion?.expressiveness ?? "high",
               motionPrompt: presenterMotionPrompt(doc.presenter?.motion?.prompt),
             })
-          : audioBytes && doc.presenter?.avatarId
+          : (audioBytes || heygenVoice) && doc.presenter?.avatarId
             ? generateLibraryPresenter({
                 avatarId: doc.presenter.avatarId,
-                audio: audioBytes,
+                ...spoken,
                 ratio: doc.ratio,
                 durationSec: total ?? 30,
                 motionPrompt: presenterMotionPrompt(doc.presenter?.motion?.prompt),

@@ -31,7 +31,7 @@ export default async function NewVideoPage({
   if (!concept) notFound();
 
   const models = await videoModelChoices();
-  const { groups, voices } = await presenterChoices();
+  const { groups, defaultVoice } = await presenterChoices();
   const defaultModel = models.find((m) => m.isDefault)?.id ?? models[0]!.id;
   const preview = (k: "video" | "ugc") => {
     const doc = buildVideoDocument(concept, {
@@ -103,7 +103,7 @@ export default async function NewVideoPage({
           hint: r.hint,
         }))}
         groups={groups}
-        voices={voices}
+        defaultVoice={defaultVoice}
         storyboards={{ video: preview("video"), ugc: preview("ugc") }}
         balance={ctx.credits.balance}
         action={createVideo}

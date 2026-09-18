@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db, characters, generationEvents, products, projects, briefs, concepts } from "@adcraft/db";
-import { getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, listVoices } from "@adcraft/ai";
+import { findVoice, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, searchVoices, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
 import { getPresenterLooks, type PresenterLook } from "@/server/presenter-library";
 import { requireOrg } from "@/server/org";
 import { studioModels } from "@/server/character-studio";
@@ -62,7 +62,7 @@ export async function generateCharacterAction(form: FormData): Promise<{ id?: st
     const personality = existing?.personality ?? field(form, "personality", 300);
     const voiceId = existing?.voiceId ?? field(form, "voiceId", 120);
     if (!name || description.length < 15) throw new Error("Add a name and at least 15 characters describing your fictional adult presenter.");
-    if (!(await listVoices()).some(v => v.id === voiceId)) throw new Error("Choose an available voice.");
+    if (!(await findVoice(voiceId))) throw new Error("Choose an available voice.");
     const eventId = randomUUID();
     await reserveGenerationCredits(ctx.org.id, model.creditsPerUnit, eventId);
     reservation = { orgId: ctx.org.id, eventId };
@@ -98,7 +98,7 @@ export async function saveCharacterAction(form: FormData): Promise<{ error?: str
   try {
     const ctx = await editor();
     const voiceId = field(form, "voiceId", 120);
-    if (!(await listVoices()).some(v => v.id === voiceId)) throw new Error("Choose an available voice.");
+    if (!(await findVoice(voiceId))) throw new Error("Choose an available voice.");
     const name = field(form, "name", 60);
     if (!name) throw new Error("Give your character a name.");
     const rows = await db.update(characters).set({ name, personality: field(form, "personality", 300), voiceId, motion: motionOf(form), updatedAt: new Date() }).where(and(eq(characters.id, field(form, "characterId", 80)), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id))).returning({ id: characters.id });
@@ -111,7 +111,7 @@ export async function saveCharacterAction(form: FormData): Promise<{ error?: str
 export async function createCharacterAdAction(form: FormData): Promise<{ creativeId?: string; error?: string }> {
   try {
     const ctx = await editor();
-    if (!isFalConfigured || !isHeyGenConfigured || !isElevenLabsConfigured) throw new Error("Connect fal.ai, HeyGen and ElevenLabs before generating a character ad.");
+    if (!isFalConfigured || !isHeyGenConfigured) throw new Error("Connect fal.ai and HeyGen before generating a character ad.");
     if (ctx.credits.balance < CREDIT_COSTS.ugcVideo30s) throw new Error(`You need ${CREDIT_COSTS.ugcVideo30s} credits to generate this ad.`);
     const imageModel = await selectedImageModel(form);
     const model = field(form, "videoModel", 100);
@@ -132,7 +132,9 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
     const look = character?.looks.find(l => l.id === field(form, "lookId", 80));
     if (!stockAvatar && !look) throw new Error("Choose one of this character's saved looks.");
     const voiceId = character?.voiceId ?? field(form, "voiceId", 120);
-    if (!(await listVoices()).some(v => v.id === voiceId)) throw new Error("Choose a voice for this presenter.");
+    const voice = await findVoice(voiceId);
+    if (!voice) throw new Error("Choose a voice for this presenter.");
+    if (voice.provider === "elevenlabs" && !isElevenLabsConfigured) throw new Error("That voice needs ElevenLabs; pick a HeyGen voice or connect ElevenLabs.");
     const presenterName = character?.name ?? stockAvatar!.person ?? stockAvatar!.label;
     const tone = character?.personality ?? "Warm and conversational";
     const productId = field(form, "productId", 80);
@@ -159,6 +161,7 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
       imageModel: imageModel.id,
       ratio,
       voiceId,
+      voiceProvider: voice.provider,
       templateId,
       ...(stockAvatar ? { avatarId: stockAvatar.id } : { characterImageKey: look!.imageKey, characterId: character!.id, motion: character!.motion ?? {} }),
     });
@@ -172,4 +175,10 @@ export async function loadPresenterLooks(groupId: string): Promise<PresenterLook
   await requireOrg();
   if (!/^[a-f0-9]{16,64}$/i.test(groupId)) return [];
   return getPresenterLooks(groupId);
+}
+
+/** Paged voice search across ElevenLabs and HeyGen for the voice picker. */
+export async function searchVoicesAction(q: VoiceQuery): Promise<{ items: CatalogVoice[]; total: number; languages: string[] }> {
+  await requireOrg();
+  return searchVoices({ query: String(q.query ?? "").slice(0, 60), gender: q.gender === "male" || q.gender === "female" ? q.gender : undefined, language: q.language ? String(q.language).slice(0, 40) : undefined, provider: q.provider === "heygen" || q.provider === "elevenlabs" ? q.provider : undefined, offset: Number(q.offset) || 0, limit: 60 });
 }

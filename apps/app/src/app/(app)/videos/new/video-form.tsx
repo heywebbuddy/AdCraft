@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { PresenterLibrary, type PresenterChoice, type PresenterGroup } from "@/app/(app)/characters/presenter-library";
-import { loadPresenterLooks } from "@/app/(app)/characters/actions";
+import { loadPresenterLooks, searchVoicesAction } from "@/app/(app)/characters/actions";
+import { VoiceField, type CatalogVoice } from "@/components/voice-picker";
 import "@/app/(app)/characters/studio.css";
 import { Spark } from "@/components/spark";
 import { PlayIcon } from "@/components/icons";
@@ -18,7 +19,7 @@ export type VideoFormProps = {
   models: Model[];
   ratios: Ratio[];
   groups: PresenterGroup[];
-  voices: Choice[];
+  defaultVoice: CatalogVoice | null;
   storyboards: Record<"video" | "ugc", { scenes: ScenePreview[]; durationSec: number; credits: number }>;
   balance: number;
   action: (formData: FormData) => Promise<void>;
@@ -32,6 +33,7 @@ export function VideoForm(p: VideoFormProps) {
   const [ratio, setRatio] = useState<Ratio["id"]>("9:16");
   const [pending, setPending] = useState(false);
   const [avatar, setAvatar] = useState<PresenterChoice | null>(null);
+  const [voice, setVoice] = useState<CatalogVoice | null>(p.defaultVoice);
   const libraryDialog = useRef<HTMLDialogElement>(null);
   const board = p.storyboards[kind];
   const chosen = p.models.find((m) => m.id === model);
@@ -149,18 +151,13 @@ export function VideoForm(p: VideoFormProps) {
                 <PresenterLibrary groups={p.groups} loadLooks={loadPresenterLooks} selectedId={avatar?.look.id} ratio={ratio} onSelect={(c) => { setAvatar(c); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
               </dialog>
             </div>
-            <label className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5">
               <span className="eyebrow">Voice</span>
-              <select name="voiceId" className="h-11 rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink" defaultValue={p.voices[0]?.id}>
-                {p.voices.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <input type="hidden" name="voiceId" value={voice?.id ?? ""} />
+              <VoiceField voice={voice} search={searchVoicesAction} onChange={setVoice} label="" />
+            </div>
             <p className="m-0 text-[12px] text-muted sm:col-span-2">
-              Stock avatars and voices only. Custom faces or cloned voices need a consent flow first (PLAN §4), and the video carries an “AI-generated” label.
+              Library presenters and catalogue voices only. Custom faces or cloned voices need a consent flow first (PLAN §4), and the video carries an “AI-generated” label.
             </p>
           </section>
         ) : null}

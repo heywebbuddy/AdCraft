@@ -15,7 +15,7 @@ import {
   variants,
   type BrandKitData,
 } from "@adcraft/db";
-import { listVoices } from "@adcraft/ai";
+import { findVoice, listAllVoices } from "@adcraft/ai";
 import { getPresenterGroups } from "./presenter-library";
 import { getCatalog } from "./model-catalog";
 import { getPlacement } from "@adcraft/specs";
@@ -194,6 +194,7 @@ export type VideoOptions = {
   ratio: VideoRatio;
   avatarId?: string;
   voiceId?: string;
+  voiceProvider?: "elevenlabs" | "heygen";
   imageModel?: string;
   characterImageKey?: string;
   characterId?: string;
@@ -223,7 +224,7 @@ export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): Vide
     },
     captions: { style: opts.kind === "ugc" ? "bold" : "clean", position: "bottom" },
     endCard: { headline: c.data.headline, cta: c.data.cta || "Shop now", durationSec: 2.5 },
-    voice: opts.kind === "ugc" ? { voiceId: opts.voiceId ?? "" } : undefined,
+    voice: opts.kind === "ugc" ? { voiceId: opts.voiceId ?? "", provider: opts.voiceProvider } : undefined,
     presenter:
       opts.kind === "ugc"
         ? { avatarId: opts.avatarId ?? "", ...(opts.characterImageKey ? { image: { key: opts.characterImageKey }, characterId: opts.characterId, motion: opts.motion } : {}) }
@@ -249,8 +250,8 @@ export async function videoModelChoices() {
 }
 
 export async function presenterChoices() {
-  const [library, voices] = await Promise.all([getPresenterGroups(), listVoices()]);
-  return { groups: library.groups, libraryLoading: library.loading, voices };
+  const [library, voices] = await Promise.all([getPresenterGroups(), listAllVoices()]);
+  return { groups: library.groups, libraryLoading: library.loading, defaultVoice: voices[0] ?? null };
 }
 
 // ---------- writes ----------
@@ -355,7 +356,7 @@ export async function rerunVideo(orgId: string, creativeId: string, opts: { mode
   if (opts.fresh) {
     doc.scenes = doc.scenes.map((s) => ({ ...s, still: undefined, clip: undefined, error: undefined }));
     doc.presenter = doc.presenter ? { ...doc.presenter, clip: undefined } : undefined;
-    doc.voice = doc.voice ? { voiceId: doc.voice.voiceId } : undefined;
+    doc.voice = doc.voice ? { voiceId: doc.voice.voiceId, provider: doc.voice.provider } : undefined;
   }
   doc.meta = { ...(doc.meta ?? {}), lastError: undefined };
   await save(row.id, doc);

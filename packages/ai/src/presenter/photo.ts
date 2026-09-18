@@ -16,7 +16,7 @@ export function presenterMotionPrompt(notes?: string): string {
  * "high" and a motion prompt unless the character says otherwise.
  */
 export async function generatePhotoPresenter(
-  req: { image: Buffer; audio: Buffer; ratio: AspectRatio; durationSec: number; expressiveness?: Expressiveness; motionPrompt?: string },
+  req: { image: Buffer; audio?: Buffer; script?: string; voiceId?: string; ratio: AspectRatio; durationSec: number; expressiveness?: Expressiveness; motionPrompt?: string },
   opts: { pollMs?: number; timeoutMs?: number } = {},
 ): Promise<GenerationResult<PresenterClip>> {
   const key = process.env.HEYGEN_API_KEY;
@@ -33,11 +33,12 @@ export async function generatePhotoPresenter(
     if (!body.data?.asset_id) throw new Error("HeyGen returned no asset ID.");
     return body.data.asset_id;
   }
-  const [imageId, audioId] = await Promise.all([upload(req.image, "image/png", "character.png"), upload(req.audio, "audio/mpeg", "voice.mp3")]);
+  if (!req.audio && !(req.script && req.voiceId)) throw new Error("A voice track or a script with a HeyGen voice is required.");
+  const [imageId, audioId] = await Promise.all([upload(req.image, "image/png", "character.png"), req.audio ? upload(req.audio, "audio/mpeg", "voice.mp3") : Promise.resolve(null)]);
   const response = await fetch(`${base}/v3/videos`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({
       type: "image",
       image: { type: "asset_id", asset_id: imageId },
-      audio_asset_id: audioId,
+      ...(audioId ? { audio_asset_id: audioId } : { script: req.script, voice_id: req.voiceId }),
       aspect_ratio: req.ratio === "1.91:1" ? "16:9" : req.ratio,
       resolution: "1080p",
       engine: { type: "avatar_iv" },

@@ -221,18 +221,19 @@ async function uploadAsset(bytes: Buffer, type: string, filename: string): Promi
  * HeyGen's default Avatar IV, which rejects motion prompts for video avatars.
  */
 export async function generateLibraryPresenter(
-  req: { avatarId: string; audio: Buffer; ratio: AspectRatio; durationSec: number; motionPrompt?: string; background?: string },
+  req: { avatarId: string; audio?: Buffer; script?: string; voiceId?: string; ratio: AspectRatio; durationSec: number; motionPrompt?: string; background?: string },
   opts: { pollMs?: number; timeoutMs?: number } = {},
 ): Promise<GenerationResult<PresenterClip>> {
   if (!isHeyGenLibraryConfigured()) throw new Error("HeyGen is not connected. Add HEYGEN_API_KEY to use library presenters.");
   const started = Date.now();
   const look = await getLook(req.avatarId);
   const useV = look?.engines.includes("avatar_v") ?? false;
-  const audioId = await uploadAsset(req.audio, "audio/mpeg", "voice.mp3");
+  if (!req.audio && !(req.script && req.voiceId)) throw new Error("A voice track or a script with a HeyGen voice is required.");
+  const audioId = req.audio ? await uploadAsset(req.audio, "audio/mpeg", "voice.mp3") : null;
   const body: Record<string, unknown> = {
     type: "avatar",
     avatar_id: req.avatarId,
-    audio_asset_id: audioId,
+    ...(audioId ? { audio_asset_id: audioId } : { script: req.script, voice_id: req.voiceId }),
     aspect_ratio: req.ratio === "1.91:1" ? "16:9" : req.ratio,
     resolution: "1080p",
     title: "Adcraft presenter",

@@ -71,7 +71,8 @@ export interface VideoDocument {
   endCard: { headline: string; cta: string; durationSec: number };
   music?: VideoAsset & { volume?: number };
   /** UGC voice-over. */
-  voice?: { voiceId: string; audio?: VideoAsset };
+  /** UGC voice-over. `provider` "heygen" means HeyGen speaks the script itself (no synthesised track). */
+  voice?: { voiceId: string; provider?: "elevenlabs" | "heygen"; audio?: VideoAsset };
   /** UGC presenter clip (licensed avatar). */
   presenter?: {
     avatarId: string;
