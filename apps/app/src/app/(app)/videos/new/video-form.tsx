@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { PresenterLibrary, type PresenterChoice, type PresenterGroup } from "@/app/(app)/characters/presenter-library";
-import { loadPresenterLooks, searchVoicesAction } from "@/app/(app)/characters/actions";
+import { auditionVoiceAction, loadPresenterLooks, searchVoicesAction } from "@/app/(app)/characters/actions";
 import { VoiceField, type CatalogVoice } from "@/components/voice-picker";
 import "@/app/(app)/characters/studio.css";
 import { Spark } from "@/components/spark";
@@ -154,7 +154,7 @@ export function VideoForm(p: VideoFormProps) {
             <div className="flex flex-col gap-1.5">
               <span className="eyebrow">Voice</span>
               <input type="hidden" name="voiceId" value={voice?.id ?? ""} />
-              <VoiceField voice={voice} search={searchVoicesAction} onChange={setVoice} label="" />
+              <VoiceField voice={voice} search={searchVoicesAction} audition={auditionVoiceAction} onChange={setVoice} label="" />
             </div>
             <p className="m-0 text-[12px] text-muted sm:col-span-2">
               Library presenters and catalogue voices only. Custom faces or cloned voices need a consent flow first (PLAN §4), and the video carries an “AI-generated” label.

@@ -104,7 +104,37 @@ export async function searchVoices(q: VoiceQuery): Promise<{ items: CatalogVoice
       (!needle || `${v.name} ${v.style ?? ""} ${v.language ?? ""} ${v.accent ?? ""}`.toLowerCase().includes(needle)),
   );
   const languages = Array.from(new Set(all.map((v) => v.language).filter((l): l is string => Boolean(l)))).sort((a, b) => (a === "English" ? -1 : b === "English" ? 1 : a.localeCompare(b)));
+  // Voices with a sample first (stable within each half), so the list starts playable.
+  const ordered = [...filtered].sort((a, b) => Number(Boolean(b.previewUrl)) - Number(Boolean(a.previewUrl)));
   const offset = Math.max(0, q.offset ?? 0);
   const limit = Math.min(100, Math.max(1, q.limit ?? 60));
-  return { items: filtered.slice(offset, offset + limit), total: filtered.length, languages };
+  return { items: ordered.slice(offset, offset + limit), total: filtered.length, languages };
+}
+
+/** Text a voice sample says; short so an audition costs a fraction of a credit. */
+export const SAMPLE_TEXT = "Hi there. Here is how I sound when I introduce your product — warm, clear, and ready for your next ad.";
+
+/**
+ * Generate a short sample for a HeyGen voice that ships without one (`POST /v3/voices/speech`,
+ * billed per generated minute). Returns the audio URL HeyGen hosts; callers cache it.
+ */
+export async function generateHeyGenVoiceSample(voiceId: string, text = SAMPLE_TEXT): Promise<{ url: string; durationSec?: number }> {
+  const key = process.env.HEYGEN_API_KEY;
+  if (!key) throw new Error("HeyGen is not connected.");
+  const res = await fetch(`${API}/v3/voices/speech`, {
+    method: "POST",
+    headers: { "x-api-key": key, "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ voice_id: voiceId, text }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) throw new Error(`HeyGen speech failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  const data = (await res.json()) as { data?: { audio_url?: string; duration?: number } };
+  if (!data.data?.audio_url) throw new Error("HeyGen returned no audio.");
+  return { url: data.data.audio_url, durationSec: data.data.duration };
+}
+
+/** Attach a generated sample to a cached HeyGen voice so later searches include it. */
+export function setHeyGenVoicePreview(voiceId: string, url: string) {
+  const v = heygenCache?.list.find((x) => x.id === voiceId);
+  if (v) v.previewUrl = url;
 }

@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db, characters, generationEvents, products, projects, briefs, concepts } from "@adcraft/db";
-import { findVoice, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, searchVoices, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
+import { findVoice, generateHeyGenVoiceSample, getLook, isElevenLabsConfigured, isFalConfigured, isHeyGenConfigured, searchVoices, setHeyGenVoicePreview, type CatalogVoice, type VoiceQuery } from "@adcraft/ai";
+import { getVoiceSample, storeVoiceSample } from "@/server/voice-samples";
 import { getPresenterLooks, type PresenterLook } from "@/server/presenter-library";
 import { requireOrg } from "@/server/org";
 import { studioModels } from "@/server/character-studio";
@@ -181,4 +182,27 @@ export async function loadPresenterLooks(groupId: string): Promise<PresenterLook
 export async function searchVoicesAction(q: VoiceQuery): Promise<{ items: CatalogVoice[]; total: number; languages: string[] }> {
   await requireOrg();
   return searchVoices({ query: String(q.query ?? "").slice(0, 60), gender: q.gender === "male" || q.gender === "female" ? q.gender : undefined, language: q.language ? String(q.language).slice(0, 40) : undefined, provider: q.provider === "heygen" || q.provider === "elevenlabs" ? q.provider : undefined, offset: Number(q.offset) || 0, limit: 60 });
+}
+
+/**
+ * Generate (once) and return a short sample for a HeyGen voice that has none. The sample is
+ * copied into our storage and remembered platform-wide, so each voice costs at most one
+ * short TTS call ever.
+ */
+export async function auditionVoiceAction(voiceId: string): Promise<{ url?: string; error?: string }> {
+  const ctx = await requireOrg();
+  if (ctx.role === "viewer") return { error: "Viewers can't generate samples." };
+  if (!/^[a-f0-9]{16,64}$/i.test(voiceId)) return { error: "Unknown voice." };
+  const cached = await getVoiceSample(voiceId);
+  if (cached) return { url: cached };
+  const voice = await findVoice(voiceId);
+  if (!voice || voice.provider !== "heygen") return { error: "Only HeyGen voices can be auditioned this way." };
+  try {
+    const { url } = await generateHeyGenVoiceSample(voiceId);
+    const stored = await storeVoiceSample(voiceId, url);
+    setHeyGenVoicePreview(voiceId, stored);
+    return { url: stored };
+  } catch (error) {
+    return { error: message(error) };
+  }
 }

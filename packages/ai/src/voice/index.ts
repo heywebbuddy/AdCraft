@@ -9,4 +9,4 @@ export {
   ElevenLabsVoiceProvider,
   type SynthesizedVoice,
 } from "./elevenlabs";
-export { listHeyGenVoices, listElevenLabsCatalog, listAllVoices, findVoice, searchVoices, type CatalogVoice, type VoiceSource, type VoiceQuery } from "./catalog";
+export { listHeyGenVoices, listElevenLabsCatalog, listAllVoices, findVoice, searchVoices, generateHeyGenVoiceSample, setHeyGenVoicePreview, SAMPLE_TEXT, type CatalogVoice, type VoiceSource, type VoiceQuery } from "./catalog";

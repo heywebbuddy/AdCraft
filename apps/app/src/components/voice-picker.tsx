@@ -5,17 +5,18 @@ import type { CatalogVoice, VoiceQuery } from "@adcraft/ai";
 export type { CatalogVoice };
 
 type SearchFn = (q: VoiceQuery) => Promise<{ items: CatalogVoice[]; total: number; languages: string[] }>;
+type AuditionFn = (voiceId: string) => Promise<{ url?: string; error?: string }>;
 
 /**
  * A voice as a field: name, style and language on one line, a play button for the
  * preview, and "Change" to open the picker. Replaces the raw `<select>`.
  * Styles: workspace.css (.vf-*, .vp-*).
  */
-export function VoiceField({ voice, search, onChange, disabled, label = "Voice" }: { voice: CatalogVoice | null; search: SearchFn; onChange: (v: CatalogVoice) => void; disabled?: boolean; label?: string }) {
+export function VoiceField({ voice, search, audition, onChange, disabled, label = "Voice", labelClassName }: { voice: CatalogVoice | null; search: SearchFn; audition?: AuditionFn; onChange: (v: CatalogVoice) => void; disabled?: boolean; label?: string; labelClassName?: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <div className="vf-field">
-      <span className="vf-label">{label}</span>
+      {label ? <span className={labelClassName ?? "vf-label"}>{label}</span> : null}
       <div className="vf-row">
         <PlayButton src={voice?.previewUrl} />
         <div className="vf-text">
@@ -27,14 +28,14 @@ export function VoiceField({ voice, search, onChange, disabled, label = "Voice" 
         </button>
       </div>
       <dialog ref={dialog} className="cs-dialog vp-dialog" aria-labelledby="vp-title" onClick={(e) => { if (e.target === e.currentTarget) dialog.current?.close(); }}>
-        <VoicePicker search={search} selectedId={voice?.id} initialGender={voice?.gender} onSelect={(v) => { onChange(v); dialog.current?.close(); }} onClose={() => dialog.current?.close()} />
+        <VoicePicker search={search} audition={audition} selectedId={voice?.id} initialGender={voice?.gender} onSelect={(v) => { onChange(v); dialog.current?.close(); }} onClose={() => dialog.current?.close()} />
       </dialog>
     </div>
   );
 }
 
 /** Search + filter over the whole catalogue (server-side), 60 at a time, with inline previews. */
-export function VoicePicker({ search, selectedId, initialGender, onSelect, onClose }: { search: SearchFn; selectedId?: string; initialGender?: "male" | "female"; onSelect: (v: CatalogVoice) => void; onClose: () => void }) {
+export function VoicePicker({ search, audition, selectedId, initialGender, onSelect, onClose }: { search: SearchFn; audition?: AuditionFn; selectedId?: string; initialGender?: "male" | "female"; onSelect: (v: CatalogVoice) => void; onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [gender, setGender] = useState<"all" | "female" | "male">(initialGender ?? "all");
   const [language, setLanguage] = useState("");
@@ -44,6 +45,9 @@ export function VoicePicker({ search, selectedId, initialGender, onSelect, onClo
   const [languages, setLanguages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState<string | null>(null);
+  const [samples, setSamples] = useState<Record<string, string>>({});
+  const [auditioning, setAuditioning] = useState<string | null>(null);
+  const [auditionError, setAuditionError] = useState<string | null>(null);
   const seq = useRef(0);
 
   useEffect(() => {
@@ -110,15 +114,42 @@ export function VoicePicker({ search, selectedId, initialGender, onSelect, onClo
         {!loading && items.length === 0 ? <p className="pl-empty">No voices match.</p> : null}
         {items.map((v) => (
           <div key={v.id} role="option" aria-selected={v.id === selectedId} className="vp-row" onClick={() => onSelect(v)} onKeyDown={(e) => { if (e.key === "Enter") onSelect(v); }} tabIndex={0}>
-            <PlayButton src={v.previewUrl} active={playing === v.id} onToggle={(on) => setPlaying(on ? v.id : null)} />
+            {v.previewUrl || samples[v.id] ? (
+              <PlayButton src={samples[v.id] ?? v.previewUrl} active={playing === v.id} onToggle={(on) => setPlaying(on ? v.id : null)} />
+            ) : audition && v.provider === "heygen" ? (
+              <button
+                type="button"
+                className="vp-audition"
+                disabled={auditioning === v.id}
+                title="HeyGen has no sample for this voice. Generate a 4-second one (a fraction of a credit, kept for everyone)."
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAuditioning(v.id);
+                  setAuditionError(null);
+                  audition(v.id)
+                    .then((r) => {
+                      if (r.url) {
+                        setSamples((prev) => ({ ...prev, [v.id]: r.url! }));
+                        setPlaying(v.id);
+                      } else setAuditionError(r.error ?? "Could not generate a sample.");
+                    })
+                    .finally(() => setAuditioning(null));
+                }}
+              >
+                {auditioning === v.id ? "…" : "Audition"}
+              </button>
+            ) : (
+              <span className="vp-nosample" title="No sample available">—</span>
+            )}
             <div className="vp-text">
               <strong>{v.name}</strong>
-              <small>{[v.style, v.gender === "female" ? "Woman" : v.gender === "male" ? "Man" : null, v.language, v.accent].filter(Boolean).join(" · ")}</small>
+              <small>{[v.style, v.gender === "female" ? "Woman" : v.gender === "male" ? "Man" : null, v.language, v.accent].filter(Boolean).join(" · ")}{!v.previewUrl && !samples[v.id] ? " · no sample yet" : ""}</small>
             </div>
             <span className={`vp-source ${v.provider}`}>{v.provider === "heygen" ? "HeyGen" : "ElevenLabs"}</span>
             {v.id === selectedId ? <span className="vp-check">✓</span> : null}
           </div>
         ))}
+        {auditionError ? <p className="pl-empty" role="alert">{auditionError}</p> : null}
         {items.length < total ? (
           <button type="button" className="vp-more" onClick={more}>
             Show more · {(total - items.length).toLocaleString()} left
