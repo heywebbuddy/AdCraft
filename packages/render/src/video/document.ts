@@ -73,7 +73,14 @@ export interface VideoDocument {
   /** UGC voice-over. */
   voice?: { voiceId: string; audio?: VideoAsset };
   /** UGC presenter clip (licensed avatar). */
-  presenter?: { avatarId: string; image?: VideoAsset; characterId?: string; clip?: VideoAsset };
+  presenter?: {
+    avatarId: string;
+    image?: VideoAsset;
+    characterId?: string;
+    /** Photo avatars: how much the presenter moves, and free-text gesture direction. */
+    motion?: { expressiveness?: "low" | "medium" | "high"; prompt?: string };
+    clip?: VideoAsset;
+  };
   /** Show the "AI-generated" label required by platform rules for synthetic presenters. */
   aiLabel: boolean;
   meta?: Record<string, unknown>;

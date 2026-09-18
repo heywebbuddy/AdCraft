@@ -1,8 +1,24 @@
 import type { AspectRatio, GenerationResult } from "../types";
 import type { PresenterClip } from "./heygen";
 
-/** Animate our saved synthetic portrait, preserving the selected image and voice track. */
-export async function generatePhotoPresenter(req: { image: Buffer; audio: Buffer; ratio: AspectRatio; durationSec: number }, opts: { pollMs?: number; timeoutMs?: number } = {}): Promise<GenerationResult<PresenterClip>> {
+export type Expressiveness = "low" | "medium" | "high";
+
+/** Default gesture direction for a talking-head ad; a character's own notes are appended. */
+export function presenterMotionPrompt(notes?: string): string {
+  const base = "Speaks straight to camera like a friendly creator: natural hand gestures while talking, relaxed shoulders, small nods and a warm smile. Stays centred in frame; no walking, no turning away.";
+  return notes?.trim() ? `${base} ${notes.trim()}` : base;
+}
+
+/**
+ * Animate our saved synthetic portrait with the Avatar IV engine (HeyGen's default for
+ * `type: "image"`), preserving the selected image and voice track. `expressiveness`
+ * defaults to "low" on HeyGen's side — which is why a portrait barely moves — so we send
+ * "high" and a motion prompt unless the character says otherwise.
+ */
+export async function generatePhotoPresenter(
+  req: { image: Buffer; audio: Buffer; ratio: AspectRatio; durationSec: number; expressiveness?: Expressiveness; motionPrompt?: string },
+  opts: { pollMs?: number; timeoutMs?: number } = {},
+): Promise<GenerationResult<PresenterClip>> {
   const key = process.env.HEYGEN_API_KEY;
   if (!key) throw new Error("HeyGen is not connected. Add HEYGEN_API_KEY to animate a character.");
   const base = process.env.HEYGEN_API_BASE ?? "https://api.heygen.com";
@@ -18,8 +34,21 @@ export async function generatePhotoPresenter(req: { image: Buffer; audio: Buffer
     return body.data.asset_id;
   }
   const [imageId, audioId] = await Promise.all([upload(req.image, "image/png", "character.png"), upload(req.audio, "audio/mpeg", "voice.mp3")]);
-  const response = await fetch(`${base}/v3/videos`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ type: "image", image: { type: "asset_id", asset_id: imageId }, audio_asset_id: audioId, aspect_ratio: req.ratio, resolution: "1080p", title: "Adcraft character ad" }), signal: AbortSignal.timeout(60_000) });
-  if (!response.ok) throw new Error(`HeyGen character generation failed (${response.status}). Check API access and available credits.`);
+  const response = await fetch(`${base}/v3/videos`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({
+      type: "image",
+      image: { type: "asset_id", asset_id: imageId },
+      audio_asset_id: audioId,
+      aspect_ratio: req.ratio === "1.91:1" ? "16:9" : req.ratio,
+      resolution: "1080p",
+      engine: { type: "avatar_iv" },
+      expressiveness: req.expressiveness ?? "high",
+      motion_prompt: req.motionPrompt ?? presenterMotionPrompt(),
+      title: "Adcraft character ad",
+    }), signal: AbortSignal.timeout(60_000) });
+  if (!response.ok) {
+    const body = (await response.text()).slice(0, 300);
+    throw new Error(`HeyGen character generation failed (${response.status}): ${body || "check API access and available credits."}`);
+  }
   const created = await response.json() as { data?: { video_id?: string } };
   if (!created.data?.video_id) throw new Error("HeyGen returned no video ID.");
   const deadline = Date.now() + (opts.timeoutMs ?? 20 * 60_000);

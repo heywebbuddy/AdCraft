@@ -5,6 +5,7 @@ import {
   downloadVideo,
   generatePresenter,
   generatePhotoPresenter,
+  presenterMotionPrompt,
   generateVideo,
   getModel,
   supportedDuration,
@@ -97,7 +98,14 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
       const res = await withEvent(
         { orgId, creativeId, capability: "presenter", provider: "heygen", model: HEYGEN_MODEL, label: "Presenter", detail: doc.presenter?.avatarId ?? "stock avatar", step: "presenter" },
         () => portrait && audioBytes
-          ? generatePhotoPresenter({ image: portrait, audio: audioBytes, ratio: doc.ratio, durationSec: total ?? 30 })
+          ? generatePhotoPresenter({
+              image: portrait,
+              audio: audioBytes,
+              ratio: doc.ratio,
+              durationSec: total ?? 30,
+              expressiveness: doc.presenter?.motion?.expressiveness ?? "high",
+              motionPrompt: presenterMotionPrompt(doc.presenter?.motion?.prompt),
+            })
           : generatePresenter({
             model: HEYGEN_MODEL,
             avatarId: doc.presenter?.avatarId ?? "",

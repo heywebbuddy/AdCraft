@@ -187,7 +187,18 @@ export async function getConceptForVideo(orgId: string, conceptId: string): Prom
 
 // ---------- document construction ----------
 
-export type VideoOptions = { kind: VideoKind; model: string; ratio: VideoRatio; avatarId?: string; voiceId?: string; imageModel?: string; characterImageKey?: string; characterId?: string; templateId?: string };
+export type VideoOptions = {
+  kind: VideoKind;
+  model: string;
+  ratio: VideoRatio;
+  avatarId?: string;
+  voiceId?: string;
+  imageModel?: string;
+  characterImageKey?: string;
+  characterId?: string;
+  motion?: { expressiveness?: "low" | "medium" | "high"; prompt?: string };
+  templateId?: string;
+};
 
 export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): VideoDocument {
   const kit = c.brand.kit;
@@ -212,9 +223,12 @@ export function buildVideoDocument(c: ConceptForVideo, opts: VideoOptions): Vide
     captions: { style: opts.kind === "ugc" ? "bold" : "clean", position: "bottom" },
     endCard: { headline: c.data.headline, cta: c.data.cta || "Shop now", durationSec: 2.5 },
     voice: opts.kind === "ugc" ? { voiceId: opts.voiceId ?? "" } : undefined,
-    presenter: opts.kind === "ugc" ? { avatarId: opts.avatarId ?? "", ...(opts.characterImageKey ? { image: { key: opts.characterImageKey }, characterId: opts.characterId } : {}) } : undefined,
+    presenter:
+      opts.kind === "ugc"
+        ? { avatarId: opts.avatarId ?? "", ...(opts.characterImageKey ? { image: { key: opts.characterImageKey }, characterId: opts.characterId, motion: opts.motion } : {}) }
+        : undefined,
     aiLabel: opts.kind === "ugc",
-    meta: { conceptId: c.id, productId: c.product?.id ?? null, visualDirection: c.data.visualDirection, tone: kit.voice?.tone ?? [], templateId: opts.templateId, characterStudio: Boolean(opts.characterId) },
+    meta: { conceptId: c.id, productId: c.product?.id ?? null, visualDirection: c.data.visualDirection, tone: kit.voice?.tone ?? [], templateId: opts.templateId, characterStudio: Boolean(opts.characterId || opts.templateId) },
   });
 }
 

@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 import { db, dbReady, characters, products } from "@adcraft/db";
-import { isFalConfigured, isHeyGenConfigured, isElevenLabsConfigured, listVoices } from "@adcraft/ai";
+import { isFalConfigured, isHeyGenConfigured, isElevenLabsConfigured, listAvatars, listVoices } from "@adcraft/ai";
 import { getCatalog } from "./model-catalog";
 
 export async function studioModels() {
@@ -11,15 +11,17 @@ export async function studioModels() {
 
 export async function characterStudioData(orgId: string, brandId: string) {
   await dbReady;
-  const [people, items, models, voices, catalog] = await Promise.all([
+  const [people, items, models, voices, catalog, avatars] = await Promise.all([
     db.select().from(characters).where(and(eq(characters.orgId, orgId), eq(characters.brandId, brandId))).orderBy(desc(characters.createdAt)),
     db.select().from(products).where(and(eq(products.orgId, orgId), eq(products.brandId, brandId))).orderBy(desc(products.createdAt)),
-    studioModels(), listVoices(), getCatalog(),
+    studioModels(), listVoices(), getCatalog(), listAvatars(),
   ]);
   return {
-    characters: people.map(c => ({ id: c.id, name: c.name, description: c.description, personality: c.personality, voiceId: c.voiceId, imageModel: c.imageModel, portraitUrl: c.portraitKey ? `/api/files/${c.portraitKey}` : null, status: c.status, error: c.error, looks: c.looks.map(l => ({ id: l.id, name: l.name, url: `/api/files/${l.imageKey}` })) })),
+    characters: people.map(c => ({ id: c.id, name: c.name, description: c.description, personality: c.personality, voiceId: c.voiceId, imageModel: c.imageModel, motion: c.motion ?? {}, portraitUrl: c.portraitKey ? `/api/files/${c.portraitKey}` : null, status: c.status, error: c.error, looks: c.looks.map(l => ({ id: l.id, name: l.name, url: `/api/files/${l.imageKey}` })) })),
     products: items.map(p => ({ id: p.id, name: p.name, description: p.description ?? "", imageUrl: p.imageKey ? `/api/files/${p.imageKey}` : null })),
     models, voices,
+    /** HeyGen's public presenter library (filmed actors; gestures built in), grouped by person. */
+    avatars: avatars.filter(a => a.licensed).map(a => ({ id: a.id, label: a.label, person: a.person ?? a.label, look: a.look ?? "Default", gender: a.gender ?? null, previewUrl: a.previewUrl ?? null, previewVideoUrl: a.previewVideoUrl ?? null })),
     videoModels: catalog.list("video").map(m => ({ id: m.id, label: m.label, default: m.id === catalog.default("video").id, notes: m.notes ?? "" })),
     videoConnected: isFalConfigured && isHeyGenConfigured && isElevenLabsConfigured,
     missingVideoProviders: [!isFalConfigured && "fal.ai", !isHeyGenConfigured && "HeyGen", !isElevenLabsConfigured && "ElevenLabs"].filter(Boolean) as string[],

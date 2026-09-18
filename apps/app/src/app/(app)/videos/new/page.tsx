@@ -105,7 +105,11 @@ export default async function NewVideoPage({
         avatars={avatars.map((a) => ({
           id: a.id,
           label: a.label,
-          previewUrl: a.previewUrl,
+          person: a.person ?? a.label,
+          look: a.look ?? "Default",
+          gender: a.gender ?? null,
+          previewUrl: a.previewUrl ?? null,
+          previewVideoUrl: a.previewVideoUrl ?? null,
         }))}
         voices={voices}
         storyboards={{ video: preview("video"), ugc: preview("ugc") }}

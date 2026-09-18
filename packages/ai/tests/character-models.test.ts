@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { falImageInput, trimPrompt } from "../src/image/fal-input";
 import { replicateImageInput, replicateVideoInput } from "../src/replicate";
 import { runwayImageInput, runwayVideoInput } from "../src/runway";
+import { splitAvatarName } from "../src/presenter/heygen";
 import { BUILT_IN_IMAGE_MODELS, BUILT_IN_MODELS, defaultModel, getModel, listModels, mergeCatalog, registerModels } from "../src/models";
 import { generatePhotoPresenter } from "../src/presenter/photo";
 
@@ -119,4 +120,12 @@ test("Runway specs map our sizes to Runway pixel ratios and pick the right task 
   assert.equal(i2v.body.duration, 10);
   assert.throws(() => runwayVideoInput(vid, { model: "rw-vid", prompt: "p", ratio: "16:9", durationSec: 5 }), /needs a start frame/);
   registerModels(BUILT_IN_MODELS);
+});
+
+test("HeyGen look names split into person + look for grouping", () => {
+  assert.deepEqual(splitAvatarName("Abigail (Upper Body)"), { person: "Abigail", look: "Upper Body" });
+  assert.deepEqual(splitAvatarName("Amanda in Blue Shirt"), { person: "Amanda", look: "In Blue Shirt" });
+  assert.deepEqual(splitAvatarName("Amanda in Blue Shirt (Upper Body)"), { person: "Amanda", look: "In Blue Shirt · Upper Body" });
+  assert.deepEqual(splitAvatarName("Abigail Office Front"), { person: "Abigail", look: "Office Front" });
+  assert.deepEqual(splitAvatarName("Aiko"), { person: "Aiko", look: "Default" });
 });

@@ -28,7 +28,21 @@ export const VIDEO_RATIO_SIZES: Record<AspectRatio, { width: number; height: num
   "1.91:1": { width: 1920, height: 1005 },
 };
 
-export type Avatar = { id: string; label: string; previewUrl?: string; licensed: boolean };
+export type Avatar = {
+  id: string;
+  label: string;
+  previewUrl?: string;
+  /** Short preview clip of the avatar talking, for hover previews. */
+  previewVideoUrl?: string;
+  /** Person this look belongs to ("Abigail"); many looks share one person. */
+  person?: string;
+  /** Pose / scene of this look ("Upper Body", "Office Front"). */
+  look?: string;
+  gender?: "male" | "female";
+  defaultVoiceId?: string;
+  tags?: string[];
+  licensed: boolean;
+};
 
 /**
  * Stock avatars shown when HeyGen cannot be reached. Ids are HeyGen public avatar ids.
@@ -57,22 +71,67 @@ function headers() {
   return { "x-api-key": process.env.HEYGEN_API_KEY ?? "", accept: "application/json", "content-type": "application/json" };
 }
 
+/**
+ * HeyGen names looks "Abigail (Upper Body)", "Amanda in Blue Shirt" or "Abigail Office
+ * Front": split the person from the look so the library can group by person.
+ */
+export function splitAvatarName(name: string): { person: string; look: string } {
+  // "Amanda in Blue Shirt (Upper Body)" → person "Amanda", look "In Blue Shirt · Upper Body"
+  const paren = /^(.+?)\s*\((.+)\)\s*$/.exec(name);
+  const head = (paren ? paren[1]! : name).trim();
+  const tail = paren ? paren[2]!.trim() : "";
+  const prep = /^([A-Z][\w'-]+)\s+((?:in|with|at|wearing|on)\s+.+)$/i.exec(head);
+  if (prep) {
+    const look = prep[2]!.replace(/^\w/, (c) => c.toUpperCase());
+    return { person: prep[1]!, look: tail ? `${look} · ${tail}` : look };
+  }
+  if (paren) return { person: head, look: tail };
+  const [person, ...rest] = head.split(/\s+/);
+  return { person: person ?? head, look: rest.join(" ") || "Default" };
+}
+
+let avatarCache: { at: number; list: Avatar[] } | null = null;
+const AVATAR_CACHE_MS = 6 * 60 * 60_000;
+
+/**
+ * The public avatar library (≈1,300 looks across ≈160 people), cached in memory for six
+ * hours. Premium and private (user-uploaded) entries are skipped; talking photos are
+ * never listed here — those are a customer's own uploads.
+ */
 export async function listAvatars(): Promise<Avatar[]> {
   if (!isHeyGenConfigured) return STOCK_AVATARS;
+  if (avatarCache && Date.now() - avatarCache.at < AVATAR_CACHE_MS) return avatarCache.list;
   try {
-    const res = await fetch(`${API_BASE}/v2/avatars`, { headers: headers() });
+    const res = await fetch(`${API_BASE}/v2/avatars`, { headers: headers(), signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`HeyGen /v2/avatars ${res.status}`);
     const data = (await res.json()) as {
-      data?: { avatars?: Array<{ avatar_id: string; avatar_name: string; preview_image_url?: string; premium?: boolean; type?: string }> };
+      data?: {
+        avatars?: Array<{ avatar_id: string; avatar_name: string; preview_image_url?: string; preview_video_url?: string; premium?: boolean; type?: string | null; gender?: string; default_voice_id?: string; tags?: string[] }>;
+      };
     };
-    // Public/stock avatars only: anything HeyGen flags as premium or user-uploaded is skipped.
-    const avatars = (data.data?.avatars ?? [])
+    const avatars: Avatar[] = (data.data?.avatars ?? [])
       .filter((a) => !a.premium && (a.type ?? "public") !== "private")
-      .map((a) => ({ id: a.avatar_id, label: a.avatar_name, previewUrl: a.preview_image_url, licensed: true }));
-    return avatars.length ? avatars : STOCK_AVATARS;
+      .map((a) => {
+        const { person, look } = splitAvatarName(a.avatar_name);
+        return {
+          id: a.avatar_id,
+          label: a.avatar_name,
+          previewUrl: a.preview_image_url,
+          previewVideoUrl: a.preview_video_url,
+          person,
+          look,
+          gender: a.gender === "male" || a.gender === "female" ? a.gender : undefined,
+          defaultVoiceId: a.default_voice_id,
+          tags: a.tags,
+          licensed: true,
+        };
+      });
+    if (!avatars.length) return STOCK_AVATARS;
+    avatarCache = { at: Date.now(), list: avatars };
+    return avatars;
   } catch (err) {
     console.warn("[heygen] listAvatars failed, using stock list:", err instanceof Error ? err.message : err);
-    return STOCK_AVATARS;
+    return avatarCache?.list ?? STOCK_AVATARS;
   }
 }
 

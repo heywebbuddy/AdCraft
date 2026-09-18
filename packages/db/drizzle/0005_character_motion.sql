@@ -1,0 +1,1 @@
+ALTER TABLE "characters" ADD COLUMN "motion" jsonb DEFAULT '{}'::jsonb NOT NULL;

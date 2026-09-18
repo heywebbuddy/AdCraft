@@ -4,6 +4,7 @@ export {
   STOCK_AVATARS,
   captionSegments,
   listAvatars,
+  splitAvatarName,
   placeholderPresenter,
   generatePresenter,
   downloadPresenter,
@@ -12,4 +13,4 @@ export {
   type PresenterClip,
   type HeyGenPresenterRequest,
 } from "./heygen";
-export { generatePhotoPresenter } from "./photo";
+export { generatePhotoPresenter, presenterMotionPrompt, type Expressiveness } from "./photo";

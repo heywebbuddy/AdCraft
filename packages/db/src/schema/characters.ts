@@ -16,6 +16,8 @@ export const characters = pgTable("characters", {
   voiceId: text("voice_id").notNull(),
   imageModel: text("image_model").notNull(),
   portraitKey: text("portrait_key"),
+  /** Photo-avatar motion: expressiveness (low | medium | high) and free-text gesture notes. */
+  motion: jsonb("motion").$type<{ expressiveness?: "low" | "medium" | "high"; prompt?: string }>().notNull().default({}),
   looks: jsonb("looks").$type<CharacterLook[]>().notNull().default([]),
   status: text("status").notNull().default("queued"),
   generationId: uuid("generation_id"),

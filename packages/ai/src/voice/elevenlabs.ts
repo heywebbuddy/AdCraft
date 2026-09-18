@@ -44,14 +44,28 @@ function headers() {
   return { "xi-api-key": process.env.ELEVENLABS_API_KEY ?? "", "content-type": "application/json" };
 }
 
-export async function listVoices(): Promise<Array<{ id: string; label: string; previewUrl?: string }>> {
+export type VoiceOption = { id: string; label: string; previewUrl?: string; gender?: "male" | "female"; accent?: string };
+
+let voiceCache: { at: number; list: VoiceOption[] } | null = null;
+
+/** The account's voices (ElevenLabs premade + cloned), cached for an hour. */
+export async function listVoices(): Promise<VoiceOption[]> {
+  if (voiceCache && Date.now() - voiceCache.at < 60 * 60_000) return voiceCache.list;
   if (!isElevenLabsConfigured) return STOCK_VOICES;
   try {
     const res = await fetch(`${API_BASE}/v1/voices`, { headers: headers() });
     if (!res.ok) throw new Error(`ElevenLabs /v1/voices ${res.status}`);
-    const data = (await res.json()) as { voices?: Array<{ voice_id: string; name: string; preview_url?: string; category?: string }> };
-    const voices = (data.voices ?? []).map((v) => ({ id: v.voice_id, label: v.category ? `${v.name} · ${v.category}` : v.name, previewUrl: v.preview_url }));
-    return voices.length ? voices : STOCK_VOICES;
+    const data = (await res.json()) as { voices?: Array<{ voice_id: string; name: string; preview_url?: string; category?: string; labels?: Record<string, string> }> };
+    const voices: VoiceOption[] = (data.voices ?? []).map((v) => ({
+      id: v.voice_id,
+      label: v.category ? `${v.name} · ${v.category}` : v.name,
+      previewUrl: v.preview_url,
+      gender: v.labels?.gender === "male" || v.labels?.gender === "female" ? v.labels.gender : undefined,
+      accent: v.labels?.accent,
+    }));
+    if (!voices.length) return STOCK_VOICES;
+    voiceCache = { at: Date.now(), list: voices };
+    return voices;
   } catch (err) {
     console.warn("[elevenlabs] listVoices failed, using stock voices:", err instanceof Error ? err.message : err);
     return STOCK_VOICES;

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { PresenterLibrary, type LibraryAvatar } from "@/app/(app)/characters/presenter-library";
+import "@/app/(app)/characters/studio.css";
 import { Spark } from "@/components/spark";
 import { PlayIcon } from "@/components/icons";
 
@@ -14,7 +16,7 @@ export type VideoFormProps = {
   initialKind: "video" | "ugc";
   models: Model[];
   ratios: Ratio[];
-  avatars: Choice[];
+  avatars: LibraryAvatar[];
   voices: Choice[];
   storyboards: Record<"video" | "ugc", { scenes: ScenePreview[]; durationSec: number; credits: number }>;
   balance: number;
@@ -28,6 +30,8 @@ export function VideoForm(p: VideoFormProps) {
   const [model, setModel] = useState(p.models.find((m) => m.isDefault)?.id ?? p.models[0]?.id ?? "");
   const [ratio, setRatio] = useState<Ratio["id"]>("9:16");
   const [pending, setPending] = useState(false);
+  const [avatar, setAvatar] = useState<LibraryAvatar | null>(p.avatars[0] ?? null);
+  const libraryDialog = useRef<HTMLDialogElement>(null);
   const board = p.storyboards[kind];
   const chosen = p.models.find((m) => m.id === model);
   const short = board.credits > p.balance;
@@ -124,16 +128,26 @@ export function VideoForm(p: VideoFormProps) {
         {/* UGC presenter + voice */}
         {kind === "ugc" ? (
           <section className="grid gap-3 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5">
               <span className="eyebrow">Presenter (licensed stock avatar)</span>
-              <select name="avatarId" className="h-11 rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink" defaultValue={p.avatars[0]?.id}>
-                {p.avatars.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <input type="hidden" name="avatarId" value={avatar?.id ?? ""} />
+              <button type="button" onClick={() => libraryDialog.current?.showModal()} className="flex h-14 items-center gap-3 rounded-[7px] border border-line bg-white px-2 text-left text-[13px] hover:border-ink">
+                {avatar?.previewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatar.previewUrl} alt="" className="h-10 w-8 rounded-[5px] object-cover" />
+                ) : (
+                  <span className="grid h-10 w-8 place-items-center rounded-[5px] bg-[#efeee8] text-[15px]">✦</span>
+                )}
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <strong className="truncate font-semibold">{avatar ? `${avatar.person} · ${avatar.look}` : "Choose a presenter"}</strong>
+                  <small className="text-[11px] text-muted">{p.avatars.length.toLocaleString()} looks in the HeyGen library</small>
+                </span>
+                <span className="pr-2 text-[12px] font-semibold text-orange">Change ↗</span>
+              </button>
+              <dialog ref={libraryDialog} className="cs-dialog cs-library-dialog" aria-labelledby="pl-title" onClick={(e) => { if (e.target === e.currentTarget) libraryDialog.current?.close(); }}>
+                <PresenterLibrary avatars={p.avatars} selectedId={avatar?.id} onSelect={(a) => { setAvatar(a); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
+              </dialog>
+            </div>
             <label className="flex flex-col gap-1.5">
               <span className="eyebrow">Voice</span>
               <select name="voiceId" className="h-11 rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink" defaultValue={p.voices[0]?.id}>

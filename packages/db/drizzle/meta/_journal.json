@@ -36,6 +36,13 @@
       "when": 1789668184471,
       "tag": "0004_ai_models",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789705811097,
+      "tag": "0005_character_motion",
+      "breakpoints": true
     }
   ]
 }
