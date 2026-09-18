@@ -57,11 +57,14 @@ function scriptExcerpt(script: string | undefined, maxLines = 3) {
 
 export default async function BriefPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ briefId: string }>;
+  searchParams: Promise<{ guardrail?: string }>;
 }) {
   const ctx = await requireOrg();
   const { briefId } = await params;
+  const { guardrail } = await searchParams;
   const detail = await loadBrief(ctx.org.id, briefId);
   if (!detail) notFound();
 
@@ -89,6 +92,7 @@ export default async function BriefPage({
       {generating ? <Poller intervalMs={3000} /> : null}
 
       <FlowSteps current="ideas" links={{ brief: "/briefs/new" }} format={brief.data.formats[0] === "video" ? "Product video" : brief.data.formats[0] === "ugc" ? "Presenter video" : "Static ad"} />
+      {guardrail ? <div role="alert" className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">The brief is saved, but concepts did not start: {decodeURIComponent(guardrail)}</div> : null}
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="eyebrow">

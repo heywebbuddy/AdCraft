@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/workspace-ui";
+import { SandboxBanner } from "@/components/sandbox-banner";
 import Link from "next/link";
 import { requireOrg } from "@/server/org";
 import { loadPerformance } from "@/server/ads";
@@ -36,6 +37,7 @@ export default async function PerformancePage({
   const fmtMoney = (v: number) => money(v, cur, { compact: true });
   const top = p.creatives[0];
   const canEdit = ctx.role !== "viewer";
+  const sandboxOnly = p.creatives.length > 0 && p.creatives.every((c) => c.sandbox);
 
   return (
     <>
@@ -72,6 +74,7 @@ export default async function PerformancePage({
           </div>
         }
       />
+      {sandboxOnly ? <SandboxBanner where="performance" /> : null}
 
       {sp.syncing ? (
         <Notice tone="info">

@@ -15,9 +15,9 @@ const errors: Record<string, string> = {
   concept: "We couldn't start this creative. Check the provider connection and selected sizes, then try again.",
   unavailable: "The selected model is unavailable. Connect its provider or choose another model.",
 };
-export default async function NewCreativePage({ searchParams }: { searchParams: Promise<{ conceptId?: string; error?: string }> }) {
+export default async function NewCreativePage({ searchParams }: { searchParams: Promise<{ conceptId?: string; error?: string; detail?: string }> }) {
   const ctx = await requireOrg();
-  const { conceptId, error } = await searchParams;
+  const { conceptId, error, detail } = await searchParams;
   const concept = conceptId ? await getConceptForCreative(ctx.org.id, conceptId) : null;
   if (!concept) return <>
     <header><div className="eyebrow">Creatives · New</div><h1 className="mt-3 text-[32px] font-medium tracking-[-1.3px]">Every great ad starts with an idea.</h1></header>
@@ -34,6 +34,7 @@ export default async function NewCreativePage({ searchParams }: { searchParams: 
       <h1 className="m-0 text-[30px] font-medium leading-tight tracking-[-1.25px] sm:text-[34px]">Make your next <span className="font-serif italic font-normal text-[#7c8868]">great impression.</span></h1><p className="m-0 text-[12px] text-muted">From a promising concept to an ad worth stopping for.</p></div>
       <span className="mb-1 rounded-full border border-line bg-white px-3 py-1.5 text-[11px] text-muted">✳ <span className="ml-1 font-semibold text-ink">{ctx.credits.balance}</span> credits available</span>
     </header>
+    {error === "guardrail" && detail && <div role="alert" className="rounded-md border border-[#efd4c7] bg-[#fff6ee] px-4 py-3 text-[12px] text-[#aa5034]">{decodeURIComponent(detail)}</div>}
     {error && errors[error] && <div role="alert" className="rounded-md border border-[#efd4c7] bg-[#fff6ee] px-4 py-3 text-[12px] text-[#aa5034]">{errors[error]}</div>}
     <StaticAdForm concept={{ id: concept.id, briefId: concept.briefId, headline: concept.data.headline, hook: concept.data.hook, cta: concept.data.cta, brand: concept.brand.name, direction: concept.data.visualDirection, product: concept.product?.name ?? null, imageUrl: productKey ? `/api/files/${productKey}` : null, colors: { primary: kit.colors.primary, accent: kit.colors.accent ?? "#e65c32" } }} models={models} sizes={STATIC_PLACEMENT_IDS.map((id) => { const p = getPlacement(id); return { id, ratio: p.ratio, width: p.width, height: p.height, label: p.label }; })} saved={saved.map((t) => ({ id: t.id, name: t.name, template: ((t.document as { template?: StaticTemplate }).template ?? "hero") }))} balance={ctx.credits.balance} canEdit={ctx.role !== "viewer"} />
   </>;

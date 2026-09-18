@@ -290,10 +290,19 @@ const AUDIO_TYPES: Record<string, string> = { "audio/mpeg": "mp3", "audio/mp3": 
 const MAX_CLONE_BYTES = 10 * 1024 * 1024;
 
 /** Instant clone from one recording. Returns the workspace voice; it finishes in the background. */
+/** HeyGen gives the whole account ~10 custom voices; each workspace gets a share. */
+async function assertVoiceSlot(orgId: string, brandId: string) {
+  const { getPlatformSettings } = await import("@/server/platform-settings");
+  const max = (await getPlatformSettings()).guardrails.heygenVoicesPerWorkspace;
+  const own = await listBrandVoices(orgId, brandId);
+  if (own.length >= max) throw new Error(`This workspace already has ${own.length} custom voice${own.length === 1 ? "" : "s"} (the limit is ${max}). Delete one under Your voices to make room.`);
+}
+
 export async function cloneVoiceAction(form: FormData): Promise<{ voice?: CatalogVoice; error?: string }> {
   try {
     const ctx = await editor();
     if (!isHeyGenConfigured) throw new Error("Connect HeyGen to clone voices.");
+    await assertVoiceSlot(ctx.org.id, ctx.brand.id);
     const name = field(form, "name", 60);
     if (!name) throw new Error("Name the voice.");
     if (field(form, "consent", 5) !== "yes") throw new Error("Confirm you have permission to clone this voice.");
@@ -332,6 +341,7 @@ export async function keepDesignedVoiceAction(input: { keep: DesignedVoice; name
     const ctx = await editor();
     const keep = input.keep;
     if (!keep?.voiceId || !isHeyGenVoiceId(keep.voiceId)) throw new Error("Choose a voice to keep.");
+    await assertVoiceSlot(ctx.org.id, ctx.brand.id);
     const name = String(input.name ?? keep.name ?? "Designed voice").trim().slice(0, 60) || "Designed voice";
     const sampleKey = keep.previewUrl ? await storeBrandVoiceSample(ctx.org.id, keep.voiceId, keep.previewUrl).catch(() => null) : null;
     const [row] = await db.insert(brandVoices).values({ orgId: ctx.org.id, brandId: ctx.brand.id, voiceId: keep.voiceId, name, kind: "designed", gender: keep.gender ?? null, language: keep.language ?? null, sampleKey, status: "ready", prompt: String(input.prompt ?? "").slice(0, 1000) || null }).returning();
@@ -387,6 +397,7 @@ export async function createAvatarAction(form: FormData): Promise<{ id?: string;
     if (type !== "prompt" && !sourceKey.startsWith(`org/${ctx.org.id}/uploads/`)) throw new Error(type === "digital_twin" ? "Upload the footage first." : "Upload a photo first.");
     if (type === "prompt" && prompt.length < 15) throw new Error("Describe the character in a sentence or two.");
     if (type === "digital_twin" && field(form, "consent", 5) !== "yes") throw new Error("Confirm the person in the footage has agreed to be cloned.");
+    if (type === "digital_twin") await assertVoiceSlot(ctx.org.id, ctx.brand.id);
     const personality = field(form, "personality", 300) || "Warm and conversational";
     const voiceId = field(form, "voiceId", 120);
     const voice = voiceId ? await resolveVoice(ctx.org.id, voiceId) : null;

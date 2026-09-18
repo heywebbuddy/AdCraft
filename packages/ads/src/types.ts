@@ -165,7 +165,8 @@ export interface ValidationIssue {
     | "landing_url"
     | "ai_disclosure"
     | "missing_copy"
-    | "platform";
+    | "platform"
+    | "claims";
   field?: string;
   message: string;
 }

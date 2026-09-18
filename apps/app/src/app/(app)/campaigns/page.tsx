@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/workspace-ui";
+import { SandboxBanner } from "@/components/sandbox-banner";
 import Link from "next/link";
 import { PlusIcon } from "@/components/icons";
 import { PLATFORM_COVERS } from "@adcraft/ads";
@@ -47,6 +48,8 @@ export default async function CampaignsPage({
     0,
   );
   const publishing = campaignRows.some((c) => c.status === "draft");
+  const connectedAccounts = cards.flatMap((c) => c.accounts.filter((a) => a.status === "connected"));
+  const sandboxOnly = connectedAccounts.length > 0 && connectedAccounts.every((a) => a.sandbox);
   const live = campaignRows.filter((c) => c.status === "active").length;
   const canEdit = ctx.role !== "viewer";
 
@@ -85,6 +88,7 @@ export default async function CampaignsPage({
         </div>
       </div>
 
+      {sandboxOnly ? <SandboxBanner where="campaigns" /> : null}
       {connect && !connected ? (
         <Notice tone="info">
           <strong>Connect an ad account first.</strong> Pick a platform below — a sandbox account works for a dry run — and Adcraft brings you straight back to publishing{creative ? " that creative" : ""}.

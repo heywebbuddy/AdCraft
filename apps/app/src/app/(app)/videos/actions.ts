@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { GuardrailError } from "@/server/guardrails";
 import { revalidatePath } from "next/cache";
 import { resolveVoice } from "@/server/brand-voices";
 import { requireOrg } from "@/server/org";
@@ -18,14 +19,20 @@ export async function createVideo(formData: FormData) {
   if (!conceptId) redirect("/briefs");
   const kind = str(formData, "kind") === "ugc" ? "ugc" : "video";
   const voice = kind === "ugc" ? await resolveVoice(ctx.org.id, str(formData, "voiceId")) : null;
-  const { creativeId } = await createVideoFromConcept(ctx.org.id, conceptId, {
-    kind,
-    model: str(formData, "model") || undefined,
-    ratio: (str(formData, "ratio") || undefined) as "9:16" | "1:1" | "16:9" | undefined,
-    avatarId: str(formData, "avatarId") || undefined,
-    voiceId: voice?.id,
-    voiceProvider: voice?.provider,
-  });
+  let creativeId: string;
+  try {
+    ({ creativeId } = await createVideoFromConcept(ctx.org.id, conceptId, {
+      kind,
+      model: str(formData, "model") || undefined,
+      ratio: (str(formData, "ratio") || undefined) as "9:16" | "1:1" | "16:9" | undefined,
+      avatarId: str(formData, "avatarId") || undefined,
+      voiceId: voice?.id,
+      voiceProvider: voice?.provider,
+    }));
+  } catch (err) {
+    if (err instanceof GuardrailError) redirect(`/videos/new?conceptId=${conceptId}&kind=${kind}&error=${encodeURIComponent(err.message)}`);
+    throw err;
+  }
   revalidatePath("/dashboard");
   redirect(`/videos/${creativeId}`);
 }

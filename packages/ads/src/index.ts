@@ -9,3 +9,4 @@ export { GoogleAdsProvider, googleProvider, GOOGLE_ADS_API_VERSION } from "./goo
 export { getAdsProvider, providerForAccount, isSandboxAccount } from "./registry";
 export { PLATFORMS, PLATFORM_LABELS, PLATFORM_COVERS, PLATFORM_SPEC_PLATFORMS, PLATFORM_ENV, platformConfigured, isPlatform } from "./platforms";
 export { isoDate, addDays, dateRange } from "./http";
+export { reviewClaims, type ClaimFinding, type ClaimCategory } from "./claims";

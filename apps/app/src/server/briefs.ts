@@ -13,6 +13,7 @@ import {
 } from "@adcraft/db";
 import { SAMPLE_MODEL } from "@adcraft/ai";
 import { getCatalog } from "./model-catalog";
+import { assertGenerationAllowed } from "./guardrails";
 import { dispatch } from "./jobs";
 import "@/pipelines";
 
@@ -172,6 +173,7 @@ export async function startConceptsRun(input: {
   count: number;
 }) {
   await dbReady;
+  await assertGenerationAllowed(input.orgId, "concepts");
   const [event] = await db
     .insert(generationEvents)
     .values({

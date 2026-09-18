@@ -1,4 +1,5 @@
 import "server-only";
+import { assertGenerationAllowed } from "./guardrails";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   db,
@@ -258,6 +259,7 @@ export async function presenterChoices() {
 
 export async function createVideoFromConcept(orgId: string, conceptId: string, opts: Partial<VideoOptions>): Promise<{ creativeId: string }> {
   await dbReady;
+  await assertGenerationAllowed(orgId, "video");
   const c = await getConceptForVideo(orgId, conceptId);
   if (!c) throw new Error("Concept not found");
   const kind: VideoKind = opts.kind === "ugc" ? "ugc" : "video";

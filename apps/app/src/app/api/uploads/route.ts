@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStorage, objectKey, extFromMime } from "@adcraft/storage";
 import { requireOrg } from "@/server/org";
+import { checkRate } from "@/server/guardrails";
 
 /**
  * Large uploads (twin footage, headshots) go through this route rather than a server action:
@@ -21,6 +22,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sign in to upload." }, { status: 401 });
   }
   if (ctx.role === "viewer") return NextResponse.json({ error: "Viewers can't upload." }, { status: 403 });
+  try {
+    checkRate(ctx.org.id, "upload", 30);
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Too many uploads." }, { status: 429 });
+  }
   const length = Number(req.headers.get("content-length") ?? 0);
   if (length > MAX_BYTES) return NextResponse.json({ error: "Keep the file under 600 MB." }, { status: 413 });
   const form = await req.formData().catch(() => null);

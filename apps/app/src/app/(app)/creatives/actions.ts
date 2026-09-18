@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { GuardrailError } from "@/server/guardrails";
 import { revalidatePath } from "next/cache";
 import { requireOrg } from "@/server/org";
 import { staticModelChoices } from "@/server/static-options";
@@ -40,7 +41,8 @@ export async function createCreativeFromConcept(formData: FormData) {
   let creativeId: string;
   try {
     ({ creativeId } = await createCreative(ctx.org.id, conceptId, { model, template, templateId, mode, placements }));
-  } catch {
+  } catch (err) {
+    if (err instanceof GuardrailError) redirect(`/creatives/new?conceptId=${conceptId}&error=guardrail&detail=${encodeURIComponent(err.message)}`);
     redirect(`/creatives/new?conceptId=${conceptId}&error=concept`);
   }
   revalidatePath("/creatives");

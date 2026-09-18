@@ -2,6 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { GuardrailError } from "@/server/guardrails";
 import { revalidatePath } from "next/cache";
 import { db, dbReady, briefs, concepts, products, projects } from "@adcraft/db";
 import { requireOrg } from "@/server/org";
@@ -83,13 +84,18 @@ export async function createBrief(formData: FormData) {
     .values({ orgId: ctx.org.id, projectId: project.id, productId, title, data })
     .returning();
 
-  await startConceptsRun({
-    orgId: ctx.org.id,
-    userId: ctx.viewer.userId,
-    briefId: brief.id,
-    title,
-    count: DEFAULT_CONCEPT_COUNT,
-  });
+  try {
+    await startConceptsRun({
+      orgId: ctx.org.id,
+      userId: ctx.viewer.userId,
+      briefId: brief.id,
+      title,
+      count: DEFAULT_CONCEPT_COUNT,
+    });
+  } catch (err) {
+    if (err instanceof GuardrailError) redirect(`/briefs/${brief.id}?guardrail=${encodeURIComponent(err.message)}`);
+    throw err;
+  }
 
   redirect(`/briefs/${brief.id}`);
 }

@@ -22,10 +22,10 @@ export const dynamic = "force-dynamic";
 export default async function NewVideoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ conceptId?: string; kind?: string }>;
+  searchParams: Promise<{ conceptId?: string; kind?: string; error?: string }>;
 }) {
   const ctx = await requireOrg();
-  const { conceptId, kind } = await searchParams;
+  const { conceptId, kind, error } = await searchParams;
   if (!conceptId) redirect("/briefs");
   const sub = await currentSubscription(ctx.org.id);
   if (!(await planAllows(sub?.plan, kind === "ugc" ? "ugc" : "video"))) redirect(`/briefs?error=plan-${kind === "ugc" ? "ugc" : "video"}`);
@@ -63,6 +63,7 @@ export default async function NewVideoPage({
     <>
       <FlowSteps current="ad" links={{ ideas: `/briefs/${concept.briefId}` }} format={initialKind === "ugc" ? "Presenter video" : "Product video"} />
       <DesktopHint what="Making a video" />
+      {error ? <div role="alert" className="rounded-md border border-[#efd4c7] bg-[#fff6ee] px-4 py-3 text-[12px] text-[#aa5034]">{decodeURIComponent(error)}</div> : null}
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="eyebrow">

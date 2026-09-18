@@ -1,10 +1,12 @@
 import "server-only";
+import { assertGenerationAllowed } from "./guardrails";
 import { and, eq, sql } from "drizzle-orm";
 import { db, dbReady, creditLedger, organizations } from "@adcraft/db";
 
 /** Serialize balance checks per org so simultaneous studio requests cannot overspend. */
 export async function reserveGenerationCredits(orgId: string, credits: number, referenceId: string) {
   await dbReady;
+  await assertGenerationAllowed(orgId);
   return db.transaction(async tx => {
     await tx.select({ id: organizations.id }).from(organizations).where(eq(organizations.id, orgId)).for("update");
     const [existing] = await tx.select().from(creditLedger).where(and(eq(creditLedger.orgId, orgId), eq(creditLedger.reason, "generation"), eq(creditLedger.referenceId, referenceId)));

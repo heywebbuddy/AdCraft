@@ -1,4 +1,5 @@
 import "server-only";
+import { assertGenerationAllowed } from "./guardrails";
 import { staticModelChoices } from "./static-options";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
@@ -335,6 +336,7 @@ export async function createCreativeFromConcept(
   opts: { model?: string; template?: string; templateId?: string; mode?: "editable" | "ai"; placements?: string[] },
 ): Promise<{ creativeId: string }> {
   await dbReady;
+  await assertGenerationAllowed(orgId, "static");
   const c = await getConceptForCreative(orgId, conceptId);
   if (!c) throw new Error("Concept not found");
   const catalog = await getCatalog();
@@ -405,6 +407,7 @@ export async function rerender(orgId: string, creativeId: string): Promise<void>
 
 /** Generate a fresh scene with the chosen model (charges STATIC_SCENE_CREDITS), then re-render. */
 export async function regenerateScene(orgId: string, creativeId: string, model?: string, opts: { instructions?: string; onlyMissing?: boolean } = {}): Promise<void> {
+  await assertGenerationAllowed(orgId, "static");
   await dbReady;
   const [row] = await db.select().from(creatives).where(and(eq(creatives.id, creativeId), eq(creatives.orgId, orgId))).limit(1);
   if (!row) throw new Error("Creative not found");

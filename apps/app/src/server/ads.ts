@@ -1,4 +1,6 @@
 import "server-only";
+import { getOrgSettings } from "./platform-settings";
+import { approvalStatuses } from "./collab-data";
 import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import {
   db,
@@ -32,6 +34,7 @@ import {
   type Platform,
   type Targeting,
   type ValidationIssue,
+  reviewClaims,
 } from "@adcraft/ads";
 import { getPlacement, placements as allPlacements, type PlacementSpec } from "@adcraft/specs";
 import { decryptTokens, encryptTokens } from "./crypto";
@@ -378,8 +381,11 @@ export async function listPublishableCreatives(orgId: string, brandId: string | 
   for (const { r } of rs) if (!latest.has(r.variantId) && r.outputKey) latest.set(r.variantId, r);
   const productUrl = new Map(ps.map((p) => [p.id, p.url]));
 
+  const requireApproval = (await getOrgSettings(orgId)).approvalBeforePublish === true;
+  const approvals = requireApproval ? await approvalStatuses(rows.map((r) => r.creative.id)) : null;
   const out: PublishableCreative[] = [];
   for (const { creative, concept, brief, brand } of rows) {
+    if (approvals && approvals.get(creative.id) !== "approved") continue;
     const doc = creative.document as { headline?: string; subhead?: string; cta?: string; scene?: { kind?: string } } | null;
     const landingUrl = (brief.productId ? productUrl.get(brief.productId) : null) ?? brand.website ?? opts.landingUrl ?? "";
     const copy = {
@@ -390,6 +396,8 @@ export async function listPublishableCreatives(orgId: string, brandId: string | 
       landingUrl: landingUrl.startsWith("http") ? landingUrl : landingUrl ? `https://${landingUrl}` : "",
     };
     const aiGenerated = Boolean(doc?.scene?.kind && doc.scene.kind !== "gradient");
+    // Claims review on the copy, hardened by the brief's constraints ("no medical claims").
+    const claims = reviewClaims({ headline: copy.headline, primaryText: copy.primaryText, description: copy.description, cta: copy.cta }, brief.data.constraints ?? []);
     const mine = vs.filter((v) => v.creativeId === creative.id);
     const pv: PublishableVariant[] = [];
     for (const v of mine) {
@@ -424,7 +432,7 @@ export async function listPublishableCreatives(orgId: string, brandId: string | 
           r.mimeType?.startsWith("video/") && typeof (r.meta as Record<string, unknown> | null)?.posterKey === "string"
             ? `/api/files/${(r.meta as Record<string, unknown>).posterKey as string}`
             : `/api/files/${r.outputKey}`,
-        issues: getAdsProvider(platform).validate({ creative: adsCreative, placement: spec }),
+        issues: [...getAdsProvider(platform).validate({ creative: adsCreative, placement: spec }), ...claims],
       });
     }
     if (pv.length) out.push({ id: creative.id, name: creative.name, kind: creative.kind, copy, aiGenerated, variants: pv });
