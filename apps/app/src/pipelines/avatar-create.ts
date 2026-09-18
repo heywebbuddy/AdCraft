@@ -5,6 +5,7 @@ import { createDigitalTwin, createPhotoAvatarFromAsset, createPromptAvatar, crea
 import { getStorage, objectKey } from "@adcraft/storage";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import { refundGenerationCredits } from "@/server/generation-credits";
+import { notifyFinished } from "@/server/notify";
 import { storeBrandVoiceSample } from "@/server/brand-voices";
 
 /**
@@ -94,11 +95,13 @@ export async function runAvatarCreatePipeline(data: JobPayloads["avatar.create"]
       await tx.update(characters).set({ portraitKey: imageKey, voiceId, looks: [{ id: randomUUID(), name: lookName, imageKey, prompt: data.prompt ?? "", model: `heygen-${data.type}`, heygenLookId: created.lookId }], heygen, status: "ready", error: null, updatedAt: new Date() }).where(and(eq(characters.id, character.id), eq(characters.generationId, data.eventId)));
       await tx.update(generationEvents).set({ status: "succeeded", durationMs: Date.now() - started, units: "1", meta: { ...(data.meta ?? {}), step: "done" } }).where(eq(generationEvents.id, data.eventId));
     });
+    void notifyFinished(data.orgId, { kind: "character", characterId: character.id, name: character.name, ok: true, what: data.type === "digital_twin" ? "twin" : "avatar" });
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 500) : "Avatar creation failed";
     await db.update(characters).set({ status: "failed", error: message, updatedAt: new Date() }).where(and(eq(characters.id, character.id), eq(characters.generationId, data.eventId)));
     await db.update(generationEvents).set({ status: "failed", error: message, durationMs: Date.now() - started }).where(eq(generationEvents.id, data.eventId));
     await refundGenerationCredits(data.orgId, data.eventId);
+    void notifyFinished(data.orgId, { kind: "character", characterId: character.id, name: character.name, ok: false, error: message, what: data.type === "digital_twin" ? "twin" : "avatar" });
   }
 }
 registerJob("avatar.create", runAvatarCreatePipeline);

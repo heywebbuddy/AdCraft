@@ -2,6 +2,7 @@ import { signOut } from "@/auth";
 import { requireOrg } from "@/server/org";
 import { switchBrand } from "@/server/onboarding";
 import { WorkspaceTopbar } from "@/components/workspace-topbar";
+import { runningCount } from "@/server/activity";
 import { BreadcrumbProvider } from "@/components/breadcrumb-title";
 import { currentSubscription, PLANS, type PlanId } from "@/server/billing";
 import "./workspace.css";
@@ -56,6 +57,7 @@ export default async function AppLayout({
               orgName={ctx.org.name}
               credits={ctx.credits.balance}
               role={ctx.role}
+              running={await runningCount(ctx.org.id)}
             />
             <main id="workspace-main" className="workspace-main">
               {children}

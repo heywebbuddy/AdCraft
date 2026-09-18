@@ -4,6 +4,7 @@ import { downloadImage, generateImage } from "@adcraft/ai";
 import { getStorage, objectKey } from "@adcraft/storage";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import { refundGenerationCredits } from "@/server/generation-credits";
+import { notifyFinished } from "@/server/notify";
 
 export async function runCharacterPipeline(data: JobPayloads["character.generate"]) {
   await dbReady;
@@ -28,11 +29,13 @@ export async function runCharacterPipeline(data: JobPayloads["character.generate
       await tx.update(characters).set({ portraitKey: character.portraitKey ?? imageKey, looks: [...character.looks, { id: data.eventId, name: data.lookName, imageKey, prompt: data.prompt, model: data.model }], status: "ready", error: null, updatedAt: new Date() }).where(and(eq(characters.id, character.id), eq(characters.generationId, data.eventId)));
       await tx.update(generationEvents).set({ status: "succeeded", durationMs: Date.now() - started, units: "1", ...(result.usage.costUsd !== undefined ? { costUsd: String(result.usage.costUsd) } : {}) }).where(eq(generationEvents.id, data.eventId));
     });
+    void notifyFinished(data.orgId, { kind: "character", characterId: character.id, name: character.name, ok: true, what: "character" });
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 500) : "Character generation failed";
     await db.update(characters).set({ status: character.portraitKey ? "ready" : "failed", error: message, updatedAt: new Date() }).where(and(eq(characters.id, character.id), eq(characters.generationId, data.eventId)));
     await db.update(generationEvents).set({ status: "failed", error: message, durationMs: Date.now() - started }).where(eq(generationEvents.id, data.eventId));
     await refundGenerationCredits(data.orgId, data.eventId);
+    void notifyFinished(data.orgId, { kind: "character", characterId: character.id, name: character.name, ok: false, error: message, what: "character" });
   }
 }
 registerJob("character.generate", runCharacterPipeline);

@@ -1,6 +1,7 @@
 import { downloadVideo, generateVideo, getModel, supportedDuration } from "@adcraft/ai";
 import { hydrateModels } from "@/server/model-catalog";
 import type { VideoDocument } from "@adcraft/render/video";
+import { notifyFinished } from "@/server/notify";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import { CREDIT_COSTS } from "@/server/billing";
 import {
@@ -112,10 +113,12 @@ export async function runVideoPipeline(data: JobPayloads["video.generate"]) {
       credits,
     );
     await chargeCredits(orgId, credits, rootEventId, { creativeId, capability: "video", model: doc.model, scenes: toGenerate });
+    void notifyFinished(orgId, { kind: "video", creativeId, name: creative.name, ok: true });
     return { creativeId, eventId: rootEventId, credits, results };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await failEvent(rootEventId, err, startedAt);
+    void notifyFinished(orgId, { kind: "video", creativeId, name: creative.name, ok: false, error: message });
     await saveVideoDocument(creativeId, { ...doc, meta: { ...(doc.meta ?? {}), lastError: message.slice(0, 500) } });
     throw err;
   }

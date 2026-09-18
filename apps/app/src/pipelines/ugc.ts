@@ -13,6 +13,7 @@ import {
   synthesizeVoice,
 } from "@adcraft/ai";
 import type { VideoDocument } from "@adcraft/render/video";
+import { notifyFinished } from "@/server/notify";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import { reserveGenerationCredits, refundGenerationCredits } from "@/server/generation-credits";
 import { CREDIT_COSTS } from "@/server/billing";
@@ -186,11 +187,13 @@ export async function runUgcPipeline(data: JobPayloads["ugc.generate"]) {
       credits,
     );
     if (!doc.meta?.characterStudio) await chargeCredits(orgId, credits, rootEventId, { creativeId, capability: "ugc", model: doc.model, presenter: HEYGEN_MODEL });
+    void notifyFinished(orgId, { kind: "video", creativeId, name: creative.name, ok: true });
     return { creativeId, eventId: rootEventId, credits, results };
   } catch (err) {
     if (doc.meta?.characterStudio) await refundGenerationCredits(orgId, rootEventId);
     const message = err instanceof Error ? err.message : String(err);
     await failEvent(rootEventId, err, startedAt);
+    void notifyFinished(orgId, { kind: "video", creativeId, name: creative.name, ok: false, error: message });
     await saveVideoDocument(creativeId, { ...doc, meta: { ...(doc.meta ?? {}), lastError: message.slice(0, 500) } });
     throw err;
   }

@@ -257,7 +257,7 @@ export default async function NewBriefPage({
               Cancel
             </Link>
             <span className="text-[12px] text-muted">
-              About ten seconds. You can keep working.
+              About a minute. You can keep working — it shows up under Activity when it is done.
             </span>
           </div>
         </div>

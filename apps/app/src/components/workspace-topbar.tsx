@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SearchIcon, ArrowIcon, BoltIcon } from "./icons";
 import { useBreadcrumbTitle } from "./breadcrumb-title";
+import { ActivityTray } from "./activity-tray";
 const destinations: Array<{ name: string; href: string; match?: string; group: string }> = [
   { name: "Overview", href: "/dashboard", group: "Workspace" },
   { name: "Creative briefs", href: "/briefs", group: "Create" },
@@ -28,10 +29,13 @@ export function WorkspaceTopbar({
   orgName,
   credits,
   role,
+  running = 0,
 }: {
   orgName: string;
   credits: number;
   role: string;
+  /** Jobs running at render time; the tray polls from there. */
+  running?: number;
 }) {
   const path = usePathname();
   const detailTitle = useBreadcrumbTitle();
@@ -86,6 +90,7 @@ export function WorkspaceTopbar({
             <span>Search workspace</span>
             <kbd>⌘ K</kbd>
           </button>
+          <ActivityTray initialRunning={running} />
           <Link
             href="/settings/billing"
             className="topbar-credits"

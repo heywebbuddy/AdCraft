@@ -56,7 +56,7 @@ export default async function DashboardPage() {
 
   const setup = [
     { title: "Add a product", description: "A photo is enough; we cut it out for you.", href: "/library/new", done: data.counts.products > 0 },
-    { title: "Write a brief", description: "Ten concepts in about a minute.", href: "/briefs/new", done: data.counts.briefs > 0 },
+    { title: "Write a brief", description: "Eight concepts in about a minute.", href: "/briefs/new", done: data.counts.briefs > 0 },
     { title: "Make your first creative", description: "Every size, exact copy.", href: "/briefs", done: data.counts.creatives > 0 },
     { title: "Connect an ad account", description: "Publish and track in one place.", href: "/campaigns", done: data.adAccountsConnected > 0 },
   ];

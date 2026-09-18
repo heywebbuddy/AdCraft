@@ -5,6 +5,7 @@ import { createPhotoAvatar, findLookPack, generatePackLooks, generatePromptLook,
 import { getStorage, objectKey } from "@adcraft/storage";
 import { registerJob, type JobPayloads } from "@/server/jobs";
 import { refundGenerationCredits } from "@/server/generation-credits";
+import { notifyFinished } from "@/server/notify";
 
 /**
  * New looks for a character on HeyGen: a Look Pack (5), a single template (2) or a prompt
@@ -83,11 +84,13 @@ export async function runCharacterLooksPipeline(data: JobPayloads["character.loo
       await tx.update(generationEvents).set({ status: "succeeded", durationMs: Date.now() - started, units: String(newLooks.length), meta: { ...(data.meta ?? {}), step: "done", failed } }).where(eq(generationEvents.id, data.eventId));
     });
     if (failed) await refundGenerationCredits(data.orgId, data.eventId, Math.round((data.credits * failed) / results.length));
+    void notifyFinished(data.orgId, { kind: "character", characterId: character.id, name: character.name, ok: true, what: "looks" });
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 500) : "Look generation failed";
     await db.update(characters).set({ status: "ready", error: message, updatedAt: new Date() }).where(and(eq(characters.id, character.id), eq(characters.generationId, data.eventId)));
     await db.update(generationEvents).set({ status: "failed", error: message, durationMs: Date.now() - started }).where(eq(generationEvents.id, data.eventId));
     await refundGenerationCredits(data.orgId, data.eventId);
+    void notifyFinished(data.orgId, { kind: "character", characterId: character.id, name: character.name, ok: false, error: message, what: "looks" });
   }
 }
 registerJob("character.looks", runCharacterLooksPipeline);
