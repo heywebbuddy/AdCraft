@@ -48,11 +48,12 @@ export function registerJob<N extends JobName>(name: N, handler: Handler<N>) {
 
 export const inngestConfigured = Boolean(process.env.INNGEST_EVENT_KEY);
 
-export async function dispatch<N extends JobName>(name: N, data: JobPayloads[N]) {
-  if (inngestConfigured) {
-    await inngest.send({ name: name.replace(".", "/") as never, data: data as never });
-    return { mode: "inngest" as const };
-  }
+/** Cloud Inngest must fail loudly. Local `INNGEST_DEV=1` talks to :8288 and is optional. */
+function canFallbackInline() {
+  return process.env.NODE_ENV !== "production" || process.env.INNGEST_DEV === "1";
+}
+
+async function runInline<N extends JobName>(name: N, data: JobPayloads[N]) {
   const handler = registry.get(name);
   if (!handler) throw new Error(`No inline handler registered for job ${name}`);
   // Jobs resolve models through the catalog (admin edits, custom models); load it first.
@@ -61,4 +62,17 @@ export async function dispatch<N extends JobName>(name: N, data: JobPayloads[N])
     .then(() => handler(data))
     .catch((err) => console.error(`[jobs] ${name} failed`, err));
   return { mode: "inline" as const };
+}
+
+export async function dispatch<N extends JobName>(name: N, data: JobPayloads[N]) {
+  if (inngestConfigured) {
+    try {
+      await inngest.send({ name: name.replace(".", "/") as never, data: data as never });
+      return { mode: "inngest" as const };
+    } catch (err) {
+      if (!canFallbackInline()) throw err;
+      console.warn(`[jobs] Inngest unreachable for ${name}; running inline`, err);
+    }
+  }
+  return runInline(name, data);
 }

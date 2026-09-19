@@ -1,11 +1,13 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { GuardrailError } from "@/server/guardrails";
+import { GuardrailError, checkRate } from "@/server/guardrails";
 import { revalidatePath } from "next/cache";
-import { db, dbReady, briefs, concepts, products, projects } from "@adcraft/db";
+import { db, dbReady, brandKits, briefs, concepts, products, projects } from "@adcraft/db";
+import { generateBriefAssistWith, type BriefAssist, type BriefField } from "@adcraft/ai";
 import { requireOrg } from "@/server/org";
+import { getCatalog } from "@/server/model-catalog";
 import {
   DEFAULT_CONCEPT_COUNT,
   FORMATS,
@@ -119,6 +121,105 @@ export async function generateMoreConcepts(briefId: string) {
     count: MORE_CONCEPT_COUNT,
   });
   revalidatePath(`/briefs/${briefId}`);
+}
+
+export type BriefDraftInput = {
+  title: string;
+  productId: string;
+  objective: string;
+  audience: string;
+  offer: string;
+  platforms: string[];
+  formats: string[];
+  tone: string;
+  constraints: string;
+};
+
+export type SuggestBriefResult =
+  | { ok: true; draft: BriefAssist; applied: BriefField }
+  | { ok: false; error: string };
+
+function sanitizeAssist(raw: BriefAssist, productIds: Set<string>): BriefAssist {
+  const platforms = raw.platforms.filter((p) => PLATFORMS.some((x) => x.id === p));
+  const formats = raw.formats.filter((f): f is FormatId => FORMATS.some((x) => x.id === f));
+  return {
+    ...raw,
+    title: raw.title.trim(),
+    productId: raw.productId && productIds.has(raw.productId) ? raw.productId : "",
+    audience: raw.audience.trim(),
+    offer: raw.offer.trim(),
+    platforms: platforms.length ? platforms : ["meta", "instagram"],
+    formats: formats.length ? formats : ["static"],
+    tone: raw.tone.trim(),
+    constraints: raw.constraints.map((s) => s.trim()).filter(Boolean),
+    note: raw.note.trim(),
+  };
+}
+
+/**
+ * Cloud write-or-rewrite for the new-brief form. Does not spend a concept credit.
+ * Empty fields are filled from the brand kit; weak or random text is rewritten.
+ */
+export async function suggestBriefFields(input: {
+  scope: BriefField;
+  draft: BriefDraftInput;
+}): Promise<SuggestBriefResult> {
+  const ctx = await requireOrg();
+  if (!ctx.brand) return { ok: false, error: "Add a brand first." };
+  try {
+    checkRate(ctx.org.id, "brief-assist", 20);
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Too many suggestions. Wait a moment." };
+  }
+
+  await dbReady;
+  await getCatalog();
+
+  const [kit] = await db
+    .select()
+    .from(brandKits)
+    .where(and(eq(brandKits.brandId, ctx.brand.id), eq(brandKits.isActive, true)))
+    .orderBy(desc(brandKits.version))
+    .limit(1);
+  const catalog = await db
+    .select({
+      id: products.id,
+      name: products.name,
+      description: products.description,
+      price: products.price,
+    })
+    .from(products)
+    .where(and(eq(products.orgId, ctx.org.id), eq(products.brandId, ctx.brand.id)));
+
+  try {
+    const result = await generateBriefAssistWith({
+      scope: input.scope,
+      brand: {
+        name: ctx.brand.name,
+        industry: ctx.brand.industry ?? undefined,
+        website: ctx.brand.website ?? undefined,
+        tone: kit?.data.voice?.tone,
+        doSay: kit?.data.voice?.doSay,
+        dontSay: kit?.data.voice?.dontSay,
+        tagline: kit?.data.tagline,
+      },
+      products: catalog.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description ?? undefined,
+        price: p.price ?? undefined,
+      })),
+      draft: input.draft,
+    });
+    return {
+      ok: true,
+      draft: sanitizeAssist(result.output, new Set(catalog.map((p) => p.id))),
+      applied: input.scope,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Could not reach the writing model.";
+    return { ok: false, error: message.slice(0, 180) };
+  }
 }
 
 export async function setConceptStatus(conceptId: string, status: "proposed" | "selected" | "rejected") {

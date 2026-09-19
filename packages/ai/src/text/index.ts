@@ -5,6 +5,15 @@ import type { ConceptBrief, ConceptsOutput } from "../concepts";
 import { generateConceptsOpenAI, isOpenAIChatConfigured } from "./openai-chat";
 
 export { generateConceptsOpenAI, isOpenAIChatConfigured } from "./openai-chat";
+export {
+  generateBriefAssistWith,
+  sampleBriefAssist,
+  BriefAssistSchema,
+  BRIEF_FIELDS,
+  type BriefAssist,
+  type BriefAssistRequest,
+  type BriefField,
+} from "./brief-assist";
 
 /** Whether the provider behind a text model has credentials on this server. */
 export function isTextModelConfigured(spec: ModelSpec): boolean {
