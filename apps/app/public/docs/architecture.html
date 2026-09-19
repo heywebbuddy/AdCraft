@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adcraft — Architecture</title>
+<meta name="description" content="How Adcraft is put together: system overview, the creative loop, background jobs, data model, and where to look in the code.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script>
+  // Apply a saved theme before first paint; the toggle below cycles auto → light → dark.
+  try { var t = localStorage.getItem("adcraft-docs-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+  :root {
+    --paper: #f7f8f5; --panel: #ffffff; --panel-2: #eef1e6; --ink: #242521; --muted: #66685f;
+    --line: #e2e4dc; --line-strong: #c9ccc0; --orange: #e65c32; --orange-text: #c94823; --orange-soft: #fbeee8;
+    --code: #f0f1ec; --shadow: 0 1px 2px #24252110;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1b1c19; --panel: #232420; --panel-2: #2a2c25; --ink: #ecece6; --muted: #a3a59b;
+      --line: #35362f; --line-strong: #4a4c43; --orange: #f0764f; --orange-text: #f39172; --orange-soft: #3a2a22;
+      --code: #2a2b26; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1b1c19; --panel: #232420; --panel-2: #2a2c25; --ink: #ecece6; --muted: #a3a59b;
+    --line: #35362f; --line-strong: #4a4c43; --orange: #f0764f; --orange-text: #f39172; --orange-soft: #3a2a22;
+    --code: #2a2b26; --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "DM Sans", system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-block: 40px 80px; padding-inline: 20px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; }
+  @media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; } .toc { position: static; } }
+  .toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 13px; }
+  .toc .brand { font-family: "Instrument Serif", Georgia, serif; font-size: 22px; letter-spacing: -0.3px; margin: 0 0 4px; }
+  .toc .brand b { color: var(--orange); font-weight: 400; }
+  .toc .eyebrow { margin-bottom: 18px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+  .toc li a { display: block; padding: 5px 0 5px 14px; color: var(--muted); text-decoration: none; margin-left: -1px; border-left: 1px solid transparent; }
+  .toc li a:hover, .toc li a:focus-visible { color: var(--ink); border-left-color: var(--ink); outline: none; }
+  main { min-width: 0; }
+  .eyebrow { font-size: 10.5px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+  header h1 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: clamp(38px, 5vw, 56px); line-height: 1.05; letter-spacing: -1.2px; margin: 8px 0 14px; text-wrap: balance; }
+  header h1 em { font-style: italic; color: var(--orange-text); }
+  header p.lede { font-size: 17px; max-width: 62ch; margin: 0 0 12px; }
+  .meta { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 8px; }
+  section { border-top: 1px solid var(--line); padding-top: 36px; margin-top: 44px; }
+  section h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 32px; letter-spacing: -0.6px; line-height: 1.1; margin: 6px 0 16px; text-wrap: balance; }
+  section h3 { font-size: 15px; font-weight: 600; margin: 28px 0 8px; }
+  p { max-width: 68ch; margin: 0 0 14px; }
+  p.wide { max-width: none; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  pre { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.55; background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; overflow-x: auto; margin: 0 0 18px; }
+  pre code { background: none; padding: 0; }
+  figure { margin: 22px 0 26px; }
+  .fig { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; overflow-x: auto; box-shadow: var(--shadow); }
+  .fig svg { display: block; width: 100%; height: auto; min-width: 640px; font-family: "DM Sans", system-ui, sans-serif; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 10px; max-width: 76ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 18px 0 8px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .card h4 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+  .card p { font-size: 13.5px; color: var(--muted); margin: 0; }
+  .card .k { display: block; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--orange-text); font-weight: 600; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 14px 0 20px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td:first-child { white-space: nowrap; font-weight: 500; }
+  .tablewrap { overflow-x: auto; }
+  ul { padding-left: 18px; max-width: 70ch; }
+  li { margin-bottom: 6px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--orange-soft); color: var(--orange-text); vertical-align: middle; }
+  .steps { counter-reset: s; list-style: none; padding: 0; max-width: 72ch; }
+  .steps li { position: relative; padding-left: 40px; margin-bottom: 14px; }
+  .steps li::before { counter-increment: s; content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: 2px; font-family: "Instrument Serif", Georgia, serif; font-size: 18px; color: var(--orange-text); }
+  .steps b { font-weight: 600; }
+  footer { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 20px; font-size: 12.5px; color: var(--muted); }
+  a { color: var(--orange-text); }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+  /* Standalone page: masthead, theme toggle, print. */
+  html { color-scheme: light dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  .mast { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .mast-in { max-width: 1240px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; }
+  .mast a.word { font-family: "Instrument Serif", Georgia, serif; font-size: 22px; letter-spacing: -0.3px; color: var(--ink); text-decoration: none; }
+  .mast a.word b { color: var(--orange); font-weight: 400; }
+  .mast .right { display: flex; align-items: center; gap: 14px; color: var(--muted); }
+  .mast .right a { color: var(--muted); text-decoration: none; }
+  .mast .right a:hover { color: var(--ink); }
+  .mast button { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .mast button:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .toc .brand { display: none; }
+  @media print {
+    .mast, .toc { display: none; }
+    .wrap { display: block; padding: 0; max-width: none; }
+    body { background: #fff; color: #111; font-size: 12px; }
+    section { break-inside: avoid; margin-top: 24px; padding-top: 16px; }
+    .fig { border: 1px solid #ccc; box-shadow: none; overflow: visible; }
+    .fig svg { min-width: 0; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<div class="mast">
+  <div class="mast-in">
+    <a class="word" href="/">adcraft<b>.</b></a>
+    <div class="right">
+      <span>Engineering · Architecture</span>
+      <a href="https://github.com/heywebbuddy/AdCraft/blob/main/docs/ARCHITECTURE.md" rel="noopener">Markdown on GitHub</a>
+      <a href="#" id="print-link">Print / PDF</a>
+      <button type="button" id="theme-toggle" aria-label="Switch theme">Theme: auto</button>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+  <nav class="toc" aria-label="Contents">
+    <p class="brand">adcraft<b>.</b></p>
+    <div class="eyebrow">Architecture</div>
+    <ol>
+      <li><a href="#overview">System overview</a></li>
+      <li><a href="#repo">Repository layout</a></li>
+      <li><a href="#requests">Request paths</a></li>
+      <li><a href="#loop">The creative loop</a></li>
+      <li><a href="#jobs">Background work</a></li>
+      <li><a href="#data">Data model</a></li>
+      <li><a href="#cross">Cross-cutting</a></li>
+      <li><a href="#where">Where to look</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header>
+      <div class="eyebrow">Engineering documentation · main · 19 Sep 2026</div>
+      <h1>How Adcraft is <em>put together.</em></h1>
+      <p class="lede">Adcraft makes ads — static, product video, presenter video — pushes them to Meta, TikTok and Google, reads the results back, and starts the next round from what worked. It is one Next.js application in a pnpm monorepo, backed by Postgres, with every long-running job run through Inngest.</p>
+      <div class="meta">
+        <span>Next.js 15 · React 19</span><span>Postgres · Drizzle · 36 tables</span><span>Inngest Cloud · 11 functions + hourly cron</span><span>Railway · one container</span><span>Repo <code>heywebbuddy/AdCraft</code></span>
+      </div>
+    </header>
+
+    <!-- 1. SYSTEM OVERVIEW -->
+    <section id="overview">
+      <div class="eyebrow">1 · System overview</div>
+      <h2>One container, one database, everything else behind an adapter.</h2>
+      <p>The browser talks only to the Next.js app. The app reads and writes Postgres directly from server components and server actions, stores media in object storage, and hands anything longer than a request to Inngest, which calls the app back to run the pipeline. Every external system — AI models, ad platforms, billing, email — sits behind a package adapter with a sandbox or a no-op when its key is missing.</p>
+
+      <figure>
+        <div class="fig">
+          <svg viewBox="0 0 980 440" role="img" aria-label="System overview: browser to the Next.js app; the app to Postgres and object storage; Inngest Cloud calling the app back; the app calling AI providers, ad platforms, Stripe, Resend and Sentry.">
+            <defs>
+              <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+              <marker id="ar-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#e65c32"/></marker>
+            </defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.2">
+              <!-- Browser -->
+              <rect x="20" y="150" width="150" height="120" rx="8"/>
+              <!-- App container -->
+              <rect x="230" y="60" width="330" height="300" rx="10" stroke-dasharray="4 4"/>
+              <rect x="250" y="100" width="130" height="52" rx="6"/>
+              <rect x="410" y="100" width="130" height="52" rx="6"/>
+              <rect x="250" y="176" width="130" height="52" rx="6"/>
+              <rect x="410" y="176" width="130" height="52" rx="6"/>
+              <rect x="250" y="252" width="290" height="52" rx="6"/>
+              <!-- State -->
+              <rect x="620" y="60" width="150" height="70" rx="8"/>
+              <rect x="620" y="150" width="150" height="70" rx="8"/>
+              <!-- Inngest -->
+              <rect x="230" y="380" width="330" height="44" rx="8"/>
+              <!-- Providers -->
+              <rect x="820" y="40" width="140" height="120" rx="8"/>
+              <rect x="820" y="180" width="140" height="92" rx="8"/>
+              <rect x="820" y="292" width="140" height="120" rx="8"/>
+            </g>
+            <g fill="currentColor" font-size="12">
+              <text x="95" y="178" text-anchor="middle" font-weight="600">Browser</text>
+              <text x="95" y="200" text-anchor="middle" font-size="11">App UI (RSC + islands)</text>
+              <text x="95" y="218" text-anchor="middle" font-size="11">Marketing site (static)</text>
+              <text x="95" y="236" text-anchor="middle" font-size="11">Share links (no account)</text>
+
+              <text x="240" y="82" font-weight="600">apps/app · Next.js 15 · Railway container</text>
+              <text x="315" y="121" text-anchor="middle" font-weight="600">Pages</text>
+              <text x="315" y="139" text-anchor="middle" font-size="11">RSC + server actions</text>
+              <text x="475" y="121" text-anchor="middle" font-weight="600">Route handlers</text>
+              <text x="475" y="139" text-anchor="middle" font-size="11">/api/* · uploads · v1</text>
+              <text x="315" y="197" text-anchor="middle" font-weight="600">/api/inngest</text>
+              <text x="315" y="215" text-anchor="middle" font-size="11">SDK serve · signed</text>
+              <text x="475" y="197" text-anchor="middle" font-weight="600">Pipelines</text>
+              <text x="475" y="215" text-anchor="middle" font-size="11">src/pipelines/*</text>
+              <text x="395" y="273" text-anchor="middle" font-weight="600">Renderers</text>
+              <text x="395" y="291" text-anchor="middle" font-size="11">Satori + resvg (static) · Remotion + Chromium (video) · ffmpeg (UGC)</text>
+
+              <text x="695" y="88" text-anchor="middle" font-weight="600">Postgres</text>
+              <text x="695" y="106" text-anchor="middle" font-size="11">Drizzle · 36 tables</text>
+              <text x="695" y="120" text-anchor="middle" font-size="11">migrated on boot</text>
+              <text x="695" y="178" text-anchor="middle" font-weight="600">Object storage</text>
+              <text x="695" y="196" text-anchor="middle" font-size="11">R2, or /data volume</text>
+              <text x="695" y="210" text-anchor="middle" font-size="11">org/&lt;id&gt;/&lt;kind&gt;/…</text>
+
+              <text x="395" y="398" text-anchor="middle" font-weight="600">Inngest Cloud</text>
+              <text x="395" y="414" text-anchor="middle" font-size="11">queue · retries · steps · cron 0 * * * *</text>
+
+              <text x="890" y="60" text-anchor="middle" font-weight="600">AI providers</text>
+              <text x="890" y="80" text-anchor="middle" font-size="11">Anthropic · OpenAI · xAI</text>
+              <text x="890" y="96" text-anchor="middle" font-size="11">fal.ai · Replicate · Runway</text>
+              <text x="890" y="112" text-anchor="middle" font-size="11">HeyGen · ElevenLabs</text>
+              <text x="890" y="134" text-anchor="middle" font-size="10.5" opacity="0.7">catalogue in ai_models</text>
+              <text x="890" y="200" text-anchor="middle" font-weight="600">Ad platforms</text>
+              <text x="890" y="220" text-anchor="middle" font-size="11">Meta v21 · TikTok v1.3</text>
+              <text x="890" y="236" text-anchor="middle" font-size="11">Google Ads v18</text>
+              <text x="890" y="256" text-anchor="middle" font-size="10.5" opacity="0.7">sandbox when no keys</text>
+              <text x="890" y="312" text-anchor="middle" font-weight="600">Services</text>
+              <text x="890" y="332" text-anchor="middle" font-size="11">Stripe — plans, credits</text>
+              <text x="890" y="348" text-anchor="middle" font-size="11">Resend — links, emails</text>
+              <text x="890" y="364" text-anchor="middle" font-size="11">Sentry — error envelopes</text>
+              <text x="890" y="386" text-anchor="middle" font-size="10.5" opacity="0.7">webhooks in, webhooks out</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar)">
+              <line x1="170" y1="190" x2="250" y2="140"/>
+              <line x1="170" y1="220" x2="250" y2="200"/>
+              <line x1="540" y1="115" x2="620" y2="95"/>
+              <line x1="540" y1="200" x2="620" y2="180"/>
+              <line x1="540" y1="278" x2="620" y2="205"/>
+              <line x1="540" y1="190" x2="820" y2="100"/>
+              <line x1="540" y1="205" x2="820" y2="220"/>
+              <line x1="540" y1="130" x2="820" y2="340"/>
+            </g>
+            <g fill="none" stroke="#e65c32" stroke-width="1.6" marker-end="url(#ar-o)">
+              <path d="M300 152 v20 h-40 v208 h60"/>
+              <path d="M330 380 v-152"/>
+            </g>
+            <g font-size="10.5" fill="#e65c32" font-weight="600">
+              <text x="214" y="300" transform="rotate(-90 214 300)" text-anchor="middle">dispatch(job) · send event</text>
+              <text x="343" y="300" transform="rotate(-90 343 300)" text-anchor="middle">POST /api/inngest · retries</text>
+            </g>
+            <g font-size="10.5" fill="currentColor" opacity="0.75">
+              <text x="176" y="140">reads pages,</text><text x="176" y="152">submits actions</text>
+              <text x="575" y="82">reads / writes</text>
+              <text x="565" y="238">renders, uploads</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption><b>The shape of the system.</b> Solid arrows are synchronous calls. The orange loop is the only asynchronous path: a server action sends an event to Inngest Cloud, which calls the app back at <code>/api/inngest</code> to run the pipeline with retries and step durability. Without an Inngest key the same function runs inline in the process.</figcaption>
+      </figure>
+
+      <div class="grid">
+        <div class="card"><span class="k">Decision</span><h4>One deployable</h4><p>App, pipelines and the Chromium-backed video renderer share a container. No serverless timeouts, no separate worker to keep in sync; scaling is a bigger box first.</p></div>
+        <div class="card"><span class="k">Decision</span><h4>Jobs through Inngest</h4><p>Anything over a request — concepts (~75 s), renders, HeyGen work, publishing, insights — is a function with retries and a dashboard. Local dev can run them inline.</p></div>
+        <div class="card"><span class="k">Decision</span><h4>Adapters with sandboxes</h4><p>Missing keys degrade to sandbox providers and disabled models rather than errors, so the whole loop is demoable with zero credentials.</p></div>
+        <div class="card"><span class="k">Decision</span><h4>Catalogue, not constants</h4><p>Models live in <code>ai_models</code> plus built-ins; admins add, disable or re-price a model without a deploy. Pipelines resolve models by id at run time.</p></div>
+      </div>
+    </section>
+
+    <!-- 2. REPO -->
+    <section id="repo">
+      <div class="eyebrow">2 · Repository layout</div>
+      <h2>A pnpm workspace: one app, seven packages.</h2>
+      <p>Packages are consumed as TypeScript source through <code>transpilePackages</code>; there is no build step for <code>packages/*</code>. Turbo runs <code>build</code>, <code>typecheck</code> and <code>test</code> across the workspace.</p>
+<pre><code>apps/app/                 Next.js 15 application (App Router)
+  src/app/(auth)/         sign-in, welcome + first-ad onboarding, invites, share links
+  src/app/(app)/          the workspace: dashboard, library, briefs, creatives, videos,
+                          characters, campaigns, performance, brands, settings
+  src/app/(admin)/        platform admin: orgs, users, billing, models, providers,
+                          generations, campaigns, audit, settings
+  src/app/(legal)/        terms, privacy, DPA
+  src/app/api/            route handlers: auth, connect, files, uploads, inngest,
+                          stripe webhook, health, share, v1 public API
+  src/server/             data access + server actions, one module per domain
+  src/pipelines/          the long-running work, plain async functions
+  src/inngest/            Inngest client + functions wrapping the pipelines
+  src/components/         shared UI: topbar, sidebar, activity tray, pickers, logos
+  e2e/                    Playwright golden-path suite
+
+packages/
+  db/        Drizzle schema, migrations, client (Postgres, or PGlite when no DATABASE_URL)
+  ai/        provider adapters: text, image, video, voice, presenter; model catalogue
+  ads/       Meta / TikTok / Google adapters, sandbox, placement validation, claims review
+  render/    static renderer (Satori + resvg) and Remotion compositions + video renderer
+  specs/     placement specs: sizes, durations, copy limits per platform
+  storage/   object storage (R2 or local disk) with org-scoped keys
+  ui/        design tokens and primitives
+
+dist/        marketing site (static); copied into apps/app/public at build
+docs/        ARCHITECTURE.md, DEPLOY.md, PLAN.md, UX-PLAN.md
+scripts/     start.sh (migrate, then serve), backup-db.sh</code></pre>
+    </section>
+
+    <!-- 3. REQUEST PATHS -->
+    <section id="requests">
+      <div class="eyebrow">3 · Request paths</div>
+      <h2>Six ways in, each with a fixed shape.</h2>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Kind</th><th>Path</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td>Page</td><td><code>(app)/**/page.tsx</code> → <code>server/*-data.ts</code></td><td>Server components read Drizzle directly. <code>requireOrg()</code> resolves session → org cookie → brand cookie → role.</td></tr>
+          <tr><td>Mutation</td><td><code>&lt;form action&gt;</code> → <code>server/*-actions.ts</code></td><td>Validate, check role and guardrails, write, <code>revalidatePath</code>, optionally <code>dispatch()</code> a job. Guardrail failures redirect with <code>?error=</code>.</td></tr>
+          <tr><td>Large upload</td><td><code>POST /api/uploads</code></td><td>Server actions cap at 16 MB; twin footage can be 600 MB. XHR with progress; returns an org-scoped storage key for the next action.</td></tr>
+          <tr><td>Background job</td><td><code>dispatch()</code> → Inngest → <code>POST /api/inngest</code></td><td>See §5. Eleven named jobs with typed payloads.</td></tr>
+          <tr><td>Platform OAuth</td><td><code>/api/connect/&lt;platform&gt;</code> → callback</td><td>Tokens encrypted with <code>TOKEN_ENCRYPTION_KEY</code> (else derived from <code>AUTH_SECRET</code>) into <code>ad_accounts</code>.</td></tr>
+          <tr><td>Billing</td><td><code>POST /api/stripe/webhook</code></td><td>Subscription and top-up events → <code>subscriptions</code>, <code>credit_ledger</code>.</td></tr>
+          <tr><td>Public API</td><td><code>/api/v1/creatives</code>, <code>/api/v1/files/*</code></td><td>Bearer API keys (hashed). Outbound webhooks on <code>creative.rendered</code>, <code>approval.*</code>, <code>comment.added</code>.</td></tr>
+          <tr><td>Share</td><td><code>/share/&lt;token&gt;</code></td><td>Client review without an account: every size, comments, approval if allowed.</td></tr>
+          <tr><td>Ops</td><td><code>GET /api/health</code></td><td>Database, storage and jobs with latency; 503 when database or storage fail.</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p><b>Auth</b> is Auth.js v5: Resend magic links, Google OAuth when configured, and a dev credentials box outside production. <code>middleware.ts</code> protects everything except <code>/api/*</code> and static assets. Roles are <code>owner · editor · viewer</code> per membership; platform admins come from <code>ADMIN_EMAILS</code>.</p>
+    </section>
+
+    <!-- 4. THE LOOP -->
+    <section id="loop">
+      <div class="eyebrow">4 · The creative loop</div>
+      <h2>This is the product. Everything else serves it.</h2>
+      <figure>
+        <div class="fig">
+          <svg viewBox="0 0 980 330" role="img" aria-label="The creative loop: product to brief to ideas to one of three builders to renders to campaign to platforms to performance, and back to a new brief.">
+            <defs>
+              <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+              <marker id="ar2o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#e65c32"/></marker>
+            </defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="20" y="120" width="110" height="70" rx="8"/>
+              <rect x="170" y="120" width="120" height="70" rx="8"/>
+              <rect x="330" y="120" width="110" height="70" rx="8"/>
+              <rect x="480" y="40" width="140" height="56" rx="8"/>
+              <rect x="480" y="127" width="140" height="56" rx="8"/>
+              <rect x="480" y="214" width="140" height="56" rx="8"/>
+              <rect x="660" y="120" width="110" height="70" rx="8"/>
+              <rect x="810" y="120" width="150" height="70" rx="8"/>
+            </g>
+            <g fill="currentColor" font-size="12">
+              <text x="75" y="149" text-anchor="middle" font-weight="600">Product</text>
+              <text x="75" y="167" text-anchor="middle" font-size="11">photo → cutout</text>
+              <text x="75" y="181" text-anchor="middle" font-size="11">or URL import</text>
+              <text x="230" y="149" text-anchor="middle" font-weight="600">Brief</text>
+              <text x="230" y="167" text-anchor="middle" font-size="11">objective · audience</text>
+              <text x="230" y="181" text-anchor="middle" font-size="11">offer · platforms</text>
+              <text x="385" y="149" text-anchor="middle" font-weight="600">Ideas</text>
+              <text x="385" y="167" text-anchor="middle" font-size="11">8 concepts · Claude</text>
+              <text x="385" y="181" text-anchor="middle" font-size="11">hook · angle · copy</text>
+              <text x="550" y="62" text-anchor="middle" font-weight="600">Static ad</text>
+              <text x="550" y="80" text-anchor="middle" font-size="11">template · or AI scene</text>
+              <text x="550" y="149" text-anchor="middle" font-weight="600">Product video</text>
+              <text x="550" y="167" text-anchor="middle" font-size="11">stills → clips → Remotion</text>
+              <text x="550" y="236" text-anchor="middle" font-weight="600">Presenter video</text>
+              <text x="550" y="254" text-anchor="middle" font-size="11">voice → HeyGen → ffmpeg</text>
+              <text x="715" y="149" text-anchor="middle" font-weight="600">Renders</text>
+              <text x="715" y="167" text-anchor="middle" font-size="11">one per placement</text>
+              <text x="715" y="181" text-anchor="middle" font-size="11">review · approve</text>
+              <text x="885" y="149" text-anchor="middle" font-weight="600">Campaign</text>
+              <text x="885" y="167" text-anchor="middle" font-size="11">5 steps · spec + claims check</text>
+              <text x="885" y="181" text-anchor="middle" font-size="11">publish paused → platform</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar2)">
+              <line x1="130" y1="155" x2="170" y2="155"/>
+              <line x1="290" y1="155" x2="330" y2="155"/>
+              <path d="M440 155 h20 v-87 h20"/>
+              <line x1="440" y1="155" x2="480" y2="155"/>
+              <path d="M440 155 h20 v87 h20"/>
+              <path d="M620 68 h20 v87 h20"/>
+              <line x1="620" y1="155" x2="660" y2="155"/>
+              <path d="M620 242 h20 v-87 h20"/>
+              <line x1="770" y1="155" x2="810" y2="155"/>
+            </g>
+            <g fill="none" stroke="#e65c32" stroke-width="1.6" marker-end="url(#ar2o)">
+              <path d="M885 190 v100 h-655 v-100"/>
+            </g>
+            <g font-size="11" fill="#e65c32" font-weight="600">
+              <text x="557" y="310" text-anchor="middle">insights hourly → Performance: spend · CTR · ROAS · fatigue → Refresh / Make a variant → a pre-filled brief</text>
+            </g>
+            <g font-size="10.5" fill="currentColor" opacity="0.75">
+              <text x="150" y="146" text-anchor="middle">1 credit</text>
+              <text x="310" y="146" text-anchor="middle">~75 s</text>
+              <text x="790" y="146" text-anchor="middle">Next panel</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption><b>Product → Brief → Ideas → Ad → Campaign, and back.</b> The orange return path is what makes it a loop: Performance reads results from the platform every hour and turns a winner or a fatigued creative into a pre-filled brief. Each stage is a job in §5.</figcaption>
+      </figure>
+
+      <div class="grid">
+        <div class="card"><span class="k">library</span><h4>Product</h4><p>Photo stored, background removed by fal BiRefNet (<code>product/cutout</code>). URL import tries Shopify <code>/products/&lt;handle&gt;.js</code>, then JSON-LD, then Open Graph.</p></div>
+        <div class="card"><span class="k">briefs</span><h4>Brief</h4><p>The input step. <code>briefPrefillFromCreative</code> lets Performance and the Next panel open a brief already filled from a creative.</p></div>
+        <div class="card"><span class="k">concepts/generate</span><h4>Ideas</h4><p>Claude returns eight concepts — hook, angle, platform-ready copy, visual direction — shaped by the brand kit's tone and do/don't lists.</p></div>
+        <div class="card"><span class="k">static/generate · render/variants</span><h4>Static ad</h4><p>An editable document rendered with Satori + resvg (brand fonts, cutout composited by the template), or an AI scene from fal behind the same template. Every placement size in one run.</p></div>
+        <div class="card"><span class="k">video/generate</span><h4>Product video</h4><p>Per-scene stills → image-to-video clips (Kling, Veo, Seedance, Runway…) → Remotion assembles each size with captions and an end card.</p></div>
+        <div class="card"><span class="k">ugc/generate</span><h4>Presenter video</h4><p>ElevenLabs or HeyGen voice → HeyGen presenter render → B-roll clips → ffmpeg assembly with captions and hook. Steps skip when their asset already exists.</p></div>
+        <div class="card"><span class="k">characters</span><h4>Character studio</h4><p>Generated characters, photo avatars, prompt characters and digital twins on HeyGen; looks from packs, templates or remixes; cloned and designed voices per workspace.</p></div>
+        <div class="card"><span class="k">campaigns · publish/campaign</span><h4>Campaign</h4><p>Account → audience → placements &amp; budget → ads → review. Spec check and claims review gate the review step; spend above the threshold needs an owner. Published paused.</p></div>
+        <div class="card"><span class="k">performance · insights/cron</span><h4>Performance</h4><p>Hourly sync into <code>metrics_daily</code>; the page derives spend, CTR, CPA, ROAS, per-creative rows and fatigue alerts, with Refresh and Pause.</p></div>
+      </div>
+    </section>
+
+    <!-- 5. BACKGROUND WORK -->
+    <section id="jobs">
+      <div class="eyebrow">5 · Background work</div>
+      <h2>A job is a typed payload, a pipeline function, and one Inngest wrapper.</h2>
+      <figure>
+        <div class="fig">
+          <svg viewBox="0 0 980 300" role="img" aria-label="Sequence of a background job: server action dispatches an event to Inngest Cloud, which posts to /api/inngest; the pipeline writes generation events with steps to Postgres; the activity tray polls; a finish email goes out via Resend.">
+            <defs>
+              <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+              <marker id="ar3o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#e65c32"/></marker>
+            </defs>
+            <!-- lanes -->
+            <g fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="20" y="20" width="150" height="40" rx="6"/>
+              <rect x="215" y="20" width="150" height="40" rx="6"/>
+              <rect x="410" y="20" width="150" height="40" rx="6"/>
+              <rect x="605" y="20" width="150" height="40" rx="6"/>
+              <rect x="800" y="20" width="160" height="40" rx="6"/>
+            </g>
+            <g stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" opacity="0.5">
+              <line x1="95" y1="60" x2="95" y2="290"/><line x1="290" y1="60" x2="290" y2="290"/><line x1="485" y1="60" x2="485" y2="290"/><line x1="680" y1="60" x2="680" y2="290"/><line x1="880" y1="60" x2="880" y2="290"/>
+            </g>
+            <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle">
+              <text x="95" y="45">Server action</text><text x="290" y="45">Inngest Cloud</text><text x="485" y="45">/api/inngest · pipeline</text><text x="680" y="45">Postgres</text><text x="880" y="45">Tray · email · webhooks</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar3)">
+              <line x1="95" y1="90" x2="290" y2="90"/>
+              <line x1="290" y1="120" x2="485" y2="120"/>
+              <line x1="485" y1="150" x2="680" y2="150"/>
+              <line x1="485" y1="180" x2="680" y2="180"/>
+              <line x1="485" y1="210" x2="680" y2="210"/>
+              <line x1="880" y1="240" x2="680" y2="240"/>
+              <line x1="485" y1="270" x2="880" y2="270"/>
+            </g>
+            <g fill="none" stroke="#e65c32" stroke-width="1.6" marker-end="url(#ar3o)">
+              <path d="M290 128 c-30 0 -30 -8 -30 -8 c0 -8 30 -8 30 -8" transform="translate(0 8)"/>
+            </g>
+            <g fill="currentColor" font-size="11">
+              <text x="192" y="84" text-anchor="middle">dispatch("video.generate", {orgId, creativeId})</text>
+              <text x="387" y="114" text-anchor="middle">POST (signed) · retried on failure</text>
+              <text x="582" y="144" text-anchor="middle">reserve credits · generation_events: started</text>
+              <text x="582" y="174" text-anchor="middle">step "stills 2/4" … "clips" … "assemble"</text>
+              <text x="582" y="204" text-anchor="middle">succeeded + usage + cost · or failed + refund</text>
+              <text x="780" y="234" text-anchor="middle">tray polls 5 s busy / 30 s idle</text>
+              <text x="682" y="264" text-anchor="middle">finish email (Resend) · creative.rendered webhook</text>
+            </g>
+            <g fill="#e65c32" font-size="10.5" font-weight="600">
+              <text x="250" y="150">retry</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption><b>One request, one row per provider call.</b> Every provider call becomes a <code>generation_events</code> row with capability, provider, model, status, step, usage and cost — the Activity tray, Admin → Generations, provider budgets and finish emails all read the same rows.</figcaption>
+      </figure>
+
+      <ol class="steps">
+        <li><b>Registry.</b> <code>src/server/jobs.ts</code> names every job and its payload type; <code>src/pipelines/index.ts</code> registers inline handlers; <code>src/inngest/functions.ts</code> wraps the same functions with <code>createFunction</code>. Without <code>INNGEST_EVENT_KEY</code>, <code>dispatch()</code> runs the handler in-process, fire-and-forget.</li>
+        <li><b>Credits.</b> <code>reserveGenerationCredits</code> charges up front — concepts 1 · static ad 2 · 15 s video 20 · 30 s presenter video 40 · HeyGen look 3 · avatar 5 · digital twin 25. Failures refund; partial results refund the difference.</li>
+        <li><b>Idempotence.</b> Video and presenter documents keep every generated asset; re-running skips steps whose asset exists, so a failed B-roll clip never re-bills the voice-over.</li>
+        <li><b>Guardrails run before dispatch.</b> Monthly provider budget, credit cap, rate limits and voice slots are checked in the server action, so a blocked job never reaches the queue.</li>
+      </ol>
+
+      <h3>The eleven jobs</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Event</th><th>Pipeline</th><th>Providers</th></tr></thead>
+        <tbody>
+          <tr><td><code>concepts/generate</code></td><td>eight ideas for a brief</td><td>Anthropic (or OpenAI-compatible text)</td></tr>
+          <tr><td><code>product/cutout</code></td><td>background removal</td><td>fal BiRefNet</td></tr>
+          <tr><td><code>static/generate</code></td><td>scene layer for a static ad</td><td>fal, OpenAI, xAI image models</td></tr>
+          <tr><td><code>render/variants</code></td><td>every placement size of a static ad</td><td>Satori + resvg (local)</td></tr>
+          <tr><td><code>video/generate</code></td><td>product video storyboard → clips → sizes</td><td>fal / Replicate / Runway video, Remotion</td></tr>
+          <tr><td><code>ugc/generate</code></td><td>presenter video</td><td>ElevenLabs, HeyGen, fal, ffmpeg</td></tr>
+          <tr><td><code>character/generate</code></td><td>a generated character look</td><td>image model</td></tr>
+          <tr><td><code>character/looks</code></td><td>HeyGen look pack, template or remix</td><td>HeyGen v3</td></tr>
+          <tr><td><code>avatar/create</code></td><td>photo avatar, prompt character or digital twin</td><td>HeyGen v3 (consent flow for twins)</td></tr>
+          <tr><td><code>publish/campaign</code></td><td>campaign → ad set → ads, paused</td><td>Meta / TikTok / Google adapter or sandbox</td></tr>
+          <tr><td><code>insights/sync</code> + <code>insights/cron</code></td><td>daily metrics per ad, hourly</td><td>platform reporting APIs or sandbox</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <!-- 6. DATA MODEL -->
+    <section id="data">
+      <div class="eyebrow">6 · Data model</div>
+      <h2>Everything hangs off an organization, and most of it off a brand.</h2>
+      <figure>
+        <div class="fig">
+          <svg viewBox="0 0 980 470" role="img" aria-label="Data model: organizations own memberships, billing, generation events, ad accounts, API keys and webhooks; brands own kits, products, characters, voices, templates and projects; projects contain briefs, concepts, creatives, variants and renders; ad accounts run campaigns, ad sets and ads with daily metrics; creatives have comments, approvals and share links.">
+            <defs><marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.2">
+              <!-- org -->
+              <rect x="20" y="20" width="150" height="56" rx="8" stroke-width="1.8"/>
+              <!-- org children -->
+              <rect x="20" y="110" width="150" height="120" rx="8" stroke-dasharray="4 4"/>
+              <rect x="20" y="260" width="150" height="150" rx="8" stroke-dasharray="4 4"/>
+              <!-- brand -->
+              <rect x="230" y="20" width="150" height="56" rx="8" stroke-width="1.8"/>
+              <rect x="230" y="110" width="150" height="120" rx="8" stroke-dasharray="4 4"/>
+              <!-- creative chain -->
+              <rect x="440" y="20" width="120" height="44" rx="8"/>
+              <rect x="440" y="94" width="120" height="44" rx="8"/>
+              <rect x="440" y="168" width="120" height="44" rx="8"/>
+              <rect x="440" y="242" width="120" height="44" rx="8" stroke-width="1.8"/>
+              <rect x="440" y="316" width="120" height="44" rx="8"/>
+              <rect x="440" y="390" width="120" height="44" rx="8"/>
+              <!-- collab -->
+              <rect x="600" y="228" width="130" height="72" rx="8" stroke-dasharray="4 4"/>
+              <!-- ads chain -->
+              <rect x="800" y="20" width="150" height="44" rx="8"/>
+              <rect x="800" y="94" width="150" height="44" rx="8"/>
+              <rect x="800" y="168" width="150" height="44" rx="8"/>
+              <rect x="800" y="242" width="150" height="44" rx="8"/>
+              <rect x="800" y="316" width="150" height="44" rx="8"/>
+            </g>
+            <g fill="currentColor" font-size="12">
+              <text x="95" y="44" text-anchor="middle" font-weight="600">organizations</text>
+              <text x="95" y="61" text-anchor="middle" font-size="11">settings (guardrails)</text>
+              <text x="30" y="129" font-size="11" font-weight="600">Access &amp; billing</text>
+              <text x="30" y="149" font-size="11">memberships → users</text>
+              <text x="30" y="165" font-size="11">invites</text>
+              <text x="30" y="181" font-size="11">subscriptions</text>
+              <text x="30" y="197" font-size="11">credit_ledger</text>
+              <text x="30" y="213" font-size="11">audit_log</text>
+              <text x="30" y="279" font-size="11" font-weight="600">Integrations &amp; ops</text>
+              <text x="30" y="299" font-size="11">ad_accounts (encrypted tokens)</text>
+              <text x="30" y="315" font-size="11">api_keys · webhooks</text>
+              <text x="30" y="331" font-size="11">generation_events</text>
+              <text x="30" y="347" font-size="11">platform_settings · ai_models</text>
+              <text x="30" y="363" font-size="11">admin_notes</text>
+              <text x="30" y="385" font-size="10.5" opacity="0.7">(last three are platform-wide)</text>
+
+              <text x="305" y="44" text-anchor="middle" font-weight="600">brands</text>
+              <text x="305" y="61" text-anchor="middle" font-size="11">name · website</text>
+              <text x="240" y="129" font-size="11" font-weight="600">Brand assets</text>
+              <text x="240" y="149" font-size="11">brand_kits (colours, fonts, voice)</text>
+              <text x="240" y="165" font-size="11">products (photo, cutout)</text>
+              <text x="240" y="181" font-size="11">characters (looks, HeyGen)</text>
+              <text x="240" y="197" font-size="11">brand_voices (clone, design)</text>
+              <text x="240" y="213" font-size="11">templates</text>
+
+              <text x="500" y="46" text-anchor="middle" font-weight="600">projects</text>
+              <text x="500" y="120" text-anchor="middle" font-weight="600">briefs</text>
+              <text x="500" y="194" text-anchor="middle" font-weight="600">concepts</text>
+              <text x="500" y="262" text-anchor="middle" font-weight="600">creatives</text>
+              <text x="500" y="278" text-anchor="middle" font-size="10.5">kind · document · status</text>
+              <text x="500" y="342" text-anchor="middle" font-weight="600">variants</text>
+              <text x="500" y="416" text-anchor="middle" font-weight="600">renders</text>
+              <text x="665" y="250" text-anchor="middle" font-size="11">comments</text>
+              <text x="665" y="266" text-anchor="middle" font-size="11">approvals</text>
+              <text x="665" y="282" text-anchor="middle" font-size="11">share_links</text>
+
+              <text x="875" y="46" text-anchor="middle" font-weight="600">ad_accounts</text>
+              <text x="875" y="120" text-anchor="middle" font-weight="600">campaigns</text>
+              <text x="875" y="194" text-anchor="middle" font-weight="600">ad_sets</text>
+              <text x="875" y="268" text-anchor="middle" font-weight="600">ads</text>
+              <text x="875" y="342" text-anchor="middle" font-weight="600">metrics_daily</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar4)">
+              <line x1="170" y1="48" x2="230" y2="48"/>
+              <line x1="95" y1="76" x2="95" y2="110"/>
+              <line x1="95" y1="230" x2="95" y2="260"/>
+              <line x1="305" y1="76" x2="305" y2="110"/>
+              <line x1="380" y1="42" x2="440" y2="42"/>
+              <line x1="500" y1="64" x2="500" y2="94"/>
+              <line x1="500" y1="138" x2="500" y2="168"/>
+              <line x1="500" y1="212" x2="500" y2="242"/>
+              <line x1="500" y1="286" x2="500" y2="316"/>
+              <line x1="500" y1="360" x2="500" y2="390"/>
+              <line x1="560" y1="264" x2="600" y2="264"/>
+              <line x1="875" y1="64" x2="875" y2="94"/>
+              <line x1="875" y1="138" x2="875" y2="168"/>
+              <line x1="875" y1="212" x2="875" y2="242"/>
+              <line x1="875" y1="286" x2="875" y2="316"/>
+              <path d="M800 264 h-40 v-88 h-200" stroke-dasharray="4 3"/>
+              <path d="M170 300 h20 v-260 h50" stroke-dasharray="4 3"/>
+            </g>
+            <g fill="currentColor" font-size="10.5" opacity="0.8">
+              <text x="200" y="40">owns</text>
+              <text x="410" y="36">1 : n</text>
+              <text x="670" y="170" text-anchor="middle">ads.creative_id → creatives</text>
+              <text x="195" y="150" transform="rotate(-90 195 150)" text-anchor="middle">org_id on every row</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption><b>36 tables, one ownership spine.</b> Every row carries <code>org_id</code> (and usually <code>brand_id</code>); ids are UUIDs; provider-specific state lives in JSON columns (<code>creatives.document</code>, <code>characters.heygen</code>, <code>organizations.settings</code>). The only platform-wide tables are <code>platform_settings</code>, <code>ai_models</code> and <code>admin_notes</code>. Migrations come from <code>drizzle-kit generate</code> and run on container start.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 7. CROSS-CUTTING -->
+    <section id="cross">
+      <div class="eyebrow">7 · Cross-cutting</div>
+      <h2>Guardrails, brand safety, collaboration, billing, observability.</h2>
+      <div class="grid">
+        <div class="card"><span class="k">server/guardrails.ts</span><h4>Guardrails</h4><p>Monthly provider budget per workspace (platform default), optional credit cap and spend-approval threshold, token-bucket rate limits on generation starts and uploads, HeyGen voice slots, optional approval-before-publish. Settings → Guardrails; Admin → Guardrail defaults.</p></div>
+        <div class="card"><span class="k">packages/ads/claims.ts</span><h4>Brand safety</h4><p><code>reviewClaims()</code> scans copy for medical, financial, guarantee, superlative, personal-attribute, false-urgency and profanity claims. Hard findings block publishing, soft ones warn; brief constraints harden matching categories.</p></div>
+        <div class="card"><span class="k">server/collab.ts · share.ts</span><h4>Collaboration</h4><p>Comments, approvals (<code>draft → in_review → changes_requested → approved</code>), share links for client review, team roles and invites, an audit log of settings and publishing actions.</p></div>
+        <div class="card"><span class="k">server/billing.ts</span><h4>Billing</h4><p>Stripe subscriptions (Starter / Studio / Agency, monthly or yearly) grant credits; top-ups add; every generation debits <code>credit_ledger</code>. Trial credits and signups are platform settings.</p></div>
+        <div class="card"><span class="k">/api/health · instrumentation.ts</span><h4>Observability</h4><p>Health with per-check latency; unhandled server errors posted to Sentry's envelope endpoint when <code>SENTRY_DSN</code> is set; Admin shows provider status, generations with cost, platform metrics.</p></div>
+        <div class="card"><span class="k">tests · e2e</span><h4>Testing</h4><p>Node test runner for server logic; Playwright golden path against a dev server — sign-in → dashboard → library → brief pre-fill → Next panel → five-step campaign builder on a sandbox account → performance → guardrails → health. No provider spend.</p></div>
+      </div>
+    </section>
+
+    <!-- 8. WHERE TO LOOK -->
+    <section id="where">
+      <div class="eyebrow">8 · Where to look</div>
+      <h2>Common changes and the file that starts them.</h2>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>I want to…</th><th>Start at</th></tr></thead>
+        <tbody>
+          <tr><td>Add a workspace page</td><td><code>src/app/(app)/&lt;area&gt;/page.tsx</code> + <code>src/server/&lt;area&gt;-data.ts</code>; sidebar entry in <code>src/components/sidebar.tsx</code></td></tr>
+          <tr><td>Add a background job</td><td><code>src/server/jobs.ts</code> (payload) → <code>src/pipelines/&lt;job&gt;.ts</code> → <code>src/pipelines/index.ts</code> + <code>src/inngest/functions.ts</code></td></tr>
+          <tr><td>Add an AI model or provider</td><td><code>packages/ai/src/models.ts</code> (built-ins) or Admin → Models; adapters under <code>packages/ai/src/{text,image,video,voice,presenter}</code></td></tr>
+          <tr><td>Add a placement size</td><td><code>packages/specs/src/index.ts</code> — renderers and the campaign builder read the spec</td></tr>
+          <tr><td>Add an ad platform</td><td><code>packages/ads/src/&lt;platform&gt;/</code> implementing <code>AdsProvider</code> + <code>AdsOAuth</code>; register in <code>registry.ts</code>; add a sandbox in <code>sandbox.ts</code></td></tr>
+          <tr><td>Change credit pricing</td><td><code>src/server/billing.ts#CREDIT_COSTS</code></td></tr>
+          <tr><td>Change a guardrail default</td><td><code>src/server/platform-settings.ts#DEFAULT_GUARDRAILS</code>; enforcement in <code>src/server/guardrails.ts</code></td></tr>
+          <tr><td>Deploy</td><td><code>docs/DEPLOY.md</code> · <code>railway up --service app --detach</code> · health at <code>/api/health</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <footer>The same content lives in the repository as <code>docs/ARCHITECTURE.md</code> (with Mermaid diagrams GitHub renders). Keep both when the shape changes; the file is the source of truth.</footer>
+  </main>
+</div>
+<script>
+  (function () {
+    var btn = document.getElementById("theme-toggle");
+    var order = ["auto", "light", "dark"];
+    function current() { return document.documentElement.dataset.theme || "auto"; }
+    function label() { btn.textContent = "Theme: " + current(); }
+    btn.addEventListener("click", function () {
+      var next = order[(order.indexOf(current()) + 1) % order.length];
+      if (next === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = next;
+      try { if (next === "auto") localStorage.removeItem("adcraft-docs-theme"); else localStorage.setItem("adcraft-docs-theme", next); } catch (e) {}
+      label();
+    });
+    label();
+    document.getElementById("print-link").addEventListener("click", function (e) { e.preventDefault(); window.print(); });
+  })();
+</script>
+</body>
+</html>
