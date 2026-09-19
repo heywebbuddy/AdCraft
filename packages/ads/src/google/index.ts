@@ -33,6 +33,7 @@ import type {
   Targeting,
   UploadedCreative,
   ValidationIssue,
+  CampaignUpdate,
 } from "../types";
 import { validateCreative } from "../validation";
 
@@ -334,6 +335,36 @@ export class GoogleAdsProvider implements AdsProvider {
       json: { operations: [{ update: { resourceName: target.externalId, status: STATUS[status] }, updateMask: "status" }] },
       isError,
     });
+  }
+
+  async updateCampaign(ctx: AdsContext, input: CampaignUpdate) {
+    const cp = customerPath(ctx.accountExternalId);
+    const campaign: Record<string, unknown> = { resourceName: input.campaignExternalId };
+    const mask: string[] = [];
+    if (input.name) {
+      campaign.name = input.name;
+      mask.push("name");
+    }
+    const start = gaqlDate(input.schedule?.startAt);
+    if (start) {
+      campaign.startDate = start;
+      mask.push("start_date");
+    }
+    if (input.schedule && "endAt" in input.schedule) {
+      campaign.endDate = gaqlDate(input.schedule.endAt) ?? "2037-12-30";
+      mask.push("end_date");
+    }
+    if (mask.length) {
+      await request("google", `${API}/${cp}/campaigns:mutate`, { headers: headers(ctx.tokens), json: { operations: [{ update: campaign, updateMask: mask.join(",") }] }, isError });
+    }
+    const budgetResource = typeof input.raw?.budget === "string" ? input.raw.budget : null;
+    if (input.budget && budgetResource) {
+      await request("google", `${API}/${cp}/campaignBudgets:mutate`, {
+        headers: headers(ctx.tokens),
+        json: { operations: [{ update: { resourceName: budgetResource, amountMicros: String(input.budget.dailyCents * 10_000) }, updateMask: "amount_micros" }] },
+        isError,
+      });
+    }
   }
 
   async fetchAdReviews(ctx: AdsContext, adExternalIds: string[]): Promise<Record<string, AdReview>> {

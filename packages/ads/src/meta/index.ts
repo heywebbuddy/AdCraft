@@ -31,6 +31,7 @@ import type {
   Objective,
   UploadedCreative,
   ValidationIssue,
+  CampaignUpdate,
 } from "../types";
 import { validateCreative } from "../validation";
 
@@ -363,6 +364,17 @@ export class MetaAdsProvider implements AdsProvider {
 
   async setStatus(ctx: AdsContext, target: { externalId: string }, status: LiveStatus) {
     await request("meta", `${GRAPH}/${target.externalId}`, { headers: auth(ctx.tokens), json: { status: STATUS[status] }, isError });
+  }
+
+  async updateCampaign(ctx: AdsContext, input: CampaignUpdate) {
+    if (input.name) await request("meta", `${GRAPH}/${input.campaignExternalId}`, { headers: auth(ctx.tokens), json: { name: input.name }, isError });
+    const set: Record<string, unknown> = {};
+    if (input.budget) set.daily_budget = input.budget.dailyCents;
+    if (input.schedule?.startAt) set.start_time = input.schedule.startAt;
+    if (input.schedule && "endAt" in input.schedule) set.end_time = input.schedule.endAt ?? null;
+    if (input.name) set.name = input.name;
+    if (!Object.keys(set).length) return;
+    for (const s of input.adSets) await request("meta", `${GRAPH}/${s.externalId}`, { headers: auth(ctx.tokens), json: set, isError });
   }
 
   async fetchAdReviews(ctx: AdsContext, adExternalIds: string[]): Promise<Record<string, AdReview>> {

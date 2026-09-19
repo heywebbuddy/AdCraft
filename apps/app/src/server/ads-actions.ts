@@ -300,3 +300,81 @@ export async function disconnectAccountAction(adAccountId: string) {
     .where(and(eq(adAccounts.id, adAccountId), eq(adAccounts.orgId, ctx.org.id)));
   revalidatePath("/campaigns");
 }
+
+/**
+ * Campaign page → "Edit". Name, daily budget and schedule can change at any time; objective,
+ * audience and placements only while the campaign has not been published (they shape the ad
+ * sets and ads on the platform). Published campaigns get the change pushed to the platform first,
+ * so the database never claims a budget the platform does not have.
+ */
+export async function updateCampaignAction(campaignId: string, formData: FormData) {
+  const ctx = await requireOrg();
+  requireEditor(ctx.role);
+  const { c, a } = await loadOwnedCampaign(ctx.org.id, campaignId);
+  const raw = (c.raw ?? {}) as CampaignRaw;
+  const back = (message: string): never => redirect(`/campaigns/${campaignId}?edit=1&error=${encodeURIComponent(message)}`);
+
+  const name = str(formData, "name");
+  if (!name) back("Give the campaign a name.");
+  const dailyBudget = num(formData, "dailyBudget");
+  if (!(dailyBudget > 0)) back("Set a daily budget.");
+  const startAt = str(formData, "startAt");
+  const endAt = str(formData, "endAt");
+  if (startAt && endAt && new Date(endAt) <= new Date(startAt)) back("The end date must be after the start date.");
+  const schedule = { startAt: startAt ? new Date(startAt).toISOString() : undefined, endAt: endAt ? new Date(endAt).toISOString() : undefined };
+  const dailyBudgetMinor = Math.round(dailyBudget * 100);
+
+  if (c.status === "active" && ctx.role !== "owner") {
+    const threshold = await spendApprovalThreshold(ctx.org.id);
+    if (threshold !== null && dailyBudget > threshold && dailyBudget > (c.dailyBudgetMinor ?? 0) / 100) back(`Daily budgets above ${threshold} on a running campaign need an owner.`);
+  }
+
+  const published = !isPending(c.externalId);
+  const sets = await db.select().from(adSets).where(eq(adSets.campaignId, c.id));
+  const next: CampaignRaw = { ...raw, schedule, error: null };
+  const setPatch: Partial<typeof adSets.$inferInsert> = { dailyBudgetMinor };
+
+  if (!published) {
+    // Still a draft on our side: the whole setup is open.
+    const objective = str(formData, "objective") || c.objective || "traffic";
+    if (!isObjective(objective)) back("Pick an objective.");
+    const countries = multi(formData, "countries").map((x) => x.toUpperCase());
+    const ageMin = num(formData, "ageMin");
+    const ageMax = num(formData, "ageMax");
+    if (!(ageMin >= 13 && ageMax <= 100 && ageMin <= ageMax)) back("Age range must be between 13 and 100.");
+    const genders = multi(formData, "genders").filter((g): g is Gender => g === "male" || g === "female");
+    const interests = str(formData, "interests").split(",").map((x) => x.trim()).filter(Boolean).slice(0, 20);
+    const allowed = new Set(placementsForPlatform(a.platform).map((p) => p.id));
+    const placements = multi(formData, "placements").filter((p) => allowed.has(p));
+    if (placements.length === 0) back("Pick at least one placement.");
+    const targeting: Targeting = { countries: countries.length ? countries : ["US"], ageMin, ageMax, genders, interests };
+    const publishMode = str(formData, "mode") === "active" ? "active" : "paused";
+    Object.assign(next, { objective, targeting, placements, publishMode });
+    Object.assign(setPatch, { targeting, placements });
+    await db.update(campaigns).set({ name, objective, dailyBudgetMinor, raw: next }).where(eq(campaigns.id, c.id));
+  } else {
+    const { provider, ctx: pctx } = await accountContext(a);
+    const changed = name !== c.name || dailyBudgetMinor !== (c.dailyBudgetMinor ?? 0) || JSON.stringify(schedule) !== JSON.stringify(raw.schedule ?? {});
+    if (changed) {
+      try {
+        await provider.updateCampaign(pctx(`${c.operationId ?? c.id}:update:${Date.now()}`), {
+          campaignExternalId: c.externalId,
+          adSets: sets.filter((s) => !isPending(s.externalId)).map((s) => ({ externalId: s.externalId, raw: (s.raw as Record<string, unknown> | null) ?? undefined })),
+          name: name !== c.name ? name : undefined,
+          budget: dailyBudgetMinor !== (c.dailyBudgetMinor ?? 0) ? { dailyCents: dailyBudgetMinor, currency: raw.currency ?? a.currency ?? "USD" } : undefined,
+          schedule: JSON.stringify(schedule) !== JSON.stringify(raw.schedule ?? {}) ? schedule : undefined,
+          raw: (c.raw as Record<string, unknown> | null) ?? undefined,
+        });
+      } catch (err) {
+        back(`The platform refused the change: ${err instanceof Error ? err.message : "unknown error"}`);
+      }
+    }
+    const now = new Date().toISOString();
+    next.log = [...(raw.log ?? []).slice(-30), { at: now, message: `Edited by ${ctx.viewer.name}: ${[name !== c.name ? "name" : null, dailyBudgetMinor !== (c.dailyBudgetMinor ?? 0) ? "budget" : null, JSON.stringify(schedule) !== JSON.stringify(raw.schedule ?? {}) ? "schedule" : null].filter(Boolean).join(", ") || "no change"}` }];
+    await db.update(campaigns).set({ name, dailyBudgetMinor, raw: next }).where(eq(campaigns.id, c.id));
+  }
+  if (sets.length) await db.update(adSets).set({ ...setPatch, name }).where(inArray(adSets.id, sets.map((s) => s.id)));
+  revalidatePath(`/campaigns/${campaignId}`);
+  revalidatePath("/campaigns");
+  redirect(`/campaigns/${campaignId}?saved=1`);
+}

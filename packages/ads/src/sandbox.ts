@@ -83,6 +83,10 @@ export class SandboxAdsProvider implements AdsProvider {
     /* nothing to call */
   }
 
+  async updateCampaign() {
+    /* nothing to call */
+  }
+
   async fetchAdReviews(_ctx: AdsContext, adExternalIds: string[]) {
     return Object.fromEntries(adExternalIds.map((id) => [id, reviewFor(id)]));
   }

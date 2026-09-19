@@ -32,6 +32,7 @@ import type {
   Targeting,
   UploadedCreative,
   ValidationIssue,
+  CampaignUpdate,
 } from "../types";
 import { validateCreative } from "../validation";
 
@@ -376,6 +377,27 @@ export class TikTokAdsProvider implements AdsProvider {
       json: { advertiser_id: ctx.accountExternalId, [key]: [target.externalId], operation_status: STATUS[status] },
       isError,
     });
+  }
+
+  async updateCampaign(ctx: AdsContext, input: CampaignUpdate) {
+    if (input.name) {
+      await request("tiktok", `${API}/campaign/update/`, { headers: auth(ctx.tokens), json: { advertiser_id: ctx.accountExternalId, campaign_id: input.campaignExternalId, campaign_name: input.name }, isError });
+    }
+    const set: Record<string, unknown> = {};
+    if (input.budget) {
+      set.budget_mode = "BUDGET_MODE_DAY";
+      set.budget = Math.max(20, input.budget.dailyCents / 100);
+    }
+    if (input.schedule?.startAt) set.schedule_start_time = tiktokTime(input.schedule.startAt);
+    if (input.schedule?.endAt) {
+      set.schedule_type = "SCHEDULE_START_END";
+      set.schedule_end_time = tiktokTime(input.schedule.endAt);
+    } else if (input.schedule && "endAt" in input.schedule) set.schedule_type = "SCHEDULE_FROM_NOW";
+    if (input.name) set.adgroup_name = input.name;
+    if (!Object.keys(set).length) return;
+    for (const s of input.adSets) {
+      await request("tiktok", `${API}/adgroup/update/`, { headers: auth(ctx.tokens), json: { advertiser_id: ctx.accountExternalId, adgroup_id: s.externalId, ...set }, isError });
+    }
   }
 
   async fetchAdReviews(ctx: AdsContext, adExternalIds: string[]): Promise<Record<string, AdReview>> {

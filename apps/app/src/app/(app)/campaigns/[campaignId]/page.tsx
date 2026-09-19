@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireOrg } from "@/server/org";
 import { getCampaign, isPending } from "@/server/ads";
-import { retryPublishAction, setAdStatusAction, setCampaignStatusAction, syncCampaignAction } from "@/server/ads-actions";
+import { retryPublishAction, setAdStatusAction, setCampaignStatusAction, syncCampaignAction, updateCampaignAction } from "@/server/ads-actions";
+import { spendApprovalThreshold } from "@/server/platform-settings";
+import { CampaignEditForm } from "./edit-form";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { Notice, PlatformMark, StatusChip, money, relative } from "../ui";
 
@@ -15,10 +17,10 @@ function fmtDate(iso: string | undefined) {
   return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export default async function CampaignPage({ params, searchParams }: { params: Promise<{ campaignId: string }>; searchParams: Promise<{ syncing?: string }> }) {
+export default async function CampaignPage({ params, searchParams }: { params: Promise<{ campaignId: string }>; searchParams: Promise<{ syncing?: string; edit?: string; error?: string; saved?: string }> }) {
   const ctx = await requireOrg();
   const { campaignId } = await params;
-  const { syncing } = await searchParams;
+  const { syncing, edit, error, saved } = await searchParams;
   const c = await getCampaign(ctx.org.id, campaignId);
   if (!c) notFound();
   const canEdit = ctx.role !== "viewer";
@@ -28,6 +30,7 @@ export default async function CampaignPage({ params, searchParams }: { params: P
   const reviewed = adList.filter((a) => a.review);
   const disapproved = reviewed.filter((a) => a.review?.status === "disapproved");
   const t = c.raw.targeting;
+  const threshold = await spendApprovalThreshold(ctx.org.id);
 
   return (
     <>
@@ -94,6 +97,12 @@ export default async function CampaignPage({ params, searchParams }: { params: P
           </div>
         ) : null}
       </header>
+
+      {saved ? <Notice tone="info">Changes saved{published ? " and sent to the platform" : ""}.</Notice> : null}
+      {error ? <Notice tone="error">{decodeURIComponent(error)}</Notice> : null}
+      {canEdit && c.status !== "archived" && !publishing ? (
+        <CampaignEditForm campaign={c} published={published} open={Boolean(edit || error)} action={updateCampaignAction.bind(null, c.id)} isOwner={ctx.role === "owner"} threshold={threshold} />
+      ) : null}
 
       {c.raw.error ? (
         <Notice tone="error">

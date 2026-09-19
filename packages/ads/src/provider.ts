@@ -16,6 +16,7 @@ import type {
   Platform,
   UploadedCreative,
   ValidationIssue,
+  CampaignUpdate,
 } from "./types";
 
 /** Context passed on every call: which connected account, plus an idempotency key for writes. */
@@ -53,6 +54,9 @@ export interface AdsProvider {
   createAd(ctx: AdsContext, input: AdInput): Promise<CreatedAd>;
 
   setStatus(ctx: AdsContext, target: { level: "campaign" | "adSet" | "ad"; externalId: string }, status: LiveStatus): Promise<void>;
+
+  /** Push name / daily budget / schedule changes to a campaign that is already on the platform. */
+  updateCampaign(ctx: AdsContext, input: CampaignUpdate): Promise<void>;
 
   /** Daily rows, one per (ad, date). */
   fetchInsights(ctx: AdsContext, query: InsightsQuery): Promise<Metrics[]>;

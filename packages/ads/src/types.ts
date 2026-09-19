@@ -195,6 +195,18 @@ export interface AdSetInput {
   extra?: Record<string, unknown>;
 }
 
+/** Changes to a campaign that is already on the platform. Everything is optional; only set fields are sent. */
+export interface CampaignUpdate {
+  campaignExternalId: string;
+  /** Ad sets to carry budget and schedule changes (Meta/TikTok keep those on the set; Google on the campaign budget). */
+  adSets: Array<{ externalId: string; raw?: Record<string, unknown> }>;
+  name?: string;
+  budget?: Budget;
+  schedule?: Schedule;
+  /** Google: the campaign budget resource, from createCampaign's raw. */
+  raw?: Record<string, unknown>;
+}
+
 export interface CreativeUpload {
   creative: Creative;
   bytes: Uint8Array;
