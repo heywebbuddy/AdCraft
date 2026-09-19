@@ -2668,10 +2668,17 @@
   .workspace-main select:not([multiple]):not([size])::picker-icon {
     display: none;
   }
-  /* base-select uses a flex box; its default cross-axis alignment leaves the
-     selected label at the top even though our background chevron is centered. */
-  .workspace-main select:not([multiple]):not([size]) {
+  /* base-select lays the selected label out with flexbox. Any author `display: block`
+     (form-field classes, Tailwind's `block`) turns that off and the label sits at the
+     top of the control while our chevron stays centred — so pin the display too:
+     inline-flex in general, flex for full-width fields so they keep their own line. */
+  .app-shell select:not([multiple]):not([size]) {
+    display: inline-flex;
     align-items: center;
+    vertical-align: middle;
+  }
+  .app-shell select:not([multiple]):not([size]):is(.cs-input, .w-full, .block, .field, [style*="width: 100%"]) {
+    display: flex;
   }
   .workspace-main select::picker(select) {
     margin-top: 4px;
