@@ -13,7 +13,9 @@ bookworm with the Chromium libraries Remotion needs, Chrome Headless Shell downl
 Background jobs run on **Inngest Cloud** (`INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY` on the service, app id
 `adcraft`, synced by `curl -X PUT https://<domain>/api/inngest` after a deploy that changes functions — the SDK
 also re-syncs itself); the hourly `insights/cron` is registered there. Video renders happen in the same container; uploads and renders live on the `/data` volume (`LOCAL_STORAGE_DIR=/data/files`) until
-the `R2_*` variables are set.
+all four `R2_*` variables are set. The bucket `adcraft-media` (APAC, Standard) already exists; `R2_BUCKET` is set on the app
+service. Create a Cloudflare **R2 Object Read & Write** API token and add `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and
+`R2_SECRET_ACCESS_KEY` (optional `R2_PUBLIC_BASE` for a public/CDN URL). The R2 MCP can create buckets, not tokens.
 
 - Deploy: `railway up --service app --detach` from the repo root (the CLI is linked to the project), or
   connect the GitHub repo in the Railway dashboard (Service → Settings → Source) for deploys on push.
@@ -21,9 +23,12 @@ the `R2_*` variables are set.
   to `${{Postgres.DATABASE_URL}}`; `AUTH_URL` is the public domain; `AUTH_SECRET` and `TOKEN_ENCRYPTION_KEY`
   were generated for production (not the local ones).
 - Health check: `/api/health` (Railway waits up to 300 s for it after each deploy).
-- Still to do by hand: a Stripe webhook endpoint for `https://<domain>/api/stripe/webhook` (then set
-  `STRIPE_WEBHOOK_SECRET`), the Railway domain in Google's OAuth redirect list if Google sign-in is wanted
-  (`AUTH_GOOGLE_ID/SECRET`), and R2 credentials for durable media once traffic is real.
+- Still to do by hand: R2 API token keys (see above), a Stripe webhook endpoint for
+  `https://<domain>/api/stripe/webhook` (then set `STRIPE_WEBHOOK_SECRET`) when paid billing goes live,
+  the Railway domain in Google's OAuth redirect list if Google sign-in is wanted (`AUTH_GOOGLE_ID/SECRET`),
+  and Meta app credentials (`META_APP_ID` / `META_APP_SECRET`) plus the OAuth redirect
+  `https://<domain>/api/connect/meta/callback`. Stripe is left as-is for now.
+- Public legal pages: `/privacy`, `/terms`, `/dpa`. Owners request workspace deletion under Settings → Privacy.
 
 ## Product app on Vercel (alternative)
 

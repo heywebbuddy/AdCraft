@@ -210,6 +210,7 @@ export type OrgRow = {
   slug: string;
   createdAt: Date;
   suspendedAt: Date | null;
+  deletionRequestedAt: string | null;
   stripeCustomerId: string | null;
   plan: string | null;
   planStatus: string | null;
@@ -284,6 +285,7 @@ export async function listOrgs(q = "", status: "all" | "active" | "suspended" = 
       slug: o.slug,
       createdAt: o.createdAt,
       suspendedAt: o.suspendedAt,
+      deletionRequestedAt: o.settings?.deletionRequestedAt ?? null,
       stripeCustomerId: o.stripeCustomerId,
       plan: sub?.plan ?? null,
       planStatus: sub?.status ?? null,
@@ -617,7 +619,7 @@ const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "last
   { id: "resend", name: "Resend", area: "Magic-link sign-in, invites", env: ["RESEND_API_KEY"], note: "Dev sign-in is enabled while unset." },
   { id: "google-auth", name: "Google sign-in", area: "OAuth", env: ["AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"] },
   { id: "stripe", name: "Stripe", area: "Subscriptions, top-ups", env: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"], note: "Purchases are simulated while unset." },
-  { id: "r2", name: "Cloudflare R2", area: "Media storage", env: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"], note: "Local disk storage while unset." },
+  { id: "r2", name: "Cloudflare R2", area: "Media storage", env: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"], note: "Bucket adcraft-media (APAC). Local disk while keys are unset." },
   { id: "inngest", name: "Inngest", area: "Background jobs", env: ["INNGEST_EVENT_KEY", "INNGEST_SIGNING_KEY"], note: "Pipelines run inline while unset." },
   { id: "meta", name: "Meta Marketing API", area: "Publishing, insights", env: ["META_APP_ID", "META_APP_SECRET"], note: "Sandbox provider while unset." },
   { id: "tiktok", name: "TikTok Marketing API", area: "Publishing, insights", env: ["TIKTOK_APP_ID", "TIKTOK_APP_SECRET"], note: "Sandbox provider while unset." },

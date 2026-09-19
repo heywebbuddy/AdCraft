@@ -215,7 +215,7 @@ Other obligations:
 - AI-generated content disclosure where required (Meta, TikTok labels for realistic AI people).
 - Presenter and voice: licensed avatars only, consent capture for custom likeness, no real-person impersonation.
 - Ad policy pre-check for restricted categories (health claims, finance, alcohol).
-- GDPR/CCPA: data processing agreement, deletion flow, EU region option for storage.
+- GDPR/CCPA: working privacy policy, terms and DPA at `/privacy`, `/terms`, `/dpa`; workspace deletion request under Settings → Privacy (counsel should review before paid launch). R2 media bucket is APAC.
 - SOC 2 readiness later; encrypt tokens now.
 
 ## 7. Repository layout (monorepo)
@@ -298,10 +298,10 @@ Everything below is wiring and verification, not new product surface.
 | Billing | Built | Create Stripe products and set `STRIPE_PRICE_*`; test webhook with the Stripe CLI |
 | Email | Built | `RESEND_API_KEY` for magic links and invites |
 | Database | PGlite locally, Postgres via `DATABASE_URL` | Provision Neon/Supabase; run `db:migrate` |
-| Storage | Local disk locally, R2 via env | Create the R2 bucket and public base |
+| Storage | Local disk locally, R2 via env | Bucket `adcraft-media` (APAC) exists; set `R2_ACCOUNT_ID` + S3 API token keys + optional `R2_PUBLIC_BASE` |
 | Jobs | Inline locally, Inngest via env | Create the Inngest app; hourly insights cron is registered |
 | Hosting | Not deployed | Vercel for the app; keep `dist/` on its current static host; set `ADCRAFT_APP_URL` on the site |
-| Compliance | Not started | Privacy policy, terms, DPA, data deletion flow |
+| Compliance | Working pages + deletion request | Counsel review of `/privacy`, `/terms`, `/dpa` before paid launch; hard wipe of a requested workspace |
 
 ## 14. Admin panel (platform operations)
 

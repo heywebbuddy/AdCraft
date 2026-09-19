@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/pending-button";
 import { Wordmark } from "@/components/spark";
+import { LegalLinks } from "@/components/legal-links";
 import { auth, signIn, devLoginEnabled } from "@/auth";
 
 const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
@@ -96,6 +97,9 @@ export default async function SignInPage({
             <p className="text-sm text-muted">No sign-in method is configured. Set RESEND_API_KEY or AUTH_GOOGLE_ID.</p>
           ) : null}
         </div>
+        <p className="mt-10 text-[12px] text-muted">
+          <LegalLinks />
+        </p>
       </div>
     </main>
   );

@@ -7,6 +7,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import "../../(app)/workspace.css";
 import "./admin.css";
+import { LegalLinks } from "@/components/legal-links";
 
 export const metadata: Metadata = { title: "Admin · Adcraft" };
 export const dynamic = "force-dynamic";
@@ -43,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </main>
         <footer className="workspace-footer">
           <span>Adcraft Admin</span>
+          <LegalLinks />
           <span>Every action here is written to the audit log</span>
         </footer>
       </div>

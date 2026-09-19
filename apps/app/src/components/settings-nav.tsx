@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export type SettingsTab =
-  "workspace" | "team" | "templates" | "billing" | "api" | "audit" | "brands" | "guardrails";
+  "workspace" | "team" | "templates" | "billing" | "api" | "audit" | "brands" | "guardrails" | "privacy";
 
 const tabs: Array<{
   id: SettingsTab;
@@ -16,6 +16,7 @@ const tabs: Array<{
   { id: "guardrails", href: "/settings/guardrails", label: "Guardrails" },
   { id: "api", href: "/settings/api", label: "API access" },
   { id: "audit", href: "/settings/audit", label: "Audit log", ownerOnly: true },
+  { id: "privacy", href: "/settings/privacy", label: "Privacy" },
   { id: "brands", href: "/brands", label: "Brands" },
 ];
 

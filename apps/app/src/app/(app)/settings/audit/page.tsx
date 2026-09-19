@@ -47,6 +47,8 @@ function describe(action: string, meta: Record<string, unknown>) {
       return `Added webhook ${s("url")}`;
     case "webhook.deleted":
       return `Removed webhook ${s("url")}`;
+    case "privacy.deletion_requested":
+      return `Requested deletion of the workspace${s("reason") ? ` — ${s("reason")}` : ""}`;
     default:
       return action;
   }
@@ -65,7 +67,7 @@ export default async function AuditPage() {
 
       <section className="panel max-w-[900px] overflow-hidden">
         {entries.length === 0 ? (
-          <p className="m-0 px-5 py-6 text-[13px] text-muted">Nothing yet. Invites, approvals, share links, templates and API keys all land here.</p>
+          <p className="m-0 px-5 py-6 text-[13px] text-muted">Nothing yet. Invites, approvals, share links, templates, API keys and deletion requests all land here.</p>
         ) : (
           <ul className="m-0 list-none divide-y divide-line p-0">
             {entries.map((e) => (

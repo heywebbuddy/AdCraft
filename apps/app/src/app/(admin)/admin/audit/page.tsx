@@ -39,6 +39,8 @@ function summarise(action: string, meta: Record<string, unknown>) {
       return `Updated model overrides (${Object.keys((meta.overrides as object) ?? {}).length})`;
     case "admin.settings_updated":
       return `Signups ${meta.signupsEnabled ? "on" : "off"} · trial ${String(meta.trialCredits)} credits`;
+    case "privacy.deletion_requested":
+      return `Deletion requested${s("reason") ? ` · ${s("reason")}` : ""}`;
     default: {
       const bits = Object.entries(meta)
         .filter(([, v]) => typeof v === "string" || typeof v === "number")

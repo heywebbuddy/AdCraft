@@ -9,6 +9,7 @@ import "./workspace.css";
 import { Sidebar } from "@/components/sidebar";
 import { SupportBanner } from "@/components/admin/support-banner";
 import { getPlatformSettings } from "@/server/platform-settings";
+import { LegalLinks } from "@/components/legal-links";
 
 export default async function AppLayout({
   children,
@@ -65,6 +66,7 @@ export default async function AppLayout({
           </BreadcrumbProvider>
           <footer className="workspace-footer">
             <span>Adcraft Studio</span>
+            <LegalLinks />
             <span>{ctx.brand?.name ?? ctx.org.name} workspace</span>
           </footer>
         </div>

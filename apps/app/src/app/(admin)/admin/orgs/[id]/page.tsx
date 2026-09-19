@@ -72,6 +72,7 @@ export default async function AdminOrgDetailPage({ params, searchParams }: { par
         actions={
           <>
             {org.suspendedAt ? <Chip tone="bad">Suspended</Chip> : <Chip tone="good">Active</Chip>}
+            {org.settings?.deletionRequestedAt ? <Chip tone="warn">Deletion requested</Chip> : null}
             {viewing ? (
               <Link href="/dashboard" className="btn btn-outline">
                 Open workspace (viewing)
@@ -162,6 +163,20 @@ export default async function AdminOrgDetailPage({ params, searchParams }: { par
                 </dl>
               </div>
             </Panel>
+
+            {org.settings?.deletionRequestedAt ? (
+              <Panel title="Deletion requested" eyebrow="Privacy">
+                <div className="admin-panel-body">
+                  <p>
+                    The owner asked to delete this workspace on {fmtDate(org.settings.deletionRequestedAt)}
+                    {org.settings.deletionReason ? ` — “${org.settings.deletionReason}”` : ""}. Confirm the
+                    owner, export anything support still needs, then delete the organisation row (cascades
+                    memberships) and the <code>org/{org.id}</code> prefix in object storage. This page does
+                    not wipe automatically.
+                  </p>
+                </div>
+              </Panel>
+            ) : null}
 
             <Panel title="Subscription history" eyebrow="Billing" note={d.subscriptions.length ? `${d.subscriptions.length} row${d.subscriptions.length === 1 ? "" : "s"}` : undefined}>
               {d.subscriptions.length === 0 ? (

@@ -1,4 +1,7 @@
 import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { id, timestamps } from "./_shared";
+import { creditReason, membershipRole, subscriptionStatus } from "./enums";
+import { users } from "./auth";
 
 /** Per-workspace guardrails, edited by owners in Settings; null means "use the platform default". */
 export type OrgSettings = {
@@ -10,10 +13,10 @@ export type OrgSettings = {
   approvalBeforePublish?: boolean;
   /** Email the workspace when long jobs finish (videos, characters, twins). */
   notifyOnFinish?: boolean;
+  /** ISO timestamp set when an owner asks us to delete the workspace. */
+  deletionRequestedAt?: string;
+  deletionReason?: string;
 };
-import { id, timestamps } from "./_shared";
-import { creditReason, membershipRole, subscriptionStatus } from "./enums";
-import { users } from "./auth";
 
 export const organizations = pgTable("organizations", {
   id: id(),

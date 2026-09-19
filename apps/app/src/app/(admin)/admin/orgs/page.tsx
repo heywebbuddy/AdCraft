@@ -74,7 +74,15 @@ export default async function AdminOrgsPage({ searchParams }: { searchParams: Pr
                     {o.lastActivity ? ago(o.lastActivity) : "—"}
                   </td>
                   <td className="muted">{fmtDate(o.createdAt, false)}</td>
-                  <td>{o.suspendedAt ? <Chip tone="bad">Suspended</Chip> : <Chip tone="good">Active</Chip>}</td>
+                  <td>
+                    {o.suspendedAt ? <Chip tone="bad">Suspended</Chip> : <Chip tone="good">Active</Chip>}
+                    {o.deletionRequestedAt ? (
+                      <>
+                        {" "}
+                        <Chip tone="warn">Deletion requested</Chip>
+                      </>
+                    ) : null}
+                  </td>
                 </tr>
               ))}
             </tbody>
