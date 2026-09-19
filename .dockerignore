@@ -5,7 +5,18 @@ node_modules
 **/node_modules
 **/.next
 **/.turbo
-apps/app/public
+# Marketing-site copies are re-synced from dist/ at build; anything else in public/ (e.g. docs/) ships.
+apps/app/public/index.html
+apps/app/public/style.css
+apps/app/public/character-studio.css
+apps/app/public/workflow-tour.css
+apps/app/public/app.js
+apps/app/public/favicon.svg
+apps/app/public/favicon-32.png
+apps/app/public/apple-touch-icon.png
+apps/app/public/assets
+apps/app/public/showcase
+apps/app/public/pricing
 apps/app/test-results
 apps/app/playwright-report
 apps/app/next-env.d.ts
