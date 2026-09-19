@@ -80,3 +80,12 @@ body {
 .out-arrow { width: 0.85em; height: 0.85em; display: inline-block; vertical-align: -0.14em; flex-shrink: 0; }
 .wordmark b { color: var(--orange); font-weight: 600; margin-left: -0.12em; }
 .btn.is-pending { opacity: 0.85; cursor: progress; }
+
+/* Route error boundary (src/app/error.tsx). */
+.route-error { min-height: 60vh; display: grid; place-items: center; padding: 40px 20px; }
+.route-error-card { max-width: 440px; text-align: center; }
+.route-error-mark { display: block; color: var(--orange); font-size: 30px; line-height: 1; margin-bottom: 14px; }
+.route-error h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.4px; margin: 0 0 8px; }
+.route-error p { font-size: 14px; line-height: 1.6; color: var(--muted); margin: 0 0 20px; }
+.route-error-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.route-error-digest { display: inline-block; margin-top: 18px; font-size: 11px; color: var(--muted); }

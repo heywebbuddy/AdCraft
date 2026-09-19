@@ -88,7 +88,12 @@ export async function regenerateScene(creativeId: string, formData: FormData) {
   const instructions = String(formData.get("instructions") ?? "").trim() || undefined;
   const onlyMissing = formData.get("retryMissing") === "on" || formData.get("retryMissing") === "true";
   if (ctx.credits.balance < (model ? await creditsForModel(model) : STATIC_SCENE_CREDITS)) redirect(`/creatives/${creativeId}?error=credits`);
-  await regenerate(ctx.org.id, creativeId, model, { instructions, onlyMissing });
+  try {
+    await regenerate(ctx.org.id, creativeId, model, { instructions, onlyMissing });
+  } catch (err) {
+    if (err instanceof GuardrailError) redirect(`/creatives/${creativeId}?error=guardrail&detail=${encodeURIComponent(err.message)}`);
+    throw err;
+  }
   revalidatePath(`/creatives/${creativeId}`);
   revalidatePath("/dashboard");
 }

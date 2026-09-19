@@ -42,11 +42,11 @@ export default async function CreativePage({
   searchParams,
 }: {
   params: Promise<{ creativeId: string }>;
-  searchParams: Promise<{ ratio?: string; error?: string }>;
+  searchParams: Promise<{ ratio?: string; error?: string; detail?: string }>;
 }) {
   const ctx = await requireOrg();
   const { creativeId } = await params;
-  const { ratio, error } = await searchParams;
+  const { ratio, error, detail } = await searchParams;
   const c = await getCreative(ctx.org.id, creativeId);
   if (!c) notFound();
 
@@ -105,6 +105,12 @@ export default async function CreativePage({
             Top up
           </Link>
           .
+        </div>
+      ) : null}
+      {error === "guardrail" ? (
+        <div className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">
+          {detail || "This generation is outside the workspace guardrails."}{" "}
+          <Link href="/settings/guardrails" className="font-semibold">Guardrails</Link>
         </div>
       ) : null}
       {c.status === "failed" && c.lastError ? (
@@ -178,6 +184,23 @@ export default async function CreativePage({
                     }}
                   >
                     {selected.render?.status === "failed" || (c.status === "failed" && !selected.render) ? (
+                      isAi && !c.document.artwork?.[selected.ratio as keyof NonNullable<typeof c.document.artwork>] ? (
+                        // An AI composition was never made for this ratio (the brief added a size after
+                        // generation, or the model failed on it). Re-rendering cannot fix that; generating
+                        // just the missing artwork can.
+                        <>
+                          <span className="font-serif text-[22px] italic">No artwork for {selected.ratio} yet.</span>
+                          <span className="max-w-[40ch] text-[12px] opacity-80">
+                            {missing} size{missing === 1 ? "" : "s"} still need{missing === 1 ? "s" : ""} a composition from {modelLabel}.
+                          </span>
+                          <form action={regen}>
+                            <input type="hidden" name="retryMissing" value="on" />
+                            <button type="submit" className="btn btn-dark h-10" disabled={busy || ctx.role === "viewer"}>
+                              Generate missing size{missing === 1 ? "" : "s"} · {STATIC_SCENE_CREDITS * missing} credit{STATIC_SCENE_CREDITS * missing === 1 ? "" : "s"}
+                            </button>
+                          </form>
+                        </>
+                      ) : (
                       <>
                         <span className="font-serif text-[22px] italic">This size failed to render.</span>
                         <span className="max-w-[40ch] text-[12px] opacity-80">{selected.render?.error ?? c.lastError}</span>
@@ -187,6 +210,7 @@ export default async function CreativePage({
                           </button>
                         </form>
                       </>
+                      )
                     ) : (
                       <>
                         <Spark size={34} animate="spin" />
