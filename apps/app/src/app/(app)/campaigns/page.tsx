@@ -125,7 +125,7 @@ export default async function CampaignsPage({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-0.5">
-                  <PlatformMark platform={card.platform} />
+                  <PlatformMark platform={card.platform} size={18} />
                   <span className="text-[12px] text-muted">
                     {PLATFORM_COVERS[card.platform]}
                   </span>

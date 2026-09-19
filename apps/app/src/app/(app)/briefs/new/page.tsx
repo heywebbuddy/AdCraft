@@ -1,3 +1,4 @@
+import { PlatformLogo } from "@/components/platform-logo";
 import Link from "next/link";
 import { PendingButton } from "@/components/pending-button";
 import { requireOrg } from "@/server/org";
@@ -203,6 +204,7 @@ export default async function NewBriefPage({
                       value={p.id}
                       className="sr-only"
                     />
+                    <PlatformLogo name={p.id} size={15} className="mr-2" />
                     {p.label}
                   </label>
                 ))}

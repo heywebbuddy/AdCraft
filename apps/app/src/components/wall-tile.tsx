@@ -1,3 +1,4 @@
+import { PlatformLogo } from "@/components/platform-logo";
 import Link from "next/link";
 import { PlayIcon } from "./icons";
 import { Spark } from "./spark";
@@ -85,7 +86,7 @@ export function WallTile({ id, name, kind, ratio, status, previewUrl, headline, 
           <span className="tabular">{relativeTime(updatedAt)}</span>
         </div>
         <div className="wall-row wall-sub">
-          <span>{live ? (platformLabel[live.platform] ?? live.platform) : kindLabel}</span>
+          <span className="inline-flex items-center gap-1.5">{live ? <><PlatformLogo name={live.platform} size={12} />{platformLabel[live.platform] ?? live.platform}</> : kindLabel}</span>
           {live ? (
             <span className="tabular">
               <b>{(live.ctr * 100).toFixed(1)}%</b> CTR{live.roas != null ? <> · <b>{live.roas.toFixed(1)}×</b></> : null}

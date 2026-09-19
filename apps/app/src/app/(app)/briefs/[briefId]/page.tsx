@@ -1,3 +1,4 @@
+import { PlatformLogo } from "@/components/platform-logo";
 import Link from "next/link";
 import { FlowSteps } from "@/components/flow-steps";
 import { Spark } from "@/components/spark";
@@ -153,8 +154,9 @@ export default async function BriefPage({
             {data.platforms.map((p) => (
               <span
                 key={p}
-                className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]"
+                className="inline-flex items-center gap-1.5 rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]"
               >
+                <PlatformLogo name={p} size={12} />
                 {platformLabel[p] ?? p}
               </span>
             ))}

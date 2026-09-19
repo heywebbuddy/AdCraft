@@ -1,3 +1,4 @@
+import { PlatformLogo } from "@/components/platform-logo";
 import type { Platform } from "@adcraft/ads";
 
 export const PLATFORM_NAMES: Record<Platform, string> = { meta: "Meta", tiktok: "TikTok", google: "Google" };
@@ -27,13 +28,10 @@ export function StatusChip({ status, label }: { status: string; label?: string }
   );
 }
 
-export function PlatformMark({ platform, sandbox }: { platform: Platform; sandbox?: boolean }) {
+export function PlatformMark({ platform, sandbox, size = 15 }: { platform: Platform; sandbox?: boolean; size?: number }) {
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[12px] font-semibold">
-      <span
-        className="inline-block h-[9px] w-[9px] rounded-[2px]"
-        style={{ background: platform === "meta" ? "#1d4fd8" : platform === "tiktok" ? "#242521" : "#3f7a55" }}
-      />
+    <span className="inline-flex items-center gap-2 whitespace-nowrap text-[12px] font-semibold">
+      <PlatformLogo name={platform} size={size} />
       {PLATFORM_NAMES[platform]}
       {sandbox ? <StatusChip status="sandbox" label="Sandbox" /> : null}
     </span>
