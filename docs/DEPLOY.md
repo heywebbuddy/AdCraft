@@ -7,6 +7,14 @@ Two deployables: the marketing site (`dist/`, static, already hosted) and the pr
 Repo: https://github.com/heywebbuddy/AdCraft — Railway project **adcraft**, services **app** and **Postgres**,
 app URL https://adcrafts.co (Railway service domain remains https://app-production-9ee2.up.railway.app).
 
+Custom domains (DNS at onlydomains.com, NS `ns*.onlydomains.com`, record TTLs are 24 h — Railway's checker can lag
+by 20–30 min after a change; `railway domain status <domain> --service app` shows what it currently sees):
+- `www.adcrafts.co` → CNAME `qts11frr.up.railway.app` (+ TXT `_railway-verify.www` = the token Railway shows) — live, certificate valid.
+- `adcrafts.co` (apex) → CNAME/ALIAS `tu9z13mz.up.railway.app` — attached to the service on 19 Sep 2026; the apex
+  record still has to be changed at onlydomains (it currently points at `5d8vmcs6.up.railway.app`, a target that is
+  not in this account, so the apex answers "Application not found"). `AUTH_URL` is the apex, so magic links and
+  OAuth callbacks use it — fix the record before inviting anyone.
+
 One always-on container built from the root `Dockerfile` (`railway.json` points at it): Node 22 on Debian
 bookworm with the Chromium libraries Remotion needs, Chrome Headless Shell downloaded at build time, and
 `scripts/start.sh` as the entrypoint — it runs `drizzle-kit migrate` against `DATABASE_URL`, then `next start`.
