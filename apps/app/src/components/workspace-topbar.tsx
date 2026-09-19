@@ -6,6 +6,7 @@ import { SearchIcon, ArrowIcon, BoltIcon } from "./icons";
 import { useBreadcrumbTitle } from "./breadcrumb-title";
 import { ActivityTray } from "./activity-tray";
 import { ThemeToggle } from "./theme-toggle";
+import { FullscreenToggle } from "./fullscreen-toggle";
 const destinations: Array<{ name: string; href: string; match?: string; group: string }> = [
   { name: "Overview", href: "/dashboard", group: "Workspace" },
   { name: "Briefs", href: "/briefs", group: "Create" },
@@ -94,6 +95,7 @@ export function WorkspaceTopbar({
             <kbd>⌘ K</kbd>
           </button>
           <ActivityTray initialRunning={running} />
+          <FullscreenToggle />
           <ThemeToggle />
           <Link
             href="/settings/billing"
