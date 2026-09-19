@@ -174,7 +174,7 @@ function ReviewView({
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {open.map((c) => (
                 <li key={c.id} className="flex gap-2.5">
-                  <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${c.authorId ? "bg-ink text-paper" : "border border-dashed border-line text-muted"}`}`}>
+                  <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${c.authorId ? "bg-ink text-paper" : "border border-dashed border-line text-muted"}`}>
                     {c.authorName.slice(0, 1).toUpperCase()}
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col gap-1">
