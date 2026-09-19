@@ -23,6 +23,17 @@ export type BrandKitData = {
   voice?: { tone: string[]; doSay?: string[]; dontSay?: string[] };
   tagline?: string;
   ctaStyle?: string;
+  /** What the website import found, so the kit page can show it and the import can be re-run. */
+  site?: {
+    url: string;
+    importedAt: string;
+    screenshotUrl?: string;
+    /** Every brand-looking colour found, most prominent first. */
+    palette: string[];
+    /** Font families the site declares, most used first. */
+    fonts: string[];
+    headline?: string;
+  };
 };
 
 export const brandKits = pgTable(

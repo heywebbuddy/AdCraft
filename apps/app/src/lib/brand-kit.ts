@@ -67,5 +67,6 @@ export function withDefaults(kit: Partial<BrandKitData> | null | undefined): Bra
     voice: { tone: kit?.voice?.tone ?? DEFAULT_KIT.voice!.tone, doSay: kit?.voice?.doSay ?? [], dontSay: kit?.voice?.dontSay ?? [] },
     tagline: kit?.tagline ?? "",
     ctaStyle: kit?.ctaStyle ?? "pill",
+    site: kit?.site,
   };
 }

@@ -6,6 +6,7 @@ import { db, dbReady, organizations, memberships, brands, brandKits, creditLedge
 import { requireViewer, requireOrg } from "./org";
 import { ORG_COOKIE, BRAND_COOKIE } from "./org";
 import { importProductFromUrl } from "./product-import";
+import { importBrandKitFromWebsite } from "./brand-import";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getPlatformSettings } from "./platform-settings";
 
@@ -56,7 +57,18 @@ export async function createWorkspace(formData: FormData) {
   const jar = await cookies();
   jar.set(ORG_COOKIE, org.id, { path: "/", httpOnly: true, sameSite: "lax" });
   jar.set(BRAND_COOKIE, brand.id, { path: "/", httpOnly: true, sameSite: "lax" });
-  redirect("/welcome/first-ad");
+
+  // With a website, the first ad already looks like the brand: kit from the site, best effort.
+  let imported = false;
+  if (website) {
+    try {
+      await importBrandKitFromWebsite(org.id, brand.id, website);
+      imported = true;
+    } catch (err) {
+      console.warn("[onboarding] website import failed", err instanceof Error ? err.message : err);
+    }
+  }
+  redirect(imported ? "/welcome/first-ad?kit=1" : "/welcome/first-ad");
 }
 
 /** Onboarding step 2: import a product from its page and open a pre-filled brief. */

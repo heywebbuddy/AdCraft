@@ -21,7 +21,7 @@ export interface Storage {
   url(key: string): string;
 }
 
-export function objectKey(orgId: string, kind: "products" | "cutouts" | "renders" | "logos" | "uploads", ext: string) {
+export function objectKey(orgId: string, kind: "products" | "cutouts" | "renders" | "logos" | "uploads" | "sites", ext: string) {
   return `org/${orgId}/${kind}/${randomUUID()}.${ext.replace(/^\./, "")}`;
 }
 

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireOrg } from "@/server/org";
 import { getActiveKit, getBrand, listKitVersions } from "@/server/brands-data";
-import { saveBrandKit, selectBrand } from "@/server/brands";
+import { saveBrandKit, selectBrand, importKitFromWebsite } from "@/server/brands";
+import { SiteFindings } from "@/components/site-findings";
 import { withDefaults } from "@/lib/brand-kit";
 import { BrandKitEditor } from "@/components/brand-kit-editor";
 
@@ -12,6 +13,7 @@ const errors: Record<string, string> = {
   name: "The brand needs a name.",
   "logo-type": "Logos must be PNG, SVG, JPG or WebP.",
   "logo-size": "Logos must be 15 MB or smaller.",
+  role: "An editor or owner can change the brand kit.",
 };
 
 export default async function BrandKitPage({
@@ -19,11 +21,11 @@ export default async function BrandKitPage({
   searchParams,
 }: {
   params: Promise<{ brandId: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; created?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; created?: string; imported?: string; import?: string }>;
 }) {
   const ctx = await requireOrg();
   const { brandId } = await params;
-  const { error, saved, created } = await searchParams;
+  const { error, saved, created, imported, import: importError } = await searchParams;
   const brand = await getBrand(ctx.org.id, brandId);
   if (!brand) notFound();
   const [active, versions] = await Promise.all([
@@ -73,12 +75,30 @@ export default async function BrandKitPage({
         </div>
       </header>
 
-      {created ? (
+      {created && !imported ? (
         <div className="panel px-4 py-3 text-[13px] text-muted">
           <span className="font-semibold text-ink">{brand.name}</span> is ready.
+          {importError ? ` We couldn't read the website (${decodeURIComponent(importError)}) — ` : " "}
           Add the logo and colours so generated ads match from the first one.
         </div>
       ) : null}
+      {imported ? (
+        <div className="panel px-4 py-3 text-[13px] text-muted">
+          Kit read from <span className="font-semibold text-ink">{brand.website?.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span> and saved as version {active?.version ?? 1}. Check the colours and logo below, then Save kit if you change anything.
+        </div>
+      ) : null}
+      {importError && !created ? (
+        <div className="rounded-[9px] bg-[#fbe3d9] px-4 py-3 text-[13px] text-[#b4382a]">
+          Couldn't read the website: {decodeURIComponent(importError)}
+        </div>
+      ) : null}
+
+      <SiteFindings
+        site={kit.site}
+        website={brand.website}
+        canEdit={ctx.role !== "viewer"}
+        action={importKitFromWebsite.bind(null, brand.id)}
+      />
       {saved ? (
         <div className="panel px-4 py-3 text-[13px] text-muted">
           Saved as version {active?.version ?? 1}. Earlier versions are kept for

@@ -11,6 +11,8 @@ import { switchBrand } from "./onboarding";
 import { getBrand, getActiveKit } from "./brands-data";
 import { COLOR_FIELDS, CTA_STYLES, DEFAULT_KIT, KIT_FONTS, KIT_TONES, normalizeHex, withDefaults } from "@/lib/brand-kit";
 import { LOGO_TYPES, MAX_LOGO_EDGE, MAX_UPLOAD_BYTES } from "@/lib/uploads";
+import { importBrandKitFromWebsite } from "./brand-import";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 function field(formData: FormData, name: string) {
   const v = formData.get(name);
@@ -44,7 +46,39 @@ export async function createBrand(formData: FormData) {
 
   await switchBrand(brand.id);
   revalidatePath("/", "layout");
+
+  // Read the website into the kit when asked: colours, fonts, logo, tagline, tone.
+  const website = field(formData, "website");
+  if (website && field(formData, "importSite") === "1") {
+    try {
+      await importBrandKitFromWebsite(ctx.org.id, brand.id, website);
+      redirect(`/brands/${brand.id}?created=1&imported=1`);
+    } catch (err) {
+      if (isRedirectError(err)) throw err;
+      console.warn("[brands] website import failed", err instanceof Error ? err.message : err);
+      redirect(`/brands/${brand.id}?created=1&import=${encodeURIComponent(err instanceof Error ? err.message : "failed")}`);
+    }
+  }
   redirect(`/brands/${brand.id}?created=1`);
+}
+
+/** Brand kit page → "Import from website": rewrite the active kit from the site (kept as a new version). */
+export async function importKitFromWebsite(brandId: string, formData: FormData) {
+  await dbReady;
+  const ctx = await requireOrg();
+  if (ctx.role === "viewer") redirect(`/brands/${brandId}?error=role`);
+  const brand = await getBrand(ctx.org.id, brandId);
+  if (!brand) redirect("/brands");
+  const website = field(formData, "website") || brand.website || "";
+  try {
+    await importBrandKitFromWebsite(ctx.org.id, brandId, website);
+  } catch (err) {
+    if (isRedirectError(err)) throw err;
+    redirect(`/brands/${brandId}?import=${encodeURIComponent(err instanceof Error ? err.message : "failed")}`);
+  }
+  revalidatePath("/", "layout");
+  revalidatePath(`/brands/${brandId}`);
+  redirect(`/brands/${brandId}?imported=1`);
 }
 
 /** Stores a logo (svg as-is, raster normalised to ≤ 1024px PNG). Returns the file URL. */

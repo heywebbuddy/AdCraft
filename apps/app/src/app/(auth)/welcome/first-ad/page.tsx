@@ -11,10 +11,10 @@ const inputClass = "h-12 w-full rounded-[7px] border border-line bg-surface px-3
  * Onboarding, step 2: get to a first ad. Paste a product link and Adcraft imports the name,
  * description and photo, cuts the background out, and opens a pre-filled brief.
  */
-export default async function FirstAdPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function FirstAdPage({ searchParams }: { searchParams: Promise<{ error?: string; kit?: string }> }) {
   const ctx = await requireOrg();
   if (!ctx.brand) redirect("/brands/new");
-  const { error } = await searchParams;
+  const { error, kit } = await searchParams;
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-[520px]">
@@ -24,6 +24,7 @@ export default async function FirstAdPage({ searchParams }: { searchParams: Prom
           {ctx.brand.name} is ready.<br />
           <span className="font-serif italic text-orange">What are we advertising first?</span>
         </h1>
+        {kit ? <p className="mt-4 rounded-[7px] border border-line bg-surface px-4 py-3 text-[13px] text-muted">Logo, colours and fonts were read from {ctx.brand.website ?? "your website"} — <Link href={`/brands/${ctx.brand.id}`} className="font-semibold text-ink hover:text-orange">see the brand kit</Link> any time.</p> : null}
         <p className="mt-4 text-[15px] text-muted">Paste a product page. Adcraft pulls the name, description and photo, removes the background, and opens a brief with it filled in. About a minute to your first ad.</p>
         {error ? <p className="mt-4 rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-sm text-[#b4382a]">{decodeURIComponent(error)}</p> : null}
         <form action={importFirstProduct} className="mt-8 flex flex-col gap-4">
