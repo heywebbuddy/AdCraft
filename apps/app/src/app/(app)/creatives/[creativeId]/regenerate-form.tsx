@@ -60,7 +60,7 @@ export function RegenerateForm({
           name="model"
           value={modelId}
           onChange={(e) => setModelId(e.target.value)}
-          className="h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[12px] font-normal outline-none focus:border-ink"
+          className="h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[12px] font-normal outline-none focus:border-ink"
         >
           {models.map((m) => (
               <option key={m.id} value={m.id} disabled={!m.enabled}>

@@ -32,7 +32,8 @@ export const MAKER_ICONS: Record<string, string | null> = {
   "Kuaishou": null,
   "Runway": null,
   "fal": null,
-  "Recraft": null
+  "Recraft": null,
+  "xAI": null,
 };
 
 /** Best-effort maker from a spec that does not declare one (custom models). */
@@ -47,7 +48,25 @@ export function inferMaker(id: string, provider: string): string {
   if (s.includes("kling")) return "Kuaishou";
   if (s.includes("runway") || s.includes("gen4")) return "Runway";
   if (s.includes("recraft")) return "Recraft";
-  return provider === "fal" ? "fal" : provider === "replicate" ? "Replicate" : provider === "runway" ? "Runway" : provider === "openai" ? "OpenAI" : provider === "anthropic" ? "Anthropic" : provider;
+  if (s.includes("grok") || s.includes("xai")) return "xAI";
+  return provider === "fal" ? "fal" : provider === "replicate" ? "Replicate" : provider === "runway" ? "Runway" : provider === "openai" ? "OpenAI" : provider === "xai" ? "xAI" : provider === "anthropic" ? "Anthropic" : provider;
+}
+
+/** Short name used in connection messages and picker cards. */
+export function providerLabel(provider: string): string {
+  return provider === "fal"
+    ? "fal.ai"
+    : provider === "replicate"
+      ? "Replicate"
+      : provider === "runway"
+        ? "Runway"
+        : provider === "openai"
+          ? "OpenAI"
+          : provider === "xai"
+            ? "xAI"
+            : provider === "anthropic"
+              ? "Anthropic"
+              : provider;
 }
 
 export function MakerLogo({ maker, size = 20, className, style, title }: { maker: string; size?: number; className?: string; style?: CSSProperties; title?: string }) {

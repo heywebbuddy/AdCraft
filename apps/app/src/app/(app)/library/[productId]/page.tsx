@@ -13,7 +13,7 @@ import { IMAGE_ACCEPT } from "@/lib/uploads";
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 const errors: Record<string, string> = {
   name: "Give the product a name.",
@@ -70,7 +70,7 @@ export default async function ProductPage({
         <div className="flex shrink-0 items-center gap-3">
           <CutoutStatusChip status={status} />
           <Link href={`/briefs/new?product=${product.id}`} className="btn btn-orange h-11">
-            Brief with this product <span aria-hidden="true" className="text-lg leading-none">↗</span>
+            Brief with this product <span aria-hidden="true" className="text-lg leading-none">↗︎</span>
           </Link>
         </div>
       </header>
@@ -168,7 +168,7 @@ export default async function ProductPage({
                 name="description"
                 rows={4}
                 defaultValue={product.description ?? ""}
-                className="w-full rounded-[7px] border border-line bg-white px-3 py-2.5 text-[14px] leading-[1.5] text-ink outline-none placeholder:text-muted/70 focus:border-ink"
+                className="w-full rounded-[7px] border border-line bg-surface px-3 py-2.5 text-[14px] leading-[1.5] text-ink outline-none placeholder:text-muted/70 focus:border-ink"
               />
             </label>
             <div className="grid gap-4 sm:grid-cols-[120px_1fr]">

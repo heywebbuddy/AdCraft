@@ -264,7 +264,7 @@ export default async function BriefPage({
             </div>
             <form action={generateMoreConcepts.bind(null, brief.id)}>
               <button type="submit" className="btn btn-dark h-11">
-                Generate ideas <span aria-hidden="true">↗</span>
+                Generate ideas <span aria-hidden="true">↗︎</span>
               </button>
             </form>
           </div>
@@ -355,7 +355,7 @@ export default async function BriefPage({
                             href={`/creatives/new?conceptId=${c.id}`}
                             className="btn btn-orange h-11"
                           >
-                            Make the ad <span aria-hidden="true">↗</span>
+                            Make the ad <span aria-hidden="true">↗︎</span>
                           </Link>
                         ) : null}
                         <MakeVideoLink conceptId={c.id} kind={c.kind} />
@@ -364,7 +364,7 @@ export default async function BriefPage({
                             href={`/creatives/new?conceptId=${c.id}`}
                             className="btn btn-outline h-11"
                           >
-                            Static version <span aria-hidden="true">↗</span>
+                            Static version <span aria-hidden="true">↗︎</span>
                           </Link>
                         ) : null}
                         <form

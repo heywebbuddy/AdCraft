@@ -117,7 +117,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
             <input type="hidden" name="creativeId" value={v.id} />
             <input type="hidden" name="fresh" value="1" />
             <button type="submit" disabled={rendering} className="btn btn-dark h-11 disabled:cursor-not-allowed disabled:opacity-60">
-              Regenerate everything <span aria-hidden="true">↗</span>
+              Regenerate everything <span aria-hidden="true">↗︎</span>
             </button>
           </form>
         </div>
@@ -244,10 +244,10 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                           {busy ? <><Spark size={20} animate="spin" className="text-orange" /> Generating…</> : "No still yet"}
                         </div>
                       )}
-                      <span className="absolute left-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold text-ink">
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-surface px-2 py-[3px] text-[10px] font-semibold text-ink">
                         {isBroll ? `B-roll ${i - scenes.length + 1}` : `Scene ${i + 1}`} · {s.durationSec} s
                       </span>
-                      <span className={`absolute right-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold ${clip ? "text-[#3f7a55]" : busy ? "text-orange" : err ? "text-[#b4382a]" : "text-muted"}`}>
+                      <span className={`absolute right-2.5 top-2.5 rounded-full bg-surface px-2 py-[3px] text-[10px] font-semibold ${clip ? "text-[#3f7a55]" : busy ? "text-orange" : err ? "text-[#b4382a]" : "text-muted"}`}>
                         {busy ? <Spark size={10} animate="spin" /> : null}
                         {clip ? "Clip" : busy ? "Working" : err ? "Failed" : still ? "Still" : "Queued"}
                       </span>
@@ -266,7 +266,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                           rows={3}
                           disabled={isBroll}
                           placeholder={isBroll ? "B-roll carries no caption" : undefined}
-                          className="rounded-[7px] border border-line bg-white px-2.5 py-2 text-[13px] leading-snug outline-none focus:border-ink"
+                          className="rounded-[7px] border border-line bg-surface px-2.5 py-2 text-[13px] leading-snug outline-none focus:border-ink"
                         />
                       </label>
                       <label className="flex flex-col gap-1">
@@ -276,12 +276,12 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                           defaultValue={i === 0 && !isBroll ? (s.hookText ?? "") : ""}
                           disabled={i !== 0 || isBroll}
                           placeholder={i === 0 && !isBroll ? "Big text over the first scene" : "Only the first scene carries the hook"}
-                          className="h-9 rounded-[7px] border border-line bg-white px-2.5 text-[13px] outline-none focus:border-ink"
+                          className="h-9 rounded-[7px] border border-line bg-surface px-2.5 text-[13px] outline-none focus:border-ink"
                         />
                       </label>
                       <details className="group">
                         <summary className="cursor-pointer select-none text-[11px] font-semibold text-muted hover:text-ink">Scene prompt</summary>
-                        <textarea name="prompt" defaultValue={s.prompt} rows={4} className="mt-1.5 w-full rounded-[7px] border border-line bg-white px-2.5 py-2 text-[12px] leading-snug outline-none focus:border-ink" />
+                        <textarea name="prompt" defaultValue={s.prompt} rows={4} className="mt-1.5 w-full rounded-[7px] border border-line bg-surface px-2.5 py-2 text-[12px] leading-snug outline-none focus:border-ink" />
                       </details>
                       {err ? <div className="text-[11px] text-[#b4382a]">{err.slice(0, 140)}</div> : null}
                       <div className="flex items-center justify-between gap-2">
@@ -289,7 +289,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                           Save
                         </button>
                         <button type="submit" formAction={regenerateSceneAction} disabled={rendering} className="text-[12px] font-semibold text-orange hover:underline disabled:cursor-not-allowed disabled:opacity-60">
-                          Regenerate ↗
+                          Regenerate ↗︎
                         </button>
                       </div>
                     </form>

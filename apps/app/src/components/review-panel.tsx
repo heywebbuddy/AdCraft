@@ -33,7 +33,7 @@ function relative(d: Date) {
   return `${Math.round(s / 86400)}d ago`;
 }
 
-const textareaClass = "min-h-[84px] w-full resize-y rounded-[7px] border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink";
+const textareaClass = "min-h-[84px] w-full resize-y rounded-[7px] border border-line bg-surface px-3 py-2 text-[14px] outline-none focus:border-ink";
 
 export type ReviewPanelProps = {
   creativeId: string;
@@ -81,7 +81,7 @@ export async function ReviewPanel({ creativeId, variantId = null, variantLabels 
         {canRequest && status !== "in_review" && status !== "approved" ? (
           <form action={requestApprovalForm} className="flex flex-col gap-2">
             <input type="hidden" name="creativeId" value={creativeId} />
-            <input name="note" placeholder="Note for the reviewer (optional)" className="h-10 rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink" />
+            <input name="note" placeholder="Note for the reviewer (optional)" className="h-10 rounded-[7px] border border-line bg-surface px-3 text-[13px] outline-none focus:border-ink" />
             <button className="btn btn-dark h-10 self-start text-[13px]">Request approval</button>
           </form>
         ) : null}
@@ -89,7 +89,7 @@ export async function ReviewPanel({ creativeId, variantId = null, variantLabels 
         {canApprove && status !== "approved" ? (
           <form action={decideForm} className="flex flex-col gap-2">
             <input type="hidden" name="creativeId" value={creativeId} />
-            <input name="note" placeholder="Decision note (optional)" className="h-10 rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink" />
+            <input name="note" placeholder="Decision note (optional)" className="h-10 rounded-[7px] border border-line bg-surface px-3 text-[13px] outline-none focus:border-ink" />
             <div className="flex flex-wrap gap-2">
               <button name="decision" value="approve" className="btn btn-orange h-10 text-[13px]">
                 Approve ✓

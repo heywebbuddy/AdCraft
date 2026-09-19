@@ -60,7 +60,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
         <p className="mt-4 text-[15px] text-muted">Signed in as {session.user.email}. Joining adds this workspace to your account; you can switch between workspaces from the sidebar.</p>
         <form action={join} className="mt-6">
           <button type="submit" className="btn btn-orange h-12 justify-between text-[15px]">
-            Join {orgName} <span aria-hidden="true">↗</span>
+            Join {orgName} <span aria-hidden="true">↗︎</span>
           </button>
         </form>
       </div>
@@ -77,7 +77,7 @@ function Shell({ title, body, cta }: { title: string; body: string; cta?: { href
         <p className="mt-4 text-[15px] text-muted">{body}</p>
         {cta ? (
           <Link href={cta.href} className="btn btn-dark mt-6 h-11">
-            {cta.label} <span aria-hidden="true">↗</span>
+            {cta.label} <span aria-hidden="true">↗︎</span>
           </Link>
         ) : null}
       </div>

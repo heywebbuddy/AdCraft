@@ -5,11 +5,12 @@ import { requireOrg } from "@/server/org";
 import { updateOrgName } from "@/server/billing-actions";
 import Link from "next/link";
 import { SettingsNav } from "@/components/settings-nav";
+import { ThemePicker } from "@/components/theme-picker";
 
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] outline-none focus:border-ink";
 
 export default async function SettingsPage({
   searchParams,
@@ -88,8 +89,16 @@ export default async function SettingsPage({
             href="/settings/team"
             className="text-[12px] font-semibold text-orange"
           >
-            Invite people and manage roles ↗
+            Invite people and manage roles ↗︎
           </Link>
+        </section>
+
+        <section className="panel flex flex-col gap-4 p-5 md:col-span-2">
+          <span className="eyebrow">Appearance</span>
+          <p className="m-0 text-[13px] text-muted">
+            Light is the default for the studio and the site. Dark is optional, and it stays on this browser.
+          </p>
+          <ThemePicker />
         </section>
       </div>
     </>

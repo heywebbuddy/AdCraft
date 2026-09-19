@@ -6,7 +6,7 @@ import { saveGuardrails } from "@/server/guardrail-actions";
 
 export const dynamic = "force-dynamic";
 
-const inputClass = "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink disabled:opacity-60";
+const inputClass = "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] outline-none focus:border-ink disabled:opacity-60";
 
 /**
  * Settings → Guardrails: the limits that keep a workspace from surprising itself — spend

@@ -57,6 +57,7 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
             {kind !== "text" ? <option value="fal">fal.ai</option> : null}
             {kind !== "text" ? <option value="replicate">Replicate</option> : null}
             {kind !== "text" ? <option value="runway">Runway</option> : null}
+            {kind === "image" ? <option value="xai">xAI (Grok Imagine)</option> : null}
             <option value="openai">OpenAI {kind === "text" ? "or OpenAI-compatible" : ""}</option>
             {kind === "text" ? <option value="anthropic">Anthropic</option> : null}
           </select>
@@ -99,7 +100,7 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
           </span>
           <input name="maker" defaultValue={model?.maker ?? ""} placeholder="Google, ByteDance, Black Forest Labs…" maxLength={40} list="maker-options" />
           <datalist id="maker-options">
-            {["Google", "OpenAI", "Anthropic", "ByteDance", "Qwen", "Black Forest Labs", "Kuaishou", "Runway", "Recraft", "Replicate", "fal"].map((m) => (
+            {["Google", "OpenAI", "xAI", "Anthropic", "ByteDance", "Qwen", "Black Forest Labs", "Kuaishou", "Runway", "Recraft", "Replicate", "fal"].map((m) => (
               <option key={m} value={m} />
             ))}
           </datalist>
@@ -180,27 +181,27 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
           </div>
         </>
       ) : null}
-      {kind === "text" || (kind === "image" && provider === "openai") ? (
+      {kind === "text" || (kind === "image" && (provider === "openai" || provider === "xai")) ? (
         <div className="admin-grid-3">
           <label>
             <span>
               API model name <small>if different from the id</small>
             </span>
-            <input name="endpoint.text" defaultValue={model?.endpoints?.text ?? ""} placeholder={kind === "text" ? "claude-haiku-4-5-20251001 / gpt-5.5" : "gpt-image-2.5-sunburst"} />
+            <input name="endpoint.text" defaultValue={model?.endpoints?.text ?? ""} placeholder={kind === "text" ? "claude-haiku-4-5-20251001 / gpt-5.5" : provider === "xai" ? "grok-imagine-image-2.0" : "gpt-image-2.5-sunburst"} />
           </label>
-          {provider === "openai" ? (
+          {provider === "openai" || provider === "xai" ? (
             <>
               <label>
                 <span>
-                  Base URL <small>OpenAI-compatible endpoint; blank = api.openai.com</small>
+                  Base URL <small>{provider === "xai" ? "blank = api.x.ai/v1" : "OpenAI-compatible endpoint; blank = api.openai.com"}</small>
                 </span>
-                <input name="baseUrl" defaultValue={model?.baseUrl ?? ""} placeholder="https://generativelanguage.googleapis.com/v1beta/openai" />
+                <input name="baseUrl" defaultValue={model?.baseUrl ?? ""} placeholder={provider === "xai" ? "https://api.x.ai/v1" : "https://generativelanguage.googleapis.com/v1beta/openai"} />
               </label>
               <label>
                 <span>
-                  API key env var <small>blank = OPENAI_API_KEY</small>
+                  API key env var <small>blank = {provider === "xai" ? "XAI_API_KEY" : "OPENAI_API_KEY"}</small>
                 </span>
-                <input name="apiKeyEnv" defaultValue={model?.apiKeyEnv ?? ""} placeholder="GEMINI_API_KEY" />
+                <input name="apiKeyEnv" defaultValue={model?.apiKeyEnv ?? ""} placeholder={provider === "xai" ? "XAI_API_KEY" : "GEMINI_API_KEY"} />
               </label>
             </>
           ) : null}
@@ -233,7 +234,7 @@ export function ModelEditor({ model, builtIn, presetLists }: { model?: ModelSpec
           <input name="notes" defaultValue={model?.notes ?? ""} maxLength={200} placeholder="Photoreal lifestyle scenes." />
         </label>
       </div>
-      {kind === "image" && provider !== "openai" ? (
+      {kind === "image" && provider !== "openai" && provider !== "xai" ? (
         <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
           <label className="check">
             <input type="checkbox" name="noSeed" defaultChecked={model?.noSeed ?? false} /> Endpoint rejects a seed field

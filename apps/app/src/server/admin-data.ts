@@ -608,6 +608,7 @@ export type ProviderStatus = {
 const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "lastSuccessAt" | "lastFailureAt" | "lastError" | "total24h" | "failed24h">> = [
   { id: "anthropic", name: "Anthropic", area: "Concepts, copy, scripts", env: ["ANTHROPIC_API_KEY"], eventKey: "anthropic", note: "Falls back to sample concepts when unset." },
   { id: "openai", name: "OpenAI", area: "GPT Image, GPT text models, any OpenAI-compatible endpoint", env: ["OPENAI_API_KEY"], eventKey: "openai", note: "Compatible endpoints (Gemini, Groq…) use their own key env var set on the model." },
+  { id: "xai", name: "xAI", area: "Grok Imagine Image 2.0 for static ads", env: ["XAI_API_KEY"], eventKey: "xai", note: "Ships as a built-in image model. Run Test in Admin → Models after adding the key." },
   { id: "fal", name: "fal.ai", area: "Images, video, cutouts", env: ["FAL_KEY"], eventKey: "fal", note: "Offline placeholders when unset." },
   { id: "runway", name: "Runway", area: "Gen-4 image and image-to-video", env: ["RUNWAYML_API_SECRET"], eventKey: "runway", note: "Gen-4 Image and Gen-4 Turbo ship disabled; enable after Test." },
   { id: "replicate", name: "Replicate", area: "Images, video (any owner/name model)", env: ["REPLICATE_API_TOKEN"], eventKey: "replicate", note: "Add models from Admin → Models; two examples ship disabled." },

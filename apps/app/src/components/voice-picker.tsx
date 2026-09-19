@@ -24,7 +24,7 @@ export function VoiceField({ voice, search, audition, onChange, disabled, label 
           <small>{voice ? [voice.style, voice.language, voice.provider === "heygen" ? "HeyGen" : "ElevenLabs"].filter(Boolean).join(" · ") : "ElevenLabs and HeyGen voices"}</small>
         </div>
         <button type="button" className="vf-change" disabled={disabled} onClick={() => dialog.current?.showModal()}>
-          Change ↗
+          Change ↗︎
         </button>
       </div>
       <dialog ref={dialog} className="cs-dialog vp-dialog" aria-labelledby="vp-title" onClick={(e) => { if (e.target === e.currentTarget) dialog.current?.close(); }}>

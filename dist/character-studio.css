@@ -34,7 +34,7 @@
 .voice-wave i { width: 3px; border-radius: 4px; background: #a6b68c; }
 .character-voice strong { display: block; font-size: 11px; font-weight: 550; white-space: nowrap; }
 .character-voice div > span { display: block; font-size: 8px; color: #8d967e; margin-top: 6px; }
-.character-spark { position: absolute; top: 18px; right: 11%; color: #c3cf9f; font-size: 65px; line-height: 1; }
+.character-spark { position: absolute; top: 18px; right: 11%; color: #c3cf9f; font-size: 65px; line-height: 1; display: block; }
 .character-preview-note { position: absolute; bottom: 19px; right: 27px; font-size: 7px; letter-spacing: 1.5px; color: #8fa583; }
 .studio-feature-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
 .studio-feature { border: 1px solid #e2e3d8; border-radius: 10px; padding: 25px; overflow: hidden; background: #fffef9; display: flex; flex-direction: column; transition: border-color .2s, transform .2s, box-shadow .2s; }

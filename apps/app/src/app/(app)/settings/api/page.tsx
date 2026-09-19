@@ -10,7 +10,7 @@ import { CopyButton } from "@/components/copy-button";
 
 export const dynamic = "force-dynamic";
 
-const inputClass = "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
+const inputClass = "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] outline-none focus:border-ink";
 
 export default async function ApiPage({
   searchParams,

@@ -50,7 +50,7 @@ export default async function BrandKitPage({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {current ? (
-            <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[11px] font-semibold text-[#3f7a55]">
+            <span className="rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-semibold text-[#3f7a55]">
               Current brand
             </span>
           ) : (
@@ -67,7 +67,7 @@ export default async function BrandKitPage({
           >
             Save kit{" "}
             <span aria-hidden="true" className="text-lg leading-none">
-              ↗
+              ↗︎
             </span>
           </button>
         </div>

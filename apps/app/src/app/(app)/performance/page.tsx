@@ -47,7 +47,7 @@ export default async function PerformancePage({
         description="Track spend, measure creative impact, and find your next winning direction."
         actions={
           <div className="flex shrink-0 flex-wrap items-center gap-3">
-            <div className="flex gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+            <div className="flex gap-1 rounded-[7px] border border-line bg-surface p-[3px] text-[12px] font-medium">
               {RANGES.map((d) => (
                 <Link
                   key={d}
@@ -85,7 +85,7 @@ export default async function PerformancePage({
         <Notice tone="info">
           No ad accounts connected for {ctx.brand?.name ?? "this brand"}.{" "}
           <Link href="/campaigns" className="font-semibold text-orange">
-            Connect one ↗
+            Connect one ↗︎
           </Link>{" "}
           — a sandbox account works offline and fills these views with synthetic
           data.
@@ -269,7 +269,7 @@ export default async function PerformancePage({
                     <td className="px-4 py-2.5">
                       {c.creativeId.startsWith("ad:") ? null : (
                         <div className="flex items-center justify-end gap-3 whitespace-nowrap text-[12px]">
-                          <Link href={`/briefs/new?from=${c.creativeId}`} className="font-semibold text-orange" title="A new round of concepts that keep this promise">Refresh ↗</Link>
+                          <Link href={`/briefs/new?from=${c.creativeId}`} className="font-semibold text-orange" title="A new round of concepts that keep this promise">Refresh ↗︎</Link>
                           {c.adIds.length && canEdit ? (
                             <form action={pauseAds.bind(null, c.adIds)}>
                               <button type="submit" className="text-muted hover:text-ink">Pause</button>
@@ -319,7 +319,7 @@ export default async function PerformancePage({
                           href={`/briefs/new?from=${a.creativeId}`}
                           className="font-semibold text-orange"
                         >
-                          Refresh this creative ↗
+                          Refresh this creative ↗︎
                         </Link>
                       )}
                     </span>

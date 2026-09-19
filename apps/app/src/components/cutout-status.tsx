@@ -5,7 +5,7 @@ export function CutoutStatusChip({ status }: { status: CutoutStatus }) {
   const cls = status === "ready" ? "text-[#3f7a55]" : status === "failed" ? "text-[#b4382a]" : "text-muted";
   const label = status === "ready" ? "Cutout ready" : status === "failed" ? "Cutout failed" : "Processing";
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-2 py-[3px] text-[10px] font-semibold ${cls}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2 py-[3px] text-[10px] font-semibold ${cls}`}>
       {status === "processing" ? <Spark size={11} animate="spin" className="text-orange" /> : null}
       {label}
     </span>

@@ -9,7 +9,7 @@ import { IMAGE_ACCEPT } from "@/lib/uploads";
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 const errors: Record<string, string> = {
   name: "Give the product a name.",
@@ -45,7 +45,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input name="url" type="url" required placeholder="https://yourbrand.com/products/everyday-serum" className={`${inputClass} flex-1`} />
-          <PendingButton className="btn btn-dark h-11 shrink-0" pendingLabel="Importing…">Import ↗</PendingButton>
+          <PendingButton className="btn btn-dark h-11 shrink-0" pendingLabel="Importing…">Import ↗︎</PendingButton>
         </div>
         {error === "url" ? <p className="m-0 text-[12px] text-[#b4382a]">{detail ? decodeURIComponent(detail) : errors.url} Upload a photo below instead.</p> : null}
       </form>
@@ -78,7 +78,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
               name="description"
               rows={4}
               placeholder="What it is, who it’s for, the one thing that makes it different."
-              className="w-full rounded-[7px] border border-line bg-white px-3 py-2.5 text-[14px] leading-[1.5] text-ink outline-none placeholder:text-muted/70 focus:border-ink"
+              className="w-full rounded-[7px] border border-line bg-surface px-3 py-2.5 text-[14px] leading-[1.5] text-ink outline-none placeholder:text-muted/70 focus:border-ink"
             />
           </label>
           <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
@@ -97,7 +97,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
           </div>
           <div className="mt-1 flex items-center gap-3">
             <PendingButton className="btn btn-orange h-11" pendingLabel="Uploading…">
-              Upload and cut out <span aria-hidden="true">↗</span>
+              Upload and cut out <span aria-hidden="true">↗︎</span>
             </PendingButton>
             <Link href="/library" className="btn btn-outline h-11">
               Cancel

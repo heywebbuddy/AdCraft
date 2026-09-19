@@ -5,7 +5,7 @@ import { Wordmark } from "@/components/spark";
 import { requireOrg } from "@/server/org";
 import { importFirstProduct } from "@/server/onboarding";
 
-const inputClass = "h-12 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+const inputClass = "h-12 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 /**
  * Onboarding, step 2: get to a first ad. Paste a product link and Adcraft imports the name,
@@ -32,12 +32,12 @@ export default async function FirstAdPage({ searchParams }: { searchParams: Prom
             <input name="url" type="url" required autoFocus placeholder="https://yourbrand.com/products/everyday-serum" className={inputClass} />
           </label>
           <PendingButton className="btn btn-orange h-12 justify-between text-[15px]" pendingLabel="Importing the product…">
-            Import and write the brief <span aria-hidden="true">↗</span>
+            Import and write the brief <span aria-hidden="true">↗︎</span>
           </PendingButton>
         </form>
         <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-muted">
-          <Link href="/library/new?welcome=1" className="font-semibold text-ink hover:text-orange">Upload a photo instead ↗</Link>
-          <Link href="/characters" className="font-semibold text-ink hover:text-orange">Start with a presenter video ↗</Link>
+          <Link href="/library/new?welcome=1" className="font-semibold text-ink hover:text-orange">Upload a photo instead ↗︎</Link>
+          <Link href="/characters" className="font-semibold text-ink hover:text-orange">Start with a presenter video ↗︎</Link>
           <Link href="/dashboard" className="hover:text-ink">Skip for now</Link>
         </div>
         <p className="mt-6 text-xs text-muted">{ctx.credits.balance} free credits — about {Math.floor(ctx.credits.balance / 2)} static ads, or one presenter video.</p>

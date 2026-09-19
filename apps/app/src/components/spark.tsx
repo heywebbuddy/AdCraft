@@ -1,7 +1,7 @@
 import type { SVGProps } from "react";
 
 /**
- * The Adcraft spark: the ✳ brand mark drawn as an SVG so it can sit in buttons,
+ * The Adcraft spark: the ✳︎ brand mark drawn as an SVG so it can sit in buttons,
  * badges and loaders at any size, and animate.
  *
  * - `animate="spin"`   — the working state (generating, rendering, submitting)
@@ -38,7 +38,7 @@ export function Spark({
   );
 }
 
-/** Brand wordmark with the spark: `✳ adcraft.` */
+/** Brand wordmark with the spark: `✳︎ adcraft.` */
 export function Wordmark({ size = 24, className = "" }: { size?: number; className?: string }) {
   return (
     <span className={`wordmark ${className}`.trim()} style={{ fontSize: size }}>

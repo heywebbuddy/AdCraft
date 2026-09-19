@@ -12,6 +12,7 @@ import { studioModels } from "@/server/character-studio";
 import { currentSubscription, CREDIT_COSTS } from "@/server/billing";
 import { planAllows } from "@/server/platform-settings";
 import { getCatalog } from "@/server/model-catalog";
+import { providerLabel } from "@/components/maker-logo";
 import { reserveGenerationCredits, refundGenerationCredits } from "@/server/generation-credits";
 import { dispatch } from "@/server/jobs";
 import { createVideoFromConcept } from "@/server/videos";
@@ -36,7 +37,7 @@ async function selectedImageModel(form: FormData) {
   const id = field(form, "imageModel", 100);
   const model = (await studioModels()).find(m => m.id === id);
   if (!model?.enabled) throw new Error("Choose an available image model.");
-  if (!model.connected) throw new Error(`${model.provider === "fal" ? "fal.ai" : "OpenAI"} is not connected. Ask your workspace administrator to connect it.`);
+  if (!model.connected) throw new Error(`${providerLabel(model.provider)} is not connected. Ask your workspace administrator to connect it.`);
   return model;
 }
 const EXPRESSIVENESS = ["low", "medium", "high"] as const;

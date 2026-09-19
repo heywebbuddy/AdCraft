@@ -6,7 +6,7 @@ import { createBrand } from "@/server/brands";
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 export default async function NewBrandPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const ctx = await requireOrg();
@@ -40,7 +40,7 @@ export default async function NewBrandPage({ searchParams }: { searchParams: Pro
         </label>
         <div className="mt-1 flex items-center gap-3">
           <button type="submit" className="btn btn-orange h-11">
-            Create brand <span aria-hidden="true">↗</span>
+            Create brand <span aria-hidden="true">↗︎</span>
           </button>
           {!first ? (
             <Link href="/brands" className="btn btn-outline h-11">

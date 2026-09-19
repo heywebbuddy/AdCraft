@@ -278,7 +278,7 @@ export default async function CampaignPage({ params, searchParams }: { params: P
 
           {published ? (
             <Link href="/performance" className="btn btn-outline h-11">
-              See performance <span aria-hidden="true">↗</span>
+              See performance <span aria-hidden="true">↗︎</span>
             </Link>
           ) : null}
         </div>

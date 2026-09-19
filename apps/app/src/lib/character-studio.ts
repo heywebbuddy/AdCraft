@@ -3,7 +3,7 @@ export const CHARACTER_TEMPLATES = [
   { id: "introduction", name: "Meet your next everyday essential", description: "Introduction → product → invitation", icon: "✦" },
   { id: "details", name: "Let the details do the talking", description: "Curiosity → close-ups → invitation", icon: "◎" },
   { id: "question", name: "Start with a question", description: "Question → answer → invitation", icon: "?" },
-  { id: "explainer", name: "Make it easy to understand", description: "Context → explanation → next step", icon: "↗" },
+  { id: "explainer", name: "Make it easy to understand", description: "Context → explanation → next step", icon: "↗︎" },
   { id: "launch", name: "Introduce something new", description: "Announcement → introduction → invitation", icon: "+" },
   { id: "discovery", name: "A closer look", description: "Discovery → detail → explore", icon: "◌" },
 ] as const;

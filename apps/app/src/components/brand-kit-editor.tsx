@@ -13,9 +13,9 @@ export type BrandKitEditorProps = {
 };
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[14px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 const textareaClass =
-  "min-h-[96px] w-full rounded-[7px] border border-line bg-white px-3 py-2.5 text-[14px] leading-[1.5] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "min-h-[96px] w-full rounded-[7px] border border-line bg-surface px-3 py-2.5 text-[14px] leading-[1.5] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -115,7 +115,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
         <Section title="Colours" hint="Hex values">
           <div className="grid gap-3 sm:grid-cols-2">
             {COLOR_FIELDS.map(({ key, label, hint }) => (
-              <div key={key} className="flex items-center gap-3 rounded-[7px] border border-line bg-white p-2.5">
+              <div key={key} className="flex items-center gap-3 rounded-[7px] border border-line bg-surface p-2.5">
                 <label className="swatch relative h-11 w-11 shrink-0 cursor-pointer overflow-hidden rounded-[7px]" style={{ background: colors[key] }}>
                   <input
                     type="color"
@@ -178,7 +178,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
                   aria-pressed={on}
                   onClick={() => setTone((cur) => (on ? cur.filter((x) => x !== t) : [...cur, t]))}
                   className={`inline-flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium capitalize transition ${
-                    on ? "border-ink bg-ink text-white" : "border-line bg-white text-[#4a4b44] hover:border-ink"
+                    on ? "border-ink bg-ink text-white" : "border-line bg-surface text-[#4a4b44] hover:border-ink"
                   }`}
                 >
                   {on ? <span className="text-orange">✓</span> : null}
@@ -206,7 +206,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
           </Field>
           <div className="flex flex-col gap-1.5">
             <span className="field-label">CTA style</span>
-            <div className="flex w-fit gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+            <div className="flex w-fit gap-1 rounded-[7px] border border-line bg-surface p-[3px] text-[12px] font-medium">
               {CTA_STYLES.map((c) => (
                 <button
                   key={c.id}

@@ -1,18 +1,23 @@
 @import "tailwindcss";
 @import "@adcraft/ui/tokens.css";
 
+@import "./theme.css";
+
 @theme inline {
   --color-paper: var(--paper);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-orange: var(--orange);
   --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-well: var(--well);
   --font-sans: var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
 }
 
 html {
   height: 100%;
+  font-variant-emoji: text;
 }
 body {
   /* min-height, never height: a fixed-height flex column would shrink the app shell to the
@@ -26,6 +31,7 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  font-variant-emoji: text;
 }
 
 /* ---- Adcraft shared primitives (match dist/style.css) ---- */
@@ -46,18 +52,18 @@ body {
 }
 .btn:hover { transform: translateY(-2px); }
 .btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; }
-.btn-dark { background: var(--ink); color: #fff; }
-.btn-dark:hover { background: #404139; }
-.btn-orange { background: var(--orange); color: #fff; box-shadow: 0 3px 0 #c94823; }
-.btn-orange:hover { background: #d64a22; }
-.btn-outline { background: #fff; color: var(--ink); border-color: var(--line); }
+.btn-dark { background: var(--ink); color: var(--paper); }
+.btn-dark:hover { background: var(--btn-dark-hover); }
+.btn-orange { background: var(--orange); color: #fff; box-shadow: 0 3px 0 var(--btn-orange-shadow); }
+.btn-orange:hover { background: var(--btn-orange-hover); }
+.btn-outline { background: var(--surface); color: var(--ink); border-color: var(--line); }
 .btn-outline:hover { border-color: var(--ink); }
 .eyebrow { font-size: 10px; letter-spacing: 1.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
-.panel { background: #fff; border: 1px solid var(--line); border-radius: 9px; }
-.tile { background: #fff; border-radius: 9px; box-shadow: 0 4px 12px #2c251509; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; }
-.tile:hover { transform: translateY(-3px); box-shadow: 0 10px 24px #2c25151a; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 9px; }
+.tile { background: var(--surface); border-radius: 9px; box-shadow: 0 4px 12px var(--shadow); overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; }
+.tile:hover { transform: translateY(-3px); box-shadow: 0 10px 24px var(--shadow-hover); }
 .tabular { font-variant-numeric: tabular-nums; }
-::selection { background: #f6c9ae; }
+::selection { background: var(--selection); }
 
 /* Brand spark + wordmark (shared by auth pages and the app shell) */
 .spark { display: inline-block; vertical-align: middle; flex-shrink: 0; transform-origin: 50% 50%; }
@@ -71,5 +77,6 @@ body {
 }
 .wordmark { display: inline-flex; align-items: center; gap: 0.22em; font-weight: 650; letter-spacing: -0.06em; line-height: 1; color: var(--ink); }
 .wordmark-spark { color: var(--orange); }
+.out-arrow { width: 0.85em; height: 0.85em; display: inline-block; vertical-align: -0.14em; flex-shrink: 0; }
 .wordmark b { color: var(--orange); font-weight: 600; margin-left: -0.12em; }
 .btn.is-pending { opacity: 0.85; cursor: progress; }

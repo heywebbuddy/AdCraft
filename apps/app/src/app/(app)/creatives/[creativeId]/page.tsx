@@ -121,7 +121,7 @@ export default async function CreativePage({
         {/* Preview */}
         <section className="flex min-w-0 flex-col gap-3.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+            <div className="flex flex-wrap gap-1 rounded-[7px] border border-line bg-surface p-[3px] text-[12px] font-medium">
               {c.variants.map((v) => (
                 <Link
                   key={v.id}
@@ -139,7 +139,7 @@ export default async function CreativePage({
                         : v.render?.status === "failed"
                           ? "bg-[#b4382a]"
                           : selected?.id === v.id
-                            ? "bg-white/50"
+                            ? "bg-surface/50"
                             : "bg-line"
                     }`}
                   />
@@ -156,7 +156,7 @@ export default async function CreativePage({
           <div className="panel flex items-center justify-center overflow-hidden bg-[#efeee8] p-4">
             {selected ? (
               <div
-                className={`relative w-full overflow-hidden rounded-[7px] bg-white shadow-[0_10px_24px_#2c25151a] ${ratioClass[selected.ratio] ?? "aspect-[4/5]"} ${
+                className={`relative w-full overflow-hidden rounded-[7px] bg-surface shadow-[0_10px_24px_#2c25151a] ${ratioClass[selected.ratio] ?? "aspect-[4/5]"} ${
                   selected.ratio === "9:16" ? "max-h-[78vh] max-w-[calc(78vh*9/16)]" : selected.ratio === "4:5" ? "max-h-[78vh] max-w-[calc(78vh*4/5)]" : selected.ratio === "1:1" ? "max-h-[78vh] max-w-[78vh]" : ""
                 }`}
               >
@@ -293,7 +293,7 @@ export default async function CreativePage({
             <span className="eyebrow">Share and reuse</span>
             <p className="m-0 text-muted">Send a review link to a client, or save this layout as a template for the next brief.</p>
             <Link href={`/creatives/${creativeId}/review`} className="btn btn-outline mt-2 h-11 justify-between">
-              Share for review <span aria-hidden="true">↗</span>
+              Share for review <span aria-hidden="true">↗︎</span>
             </Link>
           </div>
         </aside>

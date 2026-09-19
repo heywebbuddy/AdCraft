@@ -1,10 +1,25 @@
-/* Adcraft brand tokens — single source of truth (mirrored in tokens.ts) */
-:root {
+/* Adcraft brand tokens — light is the default; dark is an opt-in. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
   --paper: #f8f7f3;
   --ink: #242521;
   --muted: #66685f;
   --orange: #e65c32;
+  --orange-text: #c94823;
   --line: #e4e3dc;
+  --surface: #ffffff;
+  --surface-2: #fbfbf8;
+  --well: #f4f5f0;
+  --elevated: #ffffff;
+  --btn-dark-hover: #404139;
+  --btn-orange-hover: #d64a22;
+  --btn-orange-shadow: #c94823;
+  --focus-ring: #2425211a;
+  --selection: #f6c9ae;
+  --shadow: #2c251509;
+  --shadow-hover: #2c25151a;
+  --theme-meta: #f8f7f3;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -13,4 +28,26 @@
 
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Instrument Serif", Georgia, serif;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #14130f;
+  --ink: #f2efe6;
+  --muted: #a39e90;
+  --orange: #e65c32;
+  --orange-text: #f08a62;
+  --line: #2e2b24;
+  --surface: #1c1b16;
+  --surface-2: #181712;
+  --well: #221f19;
+  --elevated: #24221c;
+  --btn-dark-hover: #e8e4d8;
+  --btn-orange-hover: #d64a22;
+  --btn-orange-shadow: #c94823;
+  --focus-ring: #f2efe626;
+  --selection: #5a2e1f;
+  --shadow: #00000040;
+  --shadow-hover: #00000055;
+  --theme-meta: #14130f;
 }

@@ -75,7 +75,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 <input type="hidden" name="plan" value={id} />
                 <input type="hidden" name="interval" value="month" />
                 <button className={`btn h-11 w-full justify-between ${popular ? "btn-orange" : "btn-outline"}`} disabled={current}>
-                  {current ? "Current plan" : `Choose ${p.name}`} <span aria-hidden="true">↗</span>
+                  {current ? "Current plan" : `Choose ${p.name}`} <span aria-hidden="true">↗︎</span>
                 </button>
               </form>
             </section>
@@ -118,7 +118,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             </p>
             <form action={startTopUp}>
               <button className="btn btn-dark h-11 w-full justify-between">
-                Buy {TOP_UP.credits} credits <span aria-hidden="true">↗</span>
+                Buy {TOP_UP.credits} credits <span aria-hidden="true">↗︎</span>
               </button>
             </form>
             {stripeConfigured && sub?.stripeSubscriptionId ? (

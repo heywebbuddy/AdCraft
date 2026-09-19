@@ -279,7 +279,7 @@ export default async function CampaignsPage({
             </p>
             {connectedCount && canEdit ? (
               <Link href="/campaigns/new" className="btn btn-dark h-11">
-                Build a campaign <span aria-hidden="true">↗</span>
+                Build a campaign <span aria-hidden="true">↗︎</span>
               </Link>
             ) : null}
           </div>

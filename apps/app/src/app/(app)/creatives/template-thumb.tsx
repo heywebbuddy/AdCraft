@@ -15,7 +15,7 @@ export function TemplateThumb({ template, className = "" }: {
       {template === "hero" ? <>Your daily<br /><em>dose of glow.</em></> : template === "split" ? <>Small ritual.<br /><em>Beautiful days.</em></> : template === "minimal" ? <>Less, but<br /><em>better.</em></> : <>GOOD<br />SKIN<br /><em>DAYS.</em></>}
     </span>
     <span className={styles.note}>{template === "minimal" ? "THE EVERYDAY SERUM" : template === "bold" ? "A LITTLE DAILY BRILLIANCE." : "Meet your new everyday essential."}</span>
-    <span className={styles.cta}>Discover the serum <span>↗</span></span>
+    <span className={styles.cta}>Discover the serum <span>↗︎</span></span>
     {template === "bold" && <span className={styles.seal}>YOUR<br />DAILY<br />RITUAL</span>}
   </span>;
 }

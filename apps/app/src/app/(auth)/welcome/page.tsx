@@ -7,7 +7,7 @@ import { requireViewer } from "@/server/org";
 import { createWorkspace } from "@/server/onboarding";
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 export default async function WelcomePage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   await dbReady;
@@ -49,7 +49,7 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
             <input name="website" type="url" placeholder="https://eclatskin.com" className={inputClass} />
           </label>
           <PendingButton className="btn btn-orange h-12 justify-between text-[15px]" pendingLabel="Setting up your studio…">
-            Open my studio <span aria-hidden="true">↗</span>
+            Open my studio <span aria-hidden="true">↗︎</span>
           </PendingButton>
           <p className="text-xs text-muted">Starts with 50 free credits. No card needed.</p>
         </form>

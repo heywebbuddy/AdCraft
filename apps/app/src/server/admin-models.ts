@@ -27,7 +27,7 @@ import { getCatalog, hydrateModels, providerConnected } from "./model-catalog";
  * for them only stores the fields the admin changed.
  */
 
-const PROVIDERS: ProviderName[] = ["fal", "replicate", "runway", "openai", "anthropic"];
+const PROVIDERS: ProviderName[] = ["fal", "replicate", "runway", "openai", "xai", "anthropic"];
 const KINDS: Capability[] = ["image", "video", "text"];
 const RATIOS: AspectRatio[] = ["1:1", "4:5", "9:16", "16:9", "1.91:1"];
 
@@ -61,6 +61,7 @@ function parseSpec(f: FormData, existing?: { id: string; kind: Capability }): { 
   if (kind === "image" && provider === "replicate" && !endpoints.text) return { id, kind, spec: {}, error: "Replicate image models need a model ref (owner/name or owner/name:version)." };
   if ((provider === "replicate" || provider === "runway") && f.get("promptOnly") === "on") endpoints.edit = "none";
   if (kind === "image" && provider === "runway" && !endpoints.text) endpoints.text = "gen4_image";
+  if (kind === "image" && provider === "xai" && !endpoints.text) endpoints.text = "grok-imagine-image-2.0";
   if (kind === "video" && provider === "runway" && !endpoints.imageToVideo && !endpoints.textToVideo) endpoints.imageToVideo = "gen4_turbo";
   if (kind === "video" && !endpoints.textToVideo && !endpoints.imageToVideo) return { id, kind, spec: {}, error: "Video models need at least one endpoint id." };
 

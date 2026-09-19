@@ -31,7 +31,7 @@ export default async function TemplatesPage() {
             Open any creative’s review page and choose “Save as template”. Shared templates show up for every brand in {ctx.org.name}; brand templates stay with their brand.
           </p>
           <Link href="/creatives" className="btn btn-dark h-11">
-            Browse creatives <span aria-hidden="true">↗</span>
+            Browse creatives <span aria-hidden="true">↗︎</span>
           </Link>
         </div>
       ) : (
@@ -45,7 +45,7 @@ export default async function TemplatesPage() {
               <div key={t.id} className="tile flex flex-col">
                 <div className="relative bg-[#efeee8] p-3">
                   <TemplateThumb template={template} colors={colors} />
-                  <span className="absolute right-2.5 top-2.5 rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold text-muted">
+                  <span className="absolute right-2.5 top-2.5 rounded-full bg-surface px-2 py-[3px] text-[10px] font-semibold text-muted">
                     {t.isShared ? "Shared" : t.brandName ?? "Brand"}
                   </span>
                 </div>

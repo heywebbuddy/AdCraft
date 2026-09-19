@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "../theme-toggle";
 
 const names: Array<[string, string]> = [
   ["/admin/orgs", "Organisations"],
@@ -45,6 +46,7 @@ export function AdminTopbar({ supportOrg }: { supportOrg: { id: string; name: st
             Viewing <strong>{supportOrg.name}</strong> as support
           </Link>
         ) : null}
+        <ThemeToggle />
         <span className="admin-topbar-note">Internal · platform operations</span>
       </div>
     </header>

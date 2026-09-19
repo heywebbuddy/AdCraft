@@ -7,7 +7,7 @@ const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
 const hasEmail = Boolean(process.env.RESEND_API_KEY);
 
 const inputClass =
-  "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
+  "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
 
 export default async function SignInPage({
   searchParams,
@@ -53,7 +53,7 @@ export default async function SignInPage({
               </label>
               <input id="email" name="email" type="email" required autoComplete="email" placeholder="you@brand.com" className={inputClass} />
               <PendingButton className="btn btn-dark h-11 justify-between" pendingLabel="Sending…">
-                Email me a sign-in link <span aria-hidden="true">↗</span>
+                Email me a sign-in link <span aria-hidden="true">↗︎</span>
               </PendingButton>
             </form>
           ) : null}
@@ -73,7 +73,7 @@ export default async function SignInPage({
 
           {devLoginEnabled ? (
             <form
-              className="flex flex-col gap-3 rounded-[9px] border border-dashed border-line bg-white p-4"
+              className="flex flex-col gap-3 rounded-[9px] border border-dashed border-line bg-surface p-4"
               action={async (formData) => {
                 "use server";
                 await signIn("dev", { email: String(formData.get("email") ?? ""), redirectTo: callbackUrl });
@@ -87,7 +87,7 @@ export default async function SignInPage({
               </p>
               <input name="email" type="email" required placeholder="you@brand.com" className={inputClass} />
               <PendingButton className="btn btn-orange h-11 justify-between" pendingLabel="Signing in…">
-                Sign in <span aria-hidden="true">↗</span>
+                Sign in <span aria-hidden="true">↗︎</span>
               </PendingButton>
             </form>
           ) : null}

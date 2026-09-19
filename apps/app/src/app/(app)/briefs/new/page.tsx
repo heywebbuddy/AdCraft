@@ -24,9 +24,9 @@ const ERRORS: Record<string, string> = {
 };
 
 const fieldClass =
-  "w-full rounded-[7px] border border-line bg-white px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
+  "w-full rounded-[7px] border border-line bg-surface px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
 const chipClass =
-  "inline-flex h-11 cursor-pointer select-none items-center rounded-[7px] border border-line bg-white px-4 text-[13px] font-medium text-[#4a4b44] transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white";
+  "inline-flex h-11 cursor-pointer select-none items-center rounded-[7px] border border-line bg-surface px-4 text-[13px] font-medium text-[#4a4b44] transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white";
 
 function Field({
   label,
@@ -142,7 +142,7 @@ export default async function NewBriefPage({
                     href="/library/new"
                     className="font-semibold text-orange"
                   >
-                    Add one ↗
+                    Add one ↗︎
                   </Link>
                 </span>
               ) : null}
@@ -254,7 +254,7 @@ export default async function NewBriefPage({
             <PendingButton className="btn btn-orange h-11" pendingLabel="Starting…">
               Generate concepts{" "}
               <span aria-hidden="true" className="text-lg leading-none">
-                ↗
+                ↗︎
               </span>
             </PendingButton>
             <Link href="/briefs" className="btn btn-outline h-11">
@@ -284,7 +284,7 @@ export default async function NewBriefPage({
                 href={ctx.brand ? `/brands/${ctx.brand.id}` : "/brands"}
                 className="font-semibold text-orange"
               >
-                Edit kit ↗
+                Edit kit ↗︎
               </Link>
             </p>
           </section>

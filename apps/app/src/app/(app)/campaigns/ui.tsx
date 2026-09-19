@@ -77,9 +77,9 @@ export function relative(d: Date | null | undefined) {
   return `${Math.round(s / 86400)}d ago`;
 }
 
-export const fieldClass = "w-full rounded-[7px] border border-line bg-white px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
+export const fieldClass = "w-full rounded-[7px] border border-line bg-surface px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
 export const chipClass =
-  "inline-flex h-10 cursor-pointer select-none items-center rounded-[7px] border border-line bg-white px-3.5 text-[13px] font-medium text-[#4a4b44] transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white has-disabled:cursor-not-allowed has-disabled:opacity-40";
+  "inline-flex h-10 cursor-pointer select-none items-center rounded-[7px] border border-line bg-surface px-3.5 text-[13px] font-medium text-[#4a4b44] transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white has-disabled:cursor-not-allowed has-disabled:opacity-40";
 
 export function Field({ label, hint, children }: { label: string; hint?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -99,6 +99,6 @@ export function Notice({ tone, children }: { tone: "error" | "ok" | "info"; chil
       ? "border-[#f0c9c2] bg-[#fdf1ee] text-[#b4382a]"
       : tone === "ok"
         ? "border-[#cfe3d6] bg-[#e9f3ec] text-[#3f7a55]"
-        : "border-line bg-white text-[#4a4b44]";
+        : "border-line bg-surface text-[#4a4b44]";
   return <div className={`rounded-[7px] border px-4 py-3 text-[13px] ${cls}`}>{children}</div>;
 }

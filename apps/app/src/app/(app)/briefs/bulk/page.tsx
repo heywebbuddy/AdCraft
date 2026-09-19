@@ -41,7 +41,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
           </h1>
         </div>
         <Link href="/creatives" className="btn btn-outline h-11">
-          All creatives <span aria-hidden="true">↗</span>
+          All creatives <span aria-hidden="true">↗︎</span>
         </Link>
       </header>
 
@@ -55,7 +55,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
             <span className="text-[12px] text-muted">Each renders in {SIZES.join(", ")}. Watch them land on the wall.</span>
           </div>
           <Link href="/creatives" className="btn btn-orange h-11">
-            Go to creatives <span aria-hidden="true">↗</span>
+            Go to creatives <span aria-hidden="true">↗︎</span>
           </Link>
         </section>
       ) : null}
@@ -67,7 +67,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
             Write a brief for {ctx.brand?.name ?? "your brand"} and Adcraft proposes hooks and angles. Come back here to turn a batch of them into ads at once.
           </p>
           <Link href="/briefs/new" className="btn btn-dark h-11">
-            New brief <span aria-hidden="true">↗</span>
+            New brief <span aria-hidden="true">↗︎</span>
           </Link>
         </div>
       ) : (
@@ -102,7 +102,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
 
             <section className="panel flex flex-col gap-3 p-4">
               <span className="eyebrow">Image model</span>
-              <select name="model" defaultValue={models.find((m) => m.isDefault)?.id} className="h-10 rounded-[7px] border border-line bg-white px-2 text-[13px] outline-none focus:border-ink">
+              <select name="model" defaultValue={models.find((m) => m.isDefault)?.id} className="h-10 rounded-[7px] border border-line bg-surface px-2 text-[13px] outline-none focus:border-ink">
                 {models.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.label}
@@ -123,7 +123,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
                 {CREDITS_PER_CREATIVE} credits per creative. You have {ctx.credits.balance}.
               </p>
               <button className="btn btn-orange h-11 justify-between" disabled={ctx.role === "viewer"}>
-                Generate in bulk <span aria-hidden="true">↗</span>
+                Generate in bulk <span aria-hidden="true">↗︎</span>
               </button>
             </section>
           </aside>

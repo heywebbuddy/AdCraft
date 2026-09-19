@@ -13,7 +13,6 @@ import {
   AlertIcon,
   ArrowIcon,
   CheckIcon,
-  LibraryIcon,
   PlusIcon,
   StarIcon,
   TextIcon,
@@ -150,7 +149,7 @@ export default async function DashboardPage() {
               description={
                 data.tiles.length
                   ? "Pick up where you left off."
-                  : "Every size it needs to be, with exact copy and product."
+                  : "This is where the work lives."
               }
               action={
                 <Link className="recent-view-all" href="/creatives">View all{data.counts.creatives ? ` (${data.counts.creatives})` : ""} <ArrowIcon width={14} height={14} /></Link>
@@ -164,23 +163,16 @@ export default async function DashboardPage() {
                 ))}
               </div>
             ) : data.tiles.length === 0 ? (
-              <div className="home-empty">
-                <div className="home-empty-art" aria-hidden="true">
-                  <span style={{ aspectRatio: "4 / 5", background: placeholders[1] }} />
-                  <span style={{ aspectRatio: "9 / 16", background: placeholders[2] }} />
-                  <span style={{ aspectRatio: "1 / 1", background: placeholders[0] }} />
-                </div>
-                <div>
-                  <h3>A little idea. Your first great ad.</h3>
-                  <p>
-                    Start with a character and a story, or turn a product photo into a new campaign for {ctx.brand?.name ?? "your brand"}. Your creations will land here.
-                  </p>
+              <div className="home-empty home-empty-open">
+                <img src="/assets/ads/eclat-packshot.webp" alt="" />
+                <div className="home-empty-open-copy">
+                  <h3>Nothing here yet.<br /><em>Let’s make the first one.</em></h3>
                   <div className="workspace-page-actions">
                     <Link href="/characters" className="btn btn-orange">
                       Create a character ad <ArrowIcon width={14} height={14} />
                     </Link>
-                    <Link href="/briefs/new" className="btn btn-outline">
-                      <LibraryIcon width={15} height={15} /> Start with a brief
+                    <Link href="/briefs/new" className="home-empty-text">
+                      Start with a brief <ArrowIcon width={13} height={13} />
                     </Link>
                   </div>
                 </div>

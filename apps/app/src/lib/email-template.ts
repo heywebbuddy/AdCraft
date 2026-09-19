@@ -1,5 +1,5 @@
 /**
- * Transactional email in the app's design language: paper ground, ink text, the ✳ spark
+ * Transactional email in the app's design language: paper ground, ink text, the ✳︎ spark
  * wordmark, a serif italic line, one orange button. Table-based and inline-styled so it
  * renders the same in Gmail, Outlook and Apple Mail. Works without images.
  */
@@ -40,7 +40,7 @@ export function renderEmail(c: EmailContent): { html: string; text: string } {
   const paragraphs = c.paragraphs.map((p) => `<p style="margin:0 0 14px;font:400 15px/1.6 ${sans};color:${tokens.ink}">${esc(p)}</p>`).join("");
   const button = c.cta
     ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px"><tr><td style="border-radius:8px;background:${tokens.orange}">
-        <a href="${esc(c.cta.url)}" style="display:inline-block;padding:13px 22px;font:600 14px/1 ${sans};color:#ffffff;text-decoration:none;border-radius:8px">${esc(c.cta.label)} &nbsp;↗</a>
+        <a href="${esc(c.cta.url)}" style="display:inline-block;padding:13px 22px;font:600 14px/1 ${sans};color:#ffffff;text-decoration:none;border-radius:8px">${esc(c.cta.label)} &nbsp;↗︎</a>
       </td></tr></table>
       <p style="margin:0 0 6px;font:400 12px/1.6 ${sans};color:${tokens.muted}">Or paste this link into your browser:<br><a href="${esc(c.cta.url)}" style="color:${tokens.orangeText};word-break:break-all">${esc(c.cta.url)}</a></p>`
     : "";

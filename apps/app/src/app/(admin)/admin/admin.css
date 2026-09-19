@@ -37,7 +37,7 @@
   padding: 4px 6px;
   border-radius: 3px;
   background: #f7f8f5;
-  color: var(--rail);
+  color: #242521;
   line-height: 1;
 }
 .admin-mobile-bar .admin-tag {
@@ -175,7 +175,7 @@
   border-radius: 8px;
   font-size: 12px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface);
 }
 .admin-flash.ok {
   color: var(--good);
@@ -195,7 +195,7 @@
   margin: 0;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
   overflow: hidden;
 }
 .admin-kpis .home-stat {
@@ -259,7 +259,7 @@
   gap: 12px;
   padding: 13px 18px;
   border-bottom: 1px solid var(--line);
-  background: #fafbf7;
+  background: var(--paper);
   border-radius: 9px 9px 0 0;
 }
 .admin-panel-head h2 {
@@ -369,7 +369,7 @@
 }
 .admin-table code {
   font-size: 11px;
-  background: #f4f5ef;
+  background: var(--well);
   padding: 1px 5px;
   border-radius: 4px;
 }
@@ -383,7 +383,7 @@
 }
 .admin-table tfoot td {
   font-weight: 600;
-  background: #fafbf7;
+  background: var(--paper);
   border-top: 1px solid var(--line);
   border-bottom: 0;
 }
@@ -400,7 +400,7 @@
   padding: 3px 8px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: #f4f5ef;
+  background: var(--well);
   color: #696e60;
   white-space: nowrap;
   line-height: 1.3;
@@ -451,7 +451,7 @@
   font-size: 11px;
 }
 .admin-shell .btn-danger {
-  background: #fff;
+  background: var(--surface);
   color: var(--bad);
   border-color: #efc9c3;
 }
@@ -492,7 +492,7 @@
   height: 36px;
   border: 1px solid #dfe2d8;
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface);
   padding: 0 10px;
   font-size: 12px;
   color: var(--ink);
@@ -539,7 +539,7 @@
   height: 38px;
   border: 1px solid #dfe2d8;
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface);
   padding: 0 11px;
   font-size: 12px;
   font-family: inherit;
@@ -764,7 +764,7 @@
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 4px;
-  background: #f4f5ef;
+  background: var(--well);
   color: var(--muted);
 }
 .admin-provider .env-list code.missing {
@@ -787,7 +787,7 @@
 }
 .admin-bar .track {
   height: 8px;
-  background: #f0f1ea;
+  background: var(--well);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -819,7 +819,7 @@
   font-size: 12px;
   text-align: right;
   font-variant-numeric: tabular-nums;
-  background: #fff;
+  background: var(--surface);
 }
 
 /* ---- Responsive ----------------------------------------------------------------------- */
@@ -889,7 +889,7 @@
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #fff;
+  background: var(--surface);
   font-size: 16px;
   line-height: 1;
   color: var(--ink);
@@ -906,7 +906,7 @@
   top: 34px;
   z-index: 5;
   min-width: 170px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 10px 30px #1f221a1f;
@@ -929,7 +929,7 @@
 }
 .model-menu > div a:hover,
 .model-menu > div button:hover {
-  background: #f4f5f0;
+  background: var(--well);
 }
 .model-menu > div button.danger {
   color: var(--bad);
@@ -946,7 +946,7 @@
   width: max-content;
   min-width: 220px;
   z-index: 4;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 10px;

@@ -9,7 +9,7 @@ import { MemberRoleForm } from "@/components/member-role-form";
 
 export const dynamic = "force-dynamic";
 
-const inputClass = "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
+const inputClass = "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] outline-none focus:border-ink";
 
 const errors: Record<string, string> = {
   owner: "Only workspace owners can manage the team.",
@@ -156,7 +156,7 @@ export default async function TeamPage({
                 ))}
               </fieldset>
               <button className="btn btn-orange h-11 justify-between">
-                {emailConfigured ? "Send invite" : "Create invite link"} <span aria-hidden="true">↗</span>
+                {emailConfigured ? "Send invite" : "Create invite link"} <span aria-hidden="true">↗︎</span>
               </button>
               {!emailConfigured ? (
                 <p className="m-0 text-[12px] text-muted">

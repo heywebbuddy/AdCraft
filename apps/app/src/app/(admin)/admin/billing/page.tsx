@@ -78,7 +78,7 @@ export default async function AdminBillingPage() {
                         <td>
                           {s.stripeCustomerId ? (
                             <a href={`https://dashboard.stripe.com/customers/${s.stripeCustomerId}`} target="_blank" rel="noreferrer" className="link-quiet">
-                              {s.stripeSubscriptionId ? "Subscription ↗" : "Customer ↗"}
+                              {s.stripeSubscriptionId ? "Subscription ↗︎" : "Customer ↗︎"}
                             </a>
                           ) : (
                             <span className="muted">manual</span>

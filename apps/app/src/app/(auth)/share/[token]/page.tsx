@@ -13,8 +13,8 @@ const ratioClass: Record<string, string> = {
   "1.91:1": "aspect-[1.91/1]",
 };
 
-const inputClass = "h-11 w-full rounded-[7px] border border-line bg-white px-3 text-[15px] outline-none focus:border-ink";
-const textareaClass = "min-h-[96px] w-full resize-y rounded-[7px] border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink";
+const inputClass = "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] outline-none focus:border-ink";
+const textareaClass = "min-h-[96px] w-full resize-y rounded-[7px] border border-line bg-surface px-3 py-2 text-[14px] outline-none focus:border-ink";
 
 const errors: Record<string, string> = {
   invalid: "This link isn’t valid.",

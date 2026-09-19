@@ -24,7 +24,7 @@ export function MemberRoleForm({
         name="role"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-[112px] rounded-[7px] border border-line bg-white px-2 text-[12px] font-medium outline-none focus:border-ink"
+        className="w-[112px] rounded-[7px] border border-line bg-surface px-2 text-[12px] font-medium outline-none focus:border-ink"
         aria-label={`Role for ${name}`}
       >
         <option value="owner">Owner</option>

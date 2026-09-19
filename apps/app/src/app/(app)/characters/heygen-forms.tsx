@@ -81,7 +81,7 @@ export function TwinForm({ balance, credits, canSubmit, onCreated }: { balance: 
         <label className="vt-consent"><input type="checkbox" name="consent" value="yes" required /> The person in this footage has agreed to be cloned. HeyGen will send them a link to record a short consent statement before the twin can be used.</label>
         {progress !== null && <div className="ac-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /><small>Uploading… {progress}%</small></div>}
         {error ? <p className="cs-error" role="alert">{error}</p> : null}
-        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available · training takes a while</span><button type="submit" className="cs-primary" disabled={!canSubmit || pending || progress !== null || !file || balance < credits}>{progress !== null ? "Uploading…" : pending ? "Starting…" : "Train the twin ↗"}</button></div>
+        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available · training takes a while</span><button type="submit" className="cs-primary" disabled={!canSubmit || pending || progress !== null || !file || balance < credits}>{progress !== null ? "Uploading…" : pending ? "Starting…" : "Train the twin ↗︎"}</button></div>
       </form>
   );
 }
@@ -143,7 +143,7 @@ export function PhotoForm({ balance, credits, canSubmit, defaultVoice, onCreated
         <div className="cs-field"><VoiceField voice={voice} search={searchVoicesAction} audition={auditionVoiceAction} onChange={setVoice} label="Voice" labelClassName="cs-field-label" /></div>
         {progress !== null && <div className="ac-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /><small>Uploading… {progress}%</small></div>}
         {error ? <p className="cs-error" role="alert">{error}</p> : null}
-        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available</span><button type="submit" className="cs-primary" disabled={!canSubmit || pending || progress !== null || balance < credits || (mode === "photo" && !file) || !voice}>{progress !== null ? "Uploading…" : pending ? "Creating…" : "Create character ↗"}</button></div>
+        <div className="cs-dialog-footer"><span>{credits} credits · {balance} available</span><button type="submit" className="cs-primary" disabled={!canSubmit || pending || progress !== null || balance < credits || (mode === "photo" && !file) || !voice}>{progress !== null ? "Uploading…" : pending ? "Creating…" : "Create character ↗︎"}</button></div>
       </form>
   );
 }

@@ -13,7 +13,7 @@ export type EditorProps = {
   onSave: (formData: FormData) => Promise<void>;
 };
 
-const fieldClass = "w-full rounded-[7px] border border-line bg-white px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
+const fieldClass = "w-full rounded-[7px] border border-line bg-surface px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -73,7 +73,7 @@ export function Editor({ creativeId, document: doc, templates, busy, onSave }: E
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Align">
-          <div className="flex gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+          <div className="flex gap-1 rounded-[7px] border border-line bg-surface p-[3px] text-[12px] font-medium">
             {(["left", "center"] as const).map((a) => (
               <label key={a} className="flex-1 cursor-pointer">
                 <input type="radio" name="align" value={a} defaultChecked={doc.layout.align === a} className="peer sr-only" />

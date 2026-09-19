@@ -75,7 +75,7 @@ export default async function BrandsPage() {
                       </span>
                     )}
                     {current ? (
-                      <span className="rounded-full bg-white px-2 py-[3px] text-[10px] font-semibold text-[#3f7a55]">
+                      <span className="rounded-full bg-surface px-2 py-[3px] text-[10px] font-semibold text-[#3f7a55]">
                         Current
                       </span>
                     ) : null}

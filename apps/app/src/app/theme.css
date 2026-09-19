@@ -1,0 +1,171 @@
+/* Theme chrome. Light is the default; [data-theme="dark"] only applies after an explicit choice. */
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.theme-toggle:hover { border-color: var(--ink); }
+.theme-toggle:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+.theme-toggle-sun { display: none; }
+[data-theme="dark"] .theme-toggle-sun { display: block; }
+[data-theme="dark"] .theme-toggle-moon { display: none; }
+
+.theme-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.theme-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.theme-pick:hover { border-color: var(--ink); }
+.theme-pick.is-selected {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.theme-pick strong { font-size: 14px; font-weight: 600; }
+.theme-pick > span:last-child {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.theme-pick-swatch {
+  width: 100%;
+  height: 44px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.theme-pick.light .theme-pick-swatch {
+  background: linear-gradient(135deg, #f8f7f3 45%, #ffffff 45%);
+}
+.theme-pick.dark .theme-pick-swatch {
+  background: linear-gradient(135deg, #14130f 45%, #1c1b16 45%);
+}
+
+.theme-fixed {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 20;
+}
+
+@media (max-width: 620px) {
+  .theme-picker { grid-template-columns: 1fr; }
+}
+
+/* Dark remaps for surfaces that still use cream/sage hexes */
+[data-theme="dark"] .app-shell {
+  background: var(--paper);
+}
+[data-theme="dark"] .workspace-sidebar,
+[data-theme="dark"] .workspace-topbar {
+  background: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  border-color: var(--line);
+}
+[data-theme="dark"] .panel,
+[data-theme="dark"] .tile,
+[data-theme="dark"] .home-stat,
+[data-theme="dark"] .home-empty,
+[data-theme="dark"] .queue-card,
+[data-theme="dark"] .workspace-command,
+[data-theme="dark"] .command-input,
+[data-theme="dark"] .setup-row,
+[data-theme="dark"] .home-panel,
+[data-theme="dark"] .overview-onboarding,
+[data-theme="dark"] .workspace-footer {
+  background: var(--surface);
+  border-color: var(--line);
+  color: inherit;
+}
+[data-theme="dark"] .dash-studio {
+  background: var(--surface);
+  border-color: var(--line);
+}
+[data-theme="dark"] .dash-studio-banner {
+  background: #1e221c;
+}
+[data-theme="dark"] .dash-studio-copy h2 em,
+[data-theme="dark"] .dash-kicker,
+[data-theme="dark"] .dash-text-link {
+  color: #b8c4a4;
+}
+[data-theme="dark"] .dash-studio-copy p,
+[data-theme="dark"] .dash-tool p,
+[data-theme="dark"] .dash-tool-detail,
+[data-theme="dark"] .dash-studio-foot,
+[data-theme="dark"] .dash-stat-label {
+  color: var(--muted);
+}
+[data-theme="dark"] .dash-tool {
+  border-color: var(--line);
+}
+[data-theme="dark"] .dash-tool:hover { background: var(--well); }
+[data-theme="dark"] .dash-tool-icon { background: #2a221c; color: #e0b49a; }
+[data-theme="dark"] .dash-tool-sage .dash-tool-icon { background: #22261c; color: #b8c4a4; }
+[data-theme="dark"] .dash-tool-lavender .dash-tool-icon { background: #24222a; color: #c4bdd4; }
+[data-theme="dark"] .dash-tool-sand .dash-tool-icon { background: #2a2518; color: #d4c08a; }
+[data-theme="dark"] .dash-inventory {
+  background: #1c2018;
+  border-color: #2c3328;
+}
+[data-theme="dark"] .dash-inventory-head,
+[data-theme="dark"] .dash-inventory-counts strong { color: #c5d0b4; }
+[data-theme="dark"] .dash-inventory > p,
+[data-theme="dark"] .dash-inventory-counts span { color: #8f997f; }
+[data-theme="dark"] .dash-inventory-counts { border-color: #2c3328; }
+[data-theme="dark"] .home-empty-open { background: #2a221c; }
+[data-theme="dark"] .home-empty-open-copy {
+  background: linear-gradient(90deg, #1c1814 0%, #1c1814e6 38%, #1c181400 78%);
+}
+[data-theme="dark"] .home-empty-open h3 { color: var(--ink); }
+[data-theme="dark"] .home-empty-text { color: #c4b8aa; }
+[data-theme="dark"] .recent-creative-preview {
+  background: var(--well);
+  border-color: var(--line);
+}
+[data-theme="dark"] .recent-creative:hover .recent-creative-preview {
+  background: #2a2822;
+  border-color: #4a4a40;
+}
+[data-theme="dark"] .dashboard-home .home-strip {
+  background: var(--surface);
+  border-color: var(--line);
+}
+[data-theme="dark"] .admin-shell { --rail: #0e0d0b; --good-bg: #1a2a1e; --bad-bg: #2a1816; --warn-bg: #2a2416; }
+[data-theme="dark"] .dash-script-note,
+[data-theme="dark"] .dash-voice-note {
+  background: var(--elevated);
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .dash-art-orbit { border-color: #3a3f32; box-shadow: 0 0 0 32px #1c2018, 0 0 0 33px #252a20; }
+[data-theme="dark"] .dash-presenter { border-color: var(--surface); }
+[data-theme="dark"] .dash-presenter-caption { background: #2a2418eb; color: var(--ink); }
+[data-theme="dark"] .workspace-command { background: var(--elevated); color: var(--ink); }
+[data-theme="dark"] .workspace-nav-item:hover,
+[data-theme="dark"] .setup-row:hover { background: var(--well); }
+[data-theme="dark"] .create-menu,
+[data-theme="dark"] .activity-tray {
+  background: var(--elevated);
+  border-color: var(--line);
+  color: var(--ink);
+}

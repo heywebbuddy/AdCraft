@@ -15,9 +15,11 @@ export {
 } from "./fal";
 
 export { generateOpenAIImage, isOpenAIConfigured, OPENAI_IMAGE_SIZES } from "./openai";
+export { generateXaiImage, isXaiConfigured, XAI_ASPECT_RATIOS, xaiImageBody } from "./xai";
 import { getModel } from "../models";
 import { generateImage as falGenerate, type FalImageRequest } from "./fal";
 import { generateOpenAIImage } from "./openai";
+import { generateXaiImage } from "./xai";
 import { generateReplicateImage } from "../replicate";
 import { generateRunwayImage } from "../runway";
 
@@ -28,6 +30,8 @@ export function generateImage(req: FalImageRequest) {
   switch (model.provider) {
     case "openai":
       return generateOpenAIImage(req);
+    case "xai":
+      return generateXaiImage(req);
     case "replicate":
       return generateReplicateImage(req);
     case "runway":

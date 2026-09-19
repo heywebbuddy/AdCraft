@@ -42,7 +42,7 @@ export function BulkPicker({ briefs }: { briefs: BulkBrief[] }) {
         <span className="eyebrow">
           Concepts · {picked.size} of {all.length} selected
         </span>
-        <div className="flex gap-1 rounded-[7px] border border-line bg-white p-[3px] text-[12px] font-medium">
+        <div className="flex gap-1 rounded-[7px] border border-line bg-surface p-[3px] text-[12px] font-medium">
           <button type="button" onClick={() => setPicked(new Set(all))} className="inline-flex min-h-8 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
             Select all
           </button>

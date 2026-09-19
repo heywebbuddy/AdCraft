@@ -5,7 +5,7 @@ import type { AspectRatio, Capability, ProviderName } from "./types";
  *
  * Every model is a self-describing `ModelSpec`: which provider serves it, which endpoint
  * ids to call, which *input preset* shapes the request, and what it costs. The adapters
- * (`image/fal-input.ts`, `video/fal-video.ts`, `image/openai.ts`, `text/*`) read the spec
+ * (`image/fal-input.ts`, `video/fal-video.ts`, `image/openai.ts`, `image/xai.ts`, `text/*`) read the spec
  * instead of switching on model ids, so a new model is data, not code.
  *
  * `BUILT_IN_MODELS` is the seed list. The app merges rows from the `ai_models` table
@@ -14,7 +14,7 @@ import type { AspectRatio, Capability, ProviderName } from "./types";
  */
 
 /** How to shape provider input. Adapters know these; specs pick one. */
-export type ImagePreset = "nano-banana" | "seedream" | "flux" | "gpt-image" | "qwen" | "fal-generic" | "openai-images" | "replicate-generic" | "runway-image";
+export type ImagePreset = "nano-banana" | "seedream" | "flux" | "gpt-image" | "qwen" | "fal-generic" | "openai-images" | "grok-imagine" | "replicate-generic" | "runway-image";
 export type VideoPreset = "kling" | "veo" | "seedance" | "fal-generic" | "replicate-generic" | "runway-video";
 export type TextPreset = "anthropic-messages" | "openai-chat";
 export type ModelPreset = ImagePreset | VideoPreset | TextPreset;
@@ -27,6 +27,7 @@ export const IMAGE_PRESETS: Array<{ id: ImagePreset; label: string; provider: Pr
   { id: "qwen", label: "Qwen Image", provider: "fal", hint: "image_size, num_images" },
   { id: "fal-generic", label: "Generic fal endpoint", provider: "fal", hint: "prompt, image_size {width,height}, num_images, seed" },
   { id: "openai-images", label: "OpenAI Images API", provider: "openai", hint: "size per ratio, quality from options" },
+  { id: "grok-imagine", label: "Grok Imagine (xAI)", provider: "xai", hint: "aspect_ratio, resolution 1k|2k, quality low|medium|auto; edits via JSON image / images" },
   { id: "replicate-generic", label: "Replicate model", provider: "replicate", hint: "prompt, aspect_ratio, width/height, num_outputs, image_input for references; ref = owner/name[:version]" },
   { id: "runway-image", label: "Runway text_to_image", provider: "runway", hint: "promptText, pixel ratio per size, up to 3 referenceImages; model = gen4_image" },
 ];
@@ -246,6 +247,19 @@ export const BUILT_IN_IMAGE_MODELS: ModelSpec[] = [
     options: { quality: "low" },
     creditsPerUnit: 1,
     notes: "Faster creative exploration and drafts.",
+  },
+  {
+    id: "grok-imagine-image-2",
+    label: "Grok Imagine Image 2.0", maker: "xAI",
+    kind: "image",
+    provider: "xai",
+    preset: "grok-imagine",
+    endpoints: { text: "grok-imagine-image-2.0" },
+    options: { quality: "medium", resolution: "1k" },
+    apiKeyEnv: "XAI_API_KEY",
+    creditsPerUnit: 2,
+    approxCostUsd: 0.05,
+    notes: "Photoreal product ads and lifestyle scenes. Needs XAI_API_KEY.",
   },
 ];
 

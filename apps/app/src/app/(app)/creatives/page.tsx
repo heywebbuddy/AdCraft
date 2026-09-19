@@ -87,7 +87,7 @@ export default async function CreativesPage({
               aria-label="Creative status"
               name="status"
               defaultValue={status}
-              className="h-9 border border-line bg-white px-3 text-[11px]"
+              className="h-9 border border-line bg-surface px-3 text-[11px]"
             >
               <option value="">All statuses</option>
               <option value="ready">Ready</option>

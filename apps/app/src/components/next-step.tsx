@@ -77,7 +77,7 @@ export async function NextStep({ orgId, creativeId, renderStatus, kind, canEdit,
             </form>
             <form action={requestApprovalForm} className="contents">
               <input type="hidden" name="creativeId" value={creativeId} />
-              <button type="submit" className="btn btn-outline h-11 justify-between">Send for review <span aria-hidden="true">↗</span></button>
+              <button type="submit" className="btn btn-outline h-11 justify-between">Send for review <span aria-hidden="true">↗︎</span></button>
             </form>
           </>
         ) : null}
@@ -91,7 +91,7 @@ export async function NextStep({ orgId, creativeId, renderStatus, kind, canEdit,
         {n.stage === "changes_requested" && canEdit ? (
           <form action={requestApprovalForm} className="contents">
             <input type="hidden" name="creativeId" value={creativeId} />
-            <button type="submit" className="btn btn-outline h-11 justify-between">Request approval again <span aria-hidden="true">↗</span></button>
+            <button type="submit" className="btn btn-outline h-11 justify-between">Request approval again <span aria-hidden="true">↗︎</span></button>
           </form>
         ) : null}
         {(n.stage === "approved" || n.stage === "paused" || n.stage === "live") && canEdit && n.readySizes > 0 ? (
@@ -103,7 +103,7 @@ export async function NextStep({ orgId, creativeId, renderStatus, kind, canEdit,
           <Link href="/performance" className="btn btn-outline h-11 justify-between">See performance <span aria-hidden="true">→</span></Link>
         ) : null}
         {n.stage !== "rendering" && canEdit && conceptId ? (
-          <Link href={variantHref} className="btn btn-outline h-11 justify-between">Make a variant <span aria-hidden="true">↗</span></Link>
+          <Link href={variantHref} className="btn btn-outline h-11 justify-between">Make a variant <span aria-hidden="true">↗︎</span></Link>
         ) : null}
       </div>
       {n.stage === "draft" && !canEdit ? <p className="m-0 text-[12px] text-muted">Viewers can comment; an editor approves.</p> : null}

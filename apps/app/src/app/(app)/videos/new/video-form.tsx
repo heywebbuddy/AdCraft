@@ -113,7 +113,7 @@ export function VideoForm(p: VideoFormProps) {
                 key={r.id}
                 type="button"
                 onClick={() => setRatio(r.id)}
-                className={`flex items-center gap-3 rounded-[7px] border bg-white px-3.5 py-2.5 text-left transition ${ratio === r.id ? "border-ink shadow-[0_0_0_3px_#efeee8]" : "border-line hover:border-muted"}`}
+                className={`flex items-center gap-3 rounded-[7px] border bg-surface px-3.5 py-2.5 text-left transition ${ratio === r.id ? "border-ink shadow-[0_0_0_3px_#efeee8]" : "border-line hover:border-muted"}`}
               >
                 <span className={`rounded-[3px] border border-ink ${ratioBox[r.id]}`} />
                 <span className="flex flex-col">
@@ -134,7 +134,7 @@ export function VideoForm(p: VideoFormProps) {
             <div className="flex flex-col gap-1.5">
               <span className="eyebrow">Presenter</span>
               <input type="hidden" name="avatarId" value={avatar?.look.id ?? ""} />
-              <button type="button" onClick={() => libraryDialog.current?.showModal()} className="flex h-14 items-center gap-3 rounded-[7px] border border-line bg-white px-2 text-left text-[13px] hover:border-ink">
+              <button type="button" onClick={() => libraryDialog.current?.showModal()} className="flex h-14 items-center gap-3 rounded-[7px] border border-line bg-surface px-2 text-left text-[13px] hover:border-ink">
                 {avatar?.look.previewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={avatar.look.previewUrl} alt="" className="h-10 w-8 rounded-[5px] object-cover" />
@@ -145,7 +145,7 @@ export function VideoForm(p: VideoFormProps) {
                   <strong className="truncate font-semibold">{avatar ? `${avatar.person.name} · ${avatar.look.name}` : "Choose a presenter"}</strong>
                   <small className="text-[11px] text-muted">{p.groups.length.toLocaleString()} people in the HeyGen library</small>
                 </span>
-                <span className="pr-2 text-[12px] font-semibold text-orange">Change ↗</span>
+                <span className="pr-2 text-[12px] font-semibold text-orange">Change ↗︎</span>
               </button>
               <dialog ref={libraryDialog} className="cs-dialog cs-library-dialog" aria-labelledby="pl-title" onClick={(e) => { if (e.target === e.currentTarget) libraryDialog.current?.close(); }}>
                 <PresenterLibrary groups={p.groups} loadLooks={loadPresenterLooks} selectedId={avatar?.look.id} ratio={ratio} onSelect={(c) => { setAvatar(c); libraryDialog.current?.close(); }} onClose={() => libraryDialog.current?.close()} />
@@ -212,7 +212,7 @@ export function VideoForm(p: VideoFormProps) {
         {short ? <p className="m-0 rounded-[7px] bg-[#fbe3d9] px-3 py-2 text-[12px] text-[#b4382a]">Not enough credits for this run. Top up in Settings.</p> : null}
         <button type="submit" disabled={pending || short} className="btn btn-orange h-11 disabled:cursor-not-allowed disabled:opacity-60">
           {pending ? <Spark size={14} animate="spin" /> : null}
-          {pending ? "Starting…" : "Generate video"} <span aria-hidden="true">↗</span>
+          {pending ? "Starting…" : "Generate video"} <span aria-hidden="true">↗︎</span>
         </button>
         <p className="m-0 text-[11px] leading-relaxed text-muted">Takes a few minutes. You can leave the page; the storyboard fills in as each scene lands.</p>
       </aside>

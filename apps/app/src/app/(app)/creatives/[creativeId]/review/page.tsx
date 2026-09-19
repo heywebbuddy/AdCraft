@@ -11,7 +11,7 @@ import { CopyButton } from "@/components/copy-button";
 export const dynamic = "force-dynamic";
 
 
-const inputClass = "h-10 w-full rounded-[7px] border border-line bg-white px-3 text-[13px] outline-none focus:border-ink";
+const inputClass = "h-10 w-full rounded-[7px] border border-line bg-surface px-3 text-[13px] outline-none focus:border-ink";
 
 export default async function CreativeReviewPage({
   params,
@@ -49,7 +49,7 @@ export default async function CreativeReviewPage({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <Link href={`/creatives/${creativeId}`} className="btn btn-outline h-11">
-            Open in editor <span aria-hidden="true">↗</span>
+            Open in editor <span aria-hidden="true">↗︎</span>
           </Link>
         </div>
       </header>
@@ -74,7 +74,7 @@ export default async function CreativeReviewPage({
         <p className="panel m-0 px-4 py-3 text-[13px] text-[#3f7a55]">
           Saved as a template.{" "}
           <Link href="/settings/templates" className="font-semibold text-orange">
-            See templates ↗
+            See templates ↗︎
           </Link>
         </p>
       ) : null}
@@ -131,7 +131,7 @@ export default async function CreativeReviewPage({
                   </label>
                   <label className="flex items-center gap-2 text-[13px]">
                     Expires in
-                    <select name="expiresInDays" defaultValue="14" className="h-9 rounded-[7px] border border-line bg-white px-2 text-[12px] outline-none focus:border-ink">
+                    <select name="expiresInDays" defaultValue="14" className="h-9 rounded-[7px] border border-line bg-surface px-2 text-[12px] outline-none focus:border-ink">
                       <option value="7">7 days</option>
                       <option value="14">14 days</option>
                       <option value="30">30 days</option>

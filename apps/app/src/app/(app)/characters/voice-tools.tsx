@@ -67,7 +67,7 @@ export function VoiceTools({ voices: initial, canEdit, onUse }: { voices: Catalo
                   <small>{v.status === "processing" ? "Training on HeyGen — usually under a minute" : v.status === "failed" ? "Cloning failed. Try a cleaner recording." : [v.gender === "female" ? "Woman" : v.gender === "male" ? "Man" : null, v.language].filter(Boolean).join(" · ") || "Ready"}</small>
                 </div>
                 <span className={`vp-source owned ${v.owned}`}>{v.owned === "clone" ? "Clone" : "Designed"}</span>
-                <button type="button" className="cs-text-button vt-use" disabled={v.status !== undefined || !canEdit} onClick={() => onUse(v)}>Use ↗</button>
+                <button type="button" className="cs-text-button vt-use" disabled={v.status !== undefined || !canEdit} onClick={() => onUse(v)}>Use ↗︎</button>
                 <button type="button" className="vt-delete" aria-label={`Delete ${v.name}`} disabled={!canEdit} onClick={() => remove(v)}>×</button>
               </div>
             ))}
@@ -116,7 +116,7 @@ function CloneDialog({ ref, onCreated }: { ref: React.RefObject<HTMLDialogElemen
         </label>
         <label className="vt-consent"><input type="checkbox" name="consent" value="yes" required /> I have this person's permission to clone their voice, and I will use it responsibly.</label>
         {error ? <p className="cs-error" role="alert">{error}</p> : null}
-        <div className="cs-dialog-footer"><span>No Adcraft credits · uses one HeyGen voice slot</span><button type="submit" className="cs-primary" disabled={pending || !file}>{pending ? "Uploading…" : "Clone voice ↗"}</button></div>
+        <div className="cs-dialog-footer"><span>No Adcraft credits · uses one HeyGen voice slot</span><button type="submit" className="cs-primary" disabled={pending || !file}>{pending ? "Uploading…" : "Clone voice ↗︎"}</button></div>
       </form>
     </dialog>
   );
@@ -175,7 +175,7 @@ function DesignDialog({ ref, onKept }: { ref: React.RefObject<HTMLDialogElement 
           <div className="pl-segment" role="group" aria-label="Gender">
             {(["", "female", "male"] as const).map((g) => <button type="button" key={g} aria-pressed={gender === g} onClick={() => setGender(g)}>{g === "" ? "Any" : g === "female" ? "Woman" : "Man"}</button>)}
           </div>
-          <button type="button" className="cs-secondary" disabled={pending || prompt.trim().length < 20} onClick={() => find(0)}>{pending && !results.length ? "Designing…" : "Find voices ↗"}</button>
+          <button type="button" className="cs-secondary" disabled={pending || prompt.trim().length < 20} onClick={() => find(0)}>{pending && !results.length ? "Designing…" : "Find voices ↗︎"}</button>
         </div>
         {note ? <p className="cs-modal-note" role="status">{note}</p> : null}
         {results.length > 0 && (
@@ -190,7 +190,7 @@ function DesignDialog({ ref, onKept }: { ref: React.RefObject<HTMLDialogElement 
                 </div>
               ))}
             </div>
-            <button type="button" className="cs-text-button vt-more" disabled={pending} onClick={() => find(seed + 1)}>{pending ? "Designing…" : "Show three more ↗"}</button>
+            <button type="button" className="cs-text-button vt-more" disabled={pending} onClick={() => find(seed + 1)}>{pending ? "Designing…" : "Show three more ↗︎"}</button>
           </div>
         )}
         {error ? <p className="cs-error" role="alert">{error}</p> : null}
