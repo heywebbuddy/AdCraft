@@ -15,5 +15,5 @@ export function CutoutStatusChip({ status }: { status: CutoutStatus }) {
 /** Checkerboard used behind transparent cutouts. */
 export const CHECKER_STYLE = {
   background:
-    "linear-gradient(45deg,#efeee8 25%,transparent 25%,transparent 75%,#efeee8 75%) 0 0 / 18px 18px, linear-gradient(45deg,#efeee8 25%,transparent 25%,transparent 75%,#efeee8 75%) 9px 9px / 18px 18px, #fff",
+    "linear-gradient(45deg,var(--well) 25%,transparent 25%,transparent 75%,var(--well) 75%) 0 0 / 18px 18px, linear-gradient(45deg,var(--well) 25%,transparent 25%,transparent 75%,var(--well) 75%) 9px 9px / 18px 18px, var(--surface)",
 } as const;

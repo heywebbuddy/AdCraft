@@ -74,7 +74,7 @@ export default async function TeamPage({
               const isMe = m.userId === ctx.viewer.userId;
               return (
                 <li key={m.id} className="flex flex-wrap items-center gap-3 py-3 text-[13px]">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[12px] font-semibold text-white">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-[12px] font-semibold text-paper">
                     {(m.name ?? m.email ?? "?").slice(0, 1).toUpperCase()}
                   </span>
                   <span className="flex min-w-0 flex-1 basis-[160px] flex-col leading-tight">
@@ -112,7 +112,7 @@ export default async function TeamPage({
               <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
                 {invites.map((i) => (
                   <li key={i.id} className="flex flex-wrap items-center gap-3 py-3 text-[13px]">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-[#d4d3ca] text-[12px] text-muted">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-line text-[12px] text-muted">
                       {i.email.slice(0, 1).toUpperCase()}
                     </span>
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">

@@ -26,7 +26,7 @@ const ERRORS: Record<string, string> = {
 const fieldClass =
   "w-full rounded-[7px] border border-line bg-surface px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
 const chipClass =
-  "inline-flex h-11 cursor-pointer select-none items-center rounded-[7px] border border-line bg-surface px-4 text-[13px] font-medium text-[#4a4b44] transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white";
+  "inline-flex h-11 cursor-pointer select-none items-center rounded-[7px] border border-line bg-surface px-4 text-[13px] font-medium text-ink transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-paper";
 
 function Field({
   label,
@@ -290,7 +290,7 @@ export default async function NewBriefPage({
           </section>
           <section className="flex flex-col gap-2 px-0.5 py-1">
             <span className="eyebrow">Good briefs</span>
-            <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[12px] text-[#4a4b44]">
+            <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[12px] text-ink">
               <li>Name the person, not the demographic.</li>
               <li>
                 One offer per brief. Make another brief for another offer.

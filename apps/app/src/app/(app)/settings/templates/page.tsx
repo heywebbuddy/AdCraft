@@ -43,7 +43,7 @@ export default async function TemplatesPage() {
             const layout = doc.template ? `${templateLabel[doc.template] ?? doc.template.charAt(0).toUpperCase() + doc.template.slice(1)} layout` : "Layout";
             return (
               <div key={t.id} className="tile flex flex-col">
-                <div className="relative bg-[#efeee8] p-3">
+                <div className="relative bg-well p-3">
                   <TemplateThumb template={template} colors={colors} />
                   <span className="absolute right-2.5 top-2.5 rounded-full bg-surface px-2 py-[3px] text-[10px] font-semibold text-muted">
                     {t.isShared ? "Shared" : t.brandName ?? "Brand"}

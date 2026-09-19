@@ -73,7 +73,7 @@ export default async function SettingsPage({
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {members.map((m) => (
               <li key={m.id} className="flex items-center gap-2.5 text-[13px]">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-paper">
                   {(m.name ?? m.email ?? "?").slice(0, 1).toUpperCase()}
                 </span>
                 <span className="min-w-0 flex-1 truncate">

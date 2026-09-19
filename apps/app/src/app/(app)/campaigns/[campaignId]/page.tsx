@@ -143,7 +143,7 @@ export default async function CampaignPage({ params, searchParams }: { params: P
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={ad.creative.previewUrl} alt="" className="h-[56px] w-[44px] shrink-0 rounded-[5px] border border-line object-cover" />
                             ) : (
-                              <div className="h-[56px] w-[44px] shrink-0 rounded-[5px] bg-[#efeee8]" />
+                              <div className="h-[56px] w-[44px] shrink-0 rounded-[5px] bg-well" />
                             )}
                             <div className="flex min-w-0 flex-col gap-0.5">
                               {ad.creative.id ? (

@@ -92,7 +92,7 @@ export default async function BulkPage({ searchParams }: { searchParams: Promise
               <span className="eyebrow">Sizes</span>
               <div className="flex flex-wrap gap-1.5">
                 {SIZES.map((s) => (
-                  <span key={s} className="rounded bg-[#efeee8] px-2 py-0.5 text-[11px] font-semibold text-[#4a4b44]">
+                  <span key={s} className="rounded bg-well px-2 py-0.5 text-[11px] font-semibold text-ink">
                     {s}
                   </span>
                 ))}

@@ -77,7 +77,7 @@ export function Editor({ creativeId, document: doc, templates, busy, onSave }: E
             {(["left", "center"] as const).map((a) => (
               <label key={a} className="flex-1 cursor-pointer">
                 <input type="radio" name="align" value={a} defaultChecked={doc.layout.align === a} className="peer sr-only" />
-                <span className="flex min-h-9 items-center justify-center rounded-[5px] capitalize text-[#4a4b44] peer-checked:bg-ink peer-checked:text-white">{a}</span>
+                <span className="flex min-h-9 items-center justify-center rounded-[5px] capitalize text-ink peer-checked:bg-ink peer-checked:text-paper">{a}</span>
               </label>
             ))}
           </div>

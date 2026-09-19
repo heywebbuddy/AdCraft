@@ -159,7 +159,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
                   {slot === "heading" ? (
                     <span className="text-[22px] leading-[1.1] tracking-[-0.5px]">Made for mornings that matter.</span>
                   ) : (
-                    <span className="text-[13px] leading-[1.5] text-[#4a4b44]">Short, honest copy that sounds like you. Ships in every size.</span>
+                    <span className="text-[13px] leading-[1.5] text-ink">Short, honest copy that sounds like you. Ships in every size.</span>
                   )}
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
                   aria-pressed={on}
                   onClick={() => setTone((cur) => (on ? cur.filter((x) => x !== t) : [...cur, t]))}
                   className={`inline-flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium capitalize transition ${
-                    on ? "border-ink bg-ink text-white" : "border-line bg-surface text-[#4a4b44] hover:border-ink"
+                    on ? "border-ink bg-ink text-paper" : "border-line bg-surface text-ink hover:border-ink"
                   }`}
                 >
                   {on ? <span className="text-orange">✓</span> : null}
@@ -213,7 +213,7 @@ export function BrandKitEditor({ brand, kit, action }: BrandKitEditorProps) {
                   type="button"
                   aria-pressed={ctaStyle === c.id}
                   onClick={() => setCtaStyle(c.id)}
-                  className={`inline-flex min-h-9 items-center rounded-[5px] px-3 ${ctaStyle === c.id ? "bg-ink text-white" : "text-[#4a4b44] hover:bg-paper"}`}
+                  className={`inline-flex min-h-9 items-center rounded-[5px] px-3 ${ctaStyle === c.id ? "bg-ink text-paper" : "text-ink hover:bg-paper"}`}
                 >
                   {c.label}
                 </button>

@@ -24,7 +24,7 @@ const ratioClass: Record<string, string> = {
 
 const STATUS: Record<CreativeStatus, { label: string; cls: string }> = {
   ready: { label: "Ready", cls: "bg-[#e6f2ea] text-[#3f7a55]" },
-  rendering: { label: "Rendering", cls: "bg-[#efeee8] text-muted" },
+  rendering: { label: "Rendering", cls: "bg-well text-muted" },
   failed: { label: "Failed", cls: "bg-[#fdf1ee] text-[#b4382a]" },
 };
 
@@ -128,7 +128,7 @@ export default async function CreativePage({
                   href={`/creatives/${c.id}?ratio=${encodeURIComponent(v.ratio)}`}
                   scroll={false}
                   className={`inline-flex min-h-9 items-center gap-1.5 rounded-[5px] px-3 ${
-                    selected?.id === v.id ? "bg-ink text-white" : "text-[#4a4b44] hover:bg-paper"
+                    selected?.id === v.id ? "bg-ink text-paper" : "text-ink hover:bg-paper"
                   }`}
                 >
                   {v.ratio}
@@ -153,7 +153,7 @@ export default async function CreativePage({
             ) : null}
           </div>
 
-          <div className="panel flex items-center justify-center overflow-hidden bg-[#efeee8] p-4">
+          <div className="panel flex items-center justify-center overflow-hidden bg-well p-4">
             {selected ? (
               <div
                 className={`relative w-full overflow-hidden rounded-[7px] bg-surface shadow-[0_10px_24px_#2c25151a] ${ratioClass[selected.ratio] ?? "aspect-[4/5]"} ${
@@ -261,7 +261,7 @@ export default async function CreativePage({
             </div>
             {!isAi && (sceneReady && c.document.scene.kind === "image" && c.document.scene.key ? (
               <div className="flex items-center gap-3">
-                <div className="h-16 w-[52px] shrink-0 overflow-hidden rounded-[5px] bg-[#efeee8]">
+                <div className="h-16 w-[52px] shrink-0 overflow-hidden rounded-[5px] bg-well">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={`/api/files/${c.document.scene.key}`} alt="" className="h-full w-full object-cover" />
                 </div>

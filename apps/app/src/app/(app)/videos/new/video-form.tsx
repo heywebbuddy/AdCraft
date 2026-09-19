@@ -66,13 +66,13 @@ export function VideoForm(p: VideoFormProps) {
                 key={k.id}
                 type="button"
                 onClick={() => setKind(k.id)}
-                className={`panel flex flex-col gap-2 p-4 text-left transition ${kind === k.id ? "border-ink shadow-[0_0_0_3px_#efeee8]" : "hover:border-muted"}`}
+                className={`panel flex flex-col gap-2 p-4 text-left transition ${kind === k.id ? "border-ink shadow-[0_0_0_3px_var(--well)]" : "hover:border-muted"}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-[14px] font-semibold">
                     <PlayIcon width={12} height={12} /> {k.title}
                   </span>
-                  <span className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]">{k.credits} credits</span>
+                  <span className="rounded bg-well px-[7px] py-0.5 text-[11px] text-ink">{k.credits} credits</span>
                 </div>
                 <p className="m-0 text-[12px] leading-relaxed text-muted">{k.blurb}</p>
               </button>
@@ -89,11 +89,11 @@ export function VideoForm(p: VideoFormProps) {
                 key={m.id}
                 type="button"
                 onClick={() => setModel(m.id)}
-                className={`panel flex flex-col gap-1.5 p-3.5 text-left transition ${model === m.id ? "border-ink shadow-[0_0_0_3px_#efeee8]" : "hover:border-muted"}`}
+                className={`panel flex flex-col gap-1.5 p-3.5 text-left transition ${model === m.id ? "border-ink shadow-[0_0_0_3px_var(--well)]" : "hover:border-muted"}`}
               >
                 <div className="flex items-center justify-between gap-2 text-[13px] font-semibold">
                   <span>{m.label}</span>
-                  {m.isDefault ? <span className="rounded-full bg-ink px-2 py-[2px] text-[10px] font-semibold text-white">Default</span> : null}
+                  {m.isDefault ? <span className="rounded-full bg-ink px-2 py-[2px] text-[10px] font-semibold text-paper">Default</span> : null}
                 </div>
                 <div className="text-[11px] text-muted">
                   {m.durations.join(" / ")} s clips · {m.audio ? "native audio" : "silent"}
@@ -113,7 +113,7 @@ export function VideoForm(p: VideoFormProps) {
                 key={r.id}
                 type="button"
                 onClick={() => setRatio(r.id)}
-                className={`flex items-center gap-3 rounded-[7px] border bg-surface px-3.5 py-2.5 text-left transition ${ratio === r.id ? "border-ink shadow-[0_0_0_3px_#efeee8]" : "border-line hover:border-muted"}`}
+                className={`flex items-center gap-3 rounded-[7px] border bg-surface px-3.5 py-2.5 text-left transition ${ratio === r.id ? "border-ink shadow-[0_0_0_3px_var(--well)]" : "border-line hover:border-muted"}`}
               >
                 <span className={`rounded-[3px] border border-ink ${ratioBox[r.id]}`} />
                 <span className="flex flex-col">
@@ -139,7 +139,7 @@ export function VideoForm(p: VideoFormProps) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={avatar.look.previewUrl} alt="" className="h-10 w-8 rounded-[5px] object-cover" />
                 ) : (
-                  <span className="grid h-10 w-8 place-items-center rounded-[5px] bg-[#efeee8] text-[15px]">✦</span>
+                  <span className="grid h-10 w-8 place-items-center rounded-[5px] bg-well text-[15px]">✦</span>
                 )}
                 <span className="flex min-w-0 flex-1 flex-col">
                   <strong className="truncate font-semibold">{avatar ? `${avatar.person.name} · ${avatar.look.name}` : "Choose a presenter"}</strong>

@@ -131,7 +131,7 @@ export async function ReviewPanel({ creativeId, variantId = null, variantLabels 
                   <span className="font-semibold">{c.authorName}</span>
                   <span className="text-muted">{relative(c.createdAt)}</span>
                   {c.variantId && variantLabels[c.variantId] ? (
-                    <span className="rounded bg-[#efeee8] px-1.5 py-px text-[10px] font-semibold text-[#4a4b44]">{variantLabels[c.variantId]}</span>
+                    <span className="rounded bg-well px-1.5 py-px text-[10px] font-semibold text-ink">{variantLabels[c.variantId]}</span>
                   ) : null}
                   {c.resolvedAt ? <span className="text-[#3f7a55]">Resolved</span> : null}
                 </span>

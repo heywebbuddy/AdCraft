@@ -47,7 +47,7 @@ export function SizeTile({
   const badgeClass = status === "ready" ? "rendered" : status === "failed" ? "failed" : status === "rendering" ? "rendering" : "";
   return (
     <div className="wall-tile size-tile">
-      <div className="wall-art" style={still ? undefined : { background: placeholder ?? "linear-gradient(160deg, #eef0e6 0%, #dfe3d3 100%)" }}>
+      <div className="wall-art" style={still ? undefined : { background: placeholder ?? "linear-gradient(160deg, var(--well) 0%, var(--line) 100%)" }}>
         {still ? <span className="wall-backdrop" style={{ backgroundImage: `url(${still})` }} aria-hidden="true" /> : null}
         {videoUrl ? (
           <video

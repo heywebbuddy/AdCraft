@@ -10,13 +10,13 @@ import { Spark } from "./spark";
  * action that moves it forward, plus the numbers once it has delivery. Server component.
  */
 const STAGE: Record<CreativeStage, { label: string; tone: string; note: string }> = {
-  rendering: { label: "Rendering", tone: "bg-[#efeee8] text-muted", note: "Sizes are being produced. You can keep working — this page updates on its own." },
+  rendering: { label: "Rendering", tone: "bg-well text-muted", note: "Sizes are being produced. You can keep working — this page updates on its own." },
   failed: { label: "Needs attention", tone: "bg-[#fdf1ee] text-[#b4382a]", note: "Nothing finished. Generate again, or try another model." },
   draft: { label: "Draft", tone: "border border-line text-muted", note: "Finished and ready to publish. Send it for review, or approve it yourself." },
   in_review: { label: "In review", tone: "bg-[#fdf3e2] text-[#8a5a0c]", note: "Waiting for a decision. Owners and editors can approve here." },
   changes_requested: { label: "Changes requested", tone: "bg-[#fdeae6] text-[#b4382a]", note: "Refine it with the panel on the right, then request approval again." },
   approved: { label: "Approved", tone: "bg-[#e9f6ec] text-[#3f7a55]", note: "Approved and not yet running anywhere." },
-  paused: { label: "In a campaign", tone: "bg-[#eef0e6] text-[#4e5943]", note: "Published as paused. Switch the campaign on when you are ready to spend." },
+  paused: { label: "In a campaign", tone: "bg-well text-ink", note: "Published as paused. Switch the campaign on when you are ready to spend." },
   live: { label: "Live", tone: "bg-[#e9f6ec] text-[#3f7a55]", note: "Delivering. Numbers below are the last seven days." },
 };
 

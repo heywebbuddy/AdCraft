@@ -90,7 +90,7 @@ export default async function BriefsPage({
                       {b.formats.map((f) => (
                         <span
                           key={f}
-                          className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]"
+                          className="rounded bg-well px-[7px] py-0.5 text-[11px] text-ink"
                         >
                           {formatLabel[f] ?? f}
                         </span>
@@ -102,7 +102,7 @@ export default async function BriefsPage({
                       ) : null}
                     </div>
                   </div>
-                  <span className="text-[13px] capitalize text-[#4a4b44]">
+                  <span className="text-[13px] capitalize text-ink">
                     {b.objective}
                   </span>
                   <span className="flex items-center gap-2 text-[13px]">

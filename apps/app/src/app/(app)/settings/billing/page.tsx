@@ -54,7 +54,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           const popular = id === "studio";
           return (
             <section key={id} className={`panel relative flex flex-col gap-4 p-6 ${popular ? "border-ink" : ""}`}>
-              {popular ? <span className="absolute -top-2.5 left-5 rounded-full bg-ink px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[1.2px] text-white">Most room to create</span> : null}
+              {popular ? <span className="absolute -top-2.5 left-5 rounded-full bg-ink px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[1.2px] text-paper">Most room to create</span> : null}
               <div className="flex flex-col gap-1">
                 <span className="text-[13px] font-semibold">{p.name}</span>
                 <span className="text-[13px] text-muted">{p.blurb}</span>

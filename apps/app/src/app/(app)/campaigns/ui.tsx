@@ -4,19 +4,19 @@ import type { Platform } from "@adcraft/ads";
 export const PLATFORM_NAMES: Record<Platform, string> = { meta: "Meta", tiktok: "TikTok", google: "Google" };
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-[#efeee8] text-[#4a4b44]",
+  draft: "bg-well text-ink",
   publishing: "bg-[#fbe3d9] text-orange",
   paused: "bg-[#fdf6e7] text-[#b7791f]",
   active: "bg-[#e9f3ec] text-[#3f7a55]",
-  archived: "bg-[#efeee8] text-muted",
+  archived: "bg-well text-muted",
   error: "bg-[#fdf1ee] text-[#b4382a]",
   connected: "bg-[#e9f3ec] text-[#3f7a55]",
   expired: "bg-[#fdf6e7] text-[#b7791f]",
-  revoked: "bg-[#efeee8] text-muted",
+  revoked: "bg-well text-muted",
   approved: "bg-[#e9f3ec] text-[#3f7a55]",
   pending: "bg-[#fdf6e7] text-[#b7791f]",
   disapproved: "bg-[#fdf1ee] text-[#b4382a]",
-  unknown: "bg-[#efeee8] text-muted",
+  unknown: "bg-well text-muted",
   sandbox: "bg-[#eef0f7] text-[#3c4a7a]",
 };
 
@@ -79,7 +79,7 @@ export function relative(d: Date | null | undefined) {
 
 export const fieldClass = "w-full rounded-[7px] border border-line bg-surface px-3.5 text-[14px] text-ink outline-none placeholder:text-muted focus:border-ink";
 export const chipClass =
-  "inline-flex h-10 cursor-pointer select-none items-center rounded-[7px] border border-line bg-surface px-3.5 text-[13px] font-medium text-[#4a4b44] transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-white has-disabled:cursor-not-allowed has-disabled:opacity-40";
+  "inline-flex h-10 cursor-pointer select-none items-center rounded-[7px] border border-line bg-surface px-3.5 text-[13px] font-medium text-ink transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-paper has-disabled:cursor-not-allowed has-disabled:opacity-40";
 
 export function Field({ label, hint, children }: { label: string; hint?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -99,6 +99,6 @@ export function Notice({ tone, children }: { tone: "error" | "ok" | "info"; chil
       ? "border-[#f0c9c2] bg-[#fdf1ee] text-[#b4382a]"
       : tone === "ok"
         ? "border-[#cfe3d6] bg-[#e9f3ec] text-[#3f7a55]"
-        : "border-line bg-surface text-[#4a4b44]";
+        : "border-line bg-surface text-ink";
   return <div className={`rounded-[7px] border px-4 py-3 text-[13px] ${cls}`}>{children}</div>;
 }

@@ -11,11 +11,11 @@ export const colors = {
 export const darkColors = {
   paper: "#14130f",
   ink: "#f2efe6",
-  muted: "#a39e90",
+  muted: "#c4bfb0",
   orange: "#e65c32",
-  line: "#2e2b24",
-  surface: "#1c1b16",
-  well: "#221f19",
+  line: "#4a453c",
+  surface: "#1f1e18",
+  well: "#2a2720",
 } as const;
 
 export const radius = {

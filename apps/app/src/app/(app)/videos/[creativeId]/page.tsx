@@ -104,7 +104,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
           </h1>
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <span className="rounded bg-[#efeee8] px-[7px] py-1 text-[11px] text-[#4a4b44]">
+          <span className="rounded bg-well px-[7px] py-1 text-[11px] text-ink">
             {spent ? `${spent} credits spent` : `${v.credits} credits per run`} · ~{v.durationSec} s
           </span>
           <form action={rerunAction}>
@@ -152,7 +152,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                       <span className="flex items-center gap-2 font-semibold">
                         <span
                           className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
-                            s.state === "done" ? "bg-[#3f7a55] text-white" : s.state === "running" ? "bg-orange text-white" : s.state === "failed" ? "bg-[#b4382a] text-white" : "bg-[#efeee8] text-muted"
+                            s.state === "done" ? "bg-[#3f7a55] text-white" : s.state === "running" ? "bg-orange text-white" : s.state === "failed" ? "bg-[#b4382a] text-white" : "bg-well text-muted"
                           }`}
                         >
                           {s.state === "done" ? "✓" : i + 1}
@@ -193,17 +193,17 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                   <span>Voice-over</span>
                   <span className="text-[11px] font-medium text-muted">{doc.voice?.audio?.durationSec ? `${doc.voice.audio.durationSec.toFixed(1)} s` : "pending"}</span>
                 </div>
-                {fileUrl(doc.voice?.audio) ? <AudioPreview src={fileUrl(doc.voice?.audio)!} label="Voice-over" /> : <div className="h-10 rounded-[5px] bg-[#efeee8]" />}
+                {fileUrl(doc.voice?.audio) ? <AudioPreview src={fileUrl(doc.voice?.audio)!} label="Voice-over" /> : <div className="h-10 rounded-[5px] bg-well" />}
                 <div className="text-[12px] text-muted">Voice {doc.voice?.voiceId || "stock"} · ElevenLabs</div>
               </div>
               <div className="panel flex gap-3.5 p-3.5">
-                <div className="w-[72px] shrink-0 overflow-hidden rounded-[5px] bg-[#efeee8]">
+                <div className="w-[72px] shrink-0 overflow-hidden rounded-[5px] bg-well">
                   {fileUrl(doc.presenter?.clip) ? <video muted playsInline preload="metadata" src={fileUrl(doc.presenter?.clip) ?? undefined} className="aspect-[9/16] w-full object-cover" /> : <div className="aspect-[9/16] w-full" />}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <div className="flex items-center justify-between text-[13px] font-semibold">
                     <span>Presenter</span>
-                    <span className="rounded-full bg-[#efeee8] px-2 py-[2px] text-[10px] font-semibold text-[#4a4b44]">AI-generated</span>
+                    <span className="rounded-full bg-well px-2 py-[2px] text-[10px] font-semibold text-ink">AI-generated</span>
                   </div>
                   <div className="text-[12px] text-muted">Avatar {doc.presenter?.avatarId || "stock"} · HeyGen · licensed stock avatar</div>
                   <div className="text-[12px] text-muted">{doc.presenter?.clip?.durationSec ? `${doc.presenter.clip.durationSec.toFixed(1)} s take` : "Waiting for the voice track"}</div>
@@ -233,7 +233,7 @@ export default async function VideoPage({ params }: { params: Promise<{ creative
                 const isBroll = s.role === "broll";
                 return (
                   <div key={s.id} className="tile flex flex-col">
-                    <div className={`relative overflow-hidden bg-[#efeee8] ${ratioClass[doc.ratio] ?? "aspect-[9/16]"} ${doc.ratio === "9:16" ? "max-h-[360px]" : ""}`}>
+                    <div className={`relative overflow-hidden bg-well ${ratioClass[doc.ratio] ?? "aspect-[9/16]"} ${doc.ratio === "9:16" ? "max-h-[360px]" : ""}`}>
                       {clip ? (
                         <video muted loop playsInline autoPlay preload="metadata" src={clip} poster={still ?? undefined} className="h-full w-full object-cover" />
                       ) : still ? (

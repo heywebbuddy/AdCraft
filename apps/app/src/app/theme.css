@@ -58,7 +58,7 @@
   background: linear-gradient(135deg, #f8f7f3 45%, #ffffff 45%);
 }
 .theme-pick.dark .theme-pick-swatch {
-  background: linear-gradient(135deg, #14130f 45%, #1c1b16 45%);
+  background: linear-gradient(135deg, #14130f 45%, #1f1e18 45%);
 }
 
 .theme-fixed {
@@ -168,4 +168,202 @@
   background: var(--elevated);
   border-color: var(--line);
   color: var(--ink);
+}
+
+/* Chrome that still used light sage/cream hexes — keep type and borders readable. */
+[data-theme="dark"] .workspace-nav-label,
+[data-theme="dark"] .workspace-breadcrumb span,
+[data-theme="dark"] .workspace-search-trigger,
+[data-theme="dark"] .topbar-credits svg,
+[data-theme="dark"] .workspace-picker summary > svg,
+[data-theme="dark"] .app-shell .eyebrow,
+[data-theme="dark"] .concept-card .eyebrow {
+  color: var(--muted);
+}
+[data-theme="dark"] .workspace-nav-item,
+[data-theme="dark"] .workspace-nav-child,
+[data-theme="dark"] .act-btn,
+[data-theme="dark"] .queue-chip,
+[data-theme="dark"] .overview-aside > .panel .eyebrow {
+  color: var(--ink);
+}
+[data-theme="dark"] .workspace-nav-item svg {
+  color: var(--muted);
+}
+[data-theme="dark"] .workspace-nav-item:hover,
+[data-theme="dark"] .workspace-nav-child:hover {
+  color: var(--ink);
+}
+[data-theme="dark"] .workspace-nav-item.active,
+[data-theme="dark"] .workspace-nav-child.active {
+  background: color-mix(in srgb, var(--orange) 16%, var(--surface));
+  color: var(--orange-text);
+}
+[data-theme="dark"] .workspace-nav-item.active svg {
+  color: var(--orange);
+}
+[data-theme="dark"] .workspace-beta,
+[data-theme="dark"] .role-badge,
+[data-theme="dark"] .queue-chip,
+[data-theme="dark"] .vp-source.elevenlabs {
+  background: var(--well);
+  color: var(--muted);
+  border-color: var(--line);
+}
+[data-theme="dark"] .workspace-picker summary,
+[data-theme="dark"] .app-shell .swatch {
+  border-color: var(--line);
+}
+[data-theme="dark"] .app-shell .btn-outline {
+  background: var(--elevated);
+  border-color: var(--line);
+  color: var(--ink);
+}
+[data-theme="dark"] .app-shell .btn-outline:hover {
+  background: var(--well);
+  border-color: var(--ink);
+}
+[data-theme="dark"] .workspace-main
+  :is(
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="hidden"]),
+    select,
+    textarea
+  ) {
+  border-color: var(--line);
+  color: var(--ink);
+  background-color: var(--surface);
+}
+[data-theme="dark"] .workspace-main :is(input, select, textarea):disabled {
+  background: var(--well);
+  color: var(--muted);
+}
+[data-theme="dark"] .workspace-main input::placeholder,
+[data-theme="dark"] .workspace-main textarea::placeholder {
+  color: var(--muted);
+}
+[data-theme="dark"] .workspace-main select:not([multiple]):not([size]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c4bfb0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+[data-theme="dark"] .workspace-main select option:checked {
+  background: color-mix(in srgb, var(--orange) 16%, var(--surface));
+}
+[data-theme="dark"] .workspace-main thead,
+[data-theme="dark"] .workspace-main .collection-head,
+[data-theme="dark"] .admin-table th {
+  background: var(--well);
+  color: var(--muted);
+}
+[data-theme="dark"] .workspace-main th {
+  color: var(--muted) !important;
+}
+[data-theme="dark"] .workspace-main tbody tr:hover,
+[data-theme="dark"] .admin-table tbody tr:hover {
+  background: var(--elevated);
+}
+[data-theme="dark"] .overview-aside .text-muted {
+  color: var(--muted);
+}
+[data-theme="dark"] .app-shell .concept-card[data-selected="true"] > div:last-child {
+  border-top-color: var(--line);
+}
+[data-theme="dark"] .act-btn.busy {
+  background: #2a1f1a;
+  border-color: #5a2e1f;
+  color: var(--orange-text);
+}
+[data-theme="dark"] .tone-peach .create-glyph { background: #2a1f1a; color: #f08a62; }
+[data-theme="dark"] .tone-sage .create-glyph { background: #22261c; color: #c5d0b4; }
+[data-theme="dark"] .tone-lavender .create-glyph { background: #24222a; color: #c4bdd4; }
+[data-theme="dark"] .tone-sand .create-glyph { background: #2a2518; color: #d4c08a; }
+[data-theme="dark"] .admin-tag {
+  background: var(--ink);
+  color: var(--paper);
+}
+[data-theme="dark"] .chip {
+  color: var(--muted);
+}
+[data-theme="dark"] .cs-field,
+[data-theme="dark"] .cs-field-label {
+  color: var(--muted);
+}
+[data-theme="dark"] .cs-pickbar {
+  background: color-mix(in srgb, var(--elevated) 94%, transparent);
+  border-color: var(--line);
+}
+[data-theme="dark"] .creative-card-badge,
+[data-theme="dark"] .creative-card-ratio {
+  background: color-mix(in srgb, var(--elevated) 92%, transparent);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] .creative-card-badge.failed {
+  color: #f08a62;
+}
+[data-theme="dark"] .workspace-tabs a,
+[data-theme="dark"] .workspace-tabs > span,
+[data-theme="dark"] .overview-metric-top,
+[data-theme="dark"] .overview-metric-note,
+[data-theme="dark"] .collection-search,
+[data-theme="dark"] .collection-search button,
+[data-theme="dark"] .home-stat dd small,
+[data-theme="dark"] .setup-row p,
+[data-theme="dark"] .creative-card-meta > div {
+  color: var(--muted);
+}
+[data-theme="dark"] .workspace-tabs .active,
+[data-theme="dark"] .setup-row:hover strong {
+  color: var(--orange-text);
+}
+[data-theme="dark"] .cs-close,
+[data-theme="dark"] .cs-model-maker {
+  color: var(--muted);
+}
+[data-theme="dark"] .pl-segment button[aria-pressed="true"],
+[data-theme="dark"] .pl-chips > button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Tailwind leftovers that still bake in light-theme hex. */
+[data-theme="dark"] [class*="bg-[#efeee8]"],
+[data-theme="dark"] [class*="bg-[#eef0e6]"],
+[data-theme="dark"] [class*="bg-[#f7f9f3]"] {
+  background-color: var(--well) !important;
+}
+[data-theme="dark"] [class*="text-[#4a4b44]"],
+[data-theme="dark"] [class*="text-[#4e5943]"] {
+  color: var(--ink) !important;
+}
+[data-theme="dark"] [class*="border-[#d4d3ca]"] {
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] [class*="has-checked:text-white"]:has(:checked) {
+  color: var(--paper) !important;
+}
+[data-theme="dark"] :is(input:checked) + [class*="peer-checked:text-white"],
+[data-theme="dark"] :is(input:checked) ~ [class*="peer-checked:text-white"] {
+  color: var(--paper) !important;
+}
+[data-theme="dark"] [class*="bg-ink"][class*="text-white"] {
+  color: var(--paper) !important;
+}
+[data-theme="dark"] [class*="shadow-[0_0_0_3px_#efeee8]"] {
+  box-shadow: 0 0 0 3px var(--well) !important;
+}
+[data-theme="dark"] [class*="bg-[#e9f3ec]"],
+[data-theme="dark"] [class*="bg-[#e9f6ec]"] {
+  background-color: #1a2a1e !important;
+}
+[data-theme="dark"] [class*="bg-[#fbe3d9]"],
+[data-theme="dark"] [class*="bg-[#fbeee8]"],
+[data-theme="dark"] [class*="bg-[#fdeae6]"],
+[data-theme="dark"] [class*="bg-[#fdf1ee]"] {
+  background-color: #2a1816 !important;
+}
+[data-theme="dark"] [class*="bg-[#fdf6e7]"],
+[data-theme="dark"] [class*="bg-[#fdf3e2]"] {
+  background-color: #2a2416 !important;
+}
+[data-theme="dark"] [class*="bg-[#eef0f7]"] {
+  background-color: #1a1e2a !important;
 }

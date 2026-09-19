@@ -57,7 +57,7 @@ export default async function GuardrailsPage({ searchParams }: { searchParams: P
               <dt className="text-muted">Provider spend</dt><dd className="tabular m-0 font-semibold">${g.month.costUsd.toFixed(2)}{g.platform.monthlyCostCapUsd !== null ? <span className="font-normal text-muted"> / ${g.platform.monthlyCostCapUsd}</span> : null}</dd>
               <dt className="text-muted">Credits used</dt><dd className="tabular m-0 font-semibold">{g.month.credits}{g.org.monthlyCreditCap != null ? <span className="font-normal text-muted"> / {g.org.monthlyCreditCap}</span> : null}</dd>
             </dl>
-            {g.platform.monthlyCostCapUsd !== null ? <div className="h-1.5 overflow-hidden rounded-full bg-[#eef0e6]"><div className="h-full bg-[#7c8868]" style={{ width: `${Math.min(100, (g.month.costUsd / g.platform.monthlyCostCapUsd) * 100)}%` }} /></div> : null}
+            {g.platform.monthlyCostCapUsd !== null ? <div className="h-1.5 overflow-hidden rounded-full bg-well"><div className="h-full bg-[#7c8868]" style={{ width: `${Math.min(100, (g.month.costUsd / g.platform.monthlyCostCapUsd) * 100)}%` }} /></div> : null}
             <p className="m-0 text-[12px] text-muted">The platform budget protects against runaway costs; it resets on the 1st. Ask support to raise it.</p>
           </section>
           <section className="panel flex flex-col gap-2 p-5 text-[12px] text-muted">

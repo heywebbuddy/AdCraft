@@ -43,10 +43,10 @@ export function BulkPicker({ briefs }: { briefs: BulkBrief[] }) {
           Concepts · {picked.size} of {all.length} selected
         </span>
         <div className="flex gap-1 rounded-[7px] border border-line bg-surface p-[3px] text-[12px] font-medium">
-          <button type="button" onClick={() => setPicked(new Set(all))} className="inline-flex min-h-8 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
+          <button type="button" onClick={() => setPicked(new Set(all))} className="inline-flex min-h-8 items-center rounded-[5px] px-3 text-ink hover:bg-paper">
             Select all
           </button>
-          <button type="button" onClick={() => setPicked(new Set())} className="inline-flex min-h-8 items-center rounded-[5px] px-3 text-[#4a4b44] hover:bg-paper">
+          <button type="button" onClick={() => setPicked(new Set())} className="inline-flex min-h-8 items-center rounded-[5px] px-3 text-ink hover:bg-paper">
             None
           </button>
         </div>
@@ -73,7 +73,7 @@ export function BulkPicker({ briefs }: { briefs: BulkBrief[] }) {
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="flex flex-wrap items-baseline gap-x-2">
                           <span className="font-semibold">{c.title}</span>
-                          <span className="rounded bg-[#efeee8] px-1.5 py-px text-[10px] font-semibold text-[#4a4b44]">{kindLabel[c.kind] ?? c.kind}</span>
+                          <span className="rounded bg-well px-1.5 py-px text-[10px] font-semibold text-ink">{kindLabel[c.kind] ?? c.kind}</span>
                           {c.status === "selected" ? <span className="text-[11px] text-[#3f7a55]">already used</span> : null}
                           {c.status === "rejected" ? <span className="text-[11px] text-muted">rejected</span> : null}
                         </span>

@@ -14,10 +14,10 @@ const friendlyModel = (id: string | null | undefined) =>
  */
 
 export const wallPlaceholders = [
-  "linear-gradient(160deg, #eef0e6 0%, #dfe3d3 100%)",
-  "linear-gradient(160deg, #f1ebe1 0%, #e3d9c9 100%)",
-  "linear-gradient(160deg, #e6ece6 0%, #d3ddd4 100%)",
-  "linear-gradient(160deg, #ece9e3 0%, #dad5cc 100%)",
+  "linear-gradient(160deg, var(--well) 0%, var(--line) 100%)",
+  "linear-gradient(160deg, color-mix(in srgb, var(--well) 70%, #c9b89a) 0%, var(--line) 100%)",
+  "linear-gradient(160deg, color-mix(in srgb, var(--well) 70%, #9aaf9c) 0%, var(--line) 100%)",
+  "linear-gradient(160deg, color-mix(in srgb, var(--well) 70%, #b8b0a4) 0%, var(--line) 100%)",
 ];
 
 const ratioValue: Record<string, string> = { "1:1": "1 / 1", "4:5": "4 / 5", "9:16": "9 / 16", "16:9": "16 / 9", "1.91:1": "1.91 / 1" };

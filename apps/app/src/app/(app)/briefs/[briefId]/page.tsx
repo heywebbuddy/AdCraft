@@ -154,7 +154,7 @@ export default async function BriefPage({
             {data.platforms.map((p) => (
               <span
                 key={p}
-                className="inline-flex items-center gap-1.5 rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]"
+                className="inline-flex items-center gap-1.5 rounded bg-well px-[7px] py-0.5 text-[11px] text-ink"
               >
                 <PlatformLogo name={p} size={12} />
                 {platformLabel[p] ?? p}
@@ -168,7 +168,7 @@ export default async function BriefPage({
             {data.formats.map((f) => (
               <span
                 key={f}
-                className="rounded bg-[#efeee8] px-[7px] py-0.5 text-[11px] text-[#4a4b44]"
+                className="rounded bg-well px-[7px] py-0.5 text-[11px] text-ink"
               >
                 {formatLabel[f] ?? f}
               </span>
@@ -177,7 +177,7 @@ export default async function BriefPage({
         </div>
         <div className="flex flex-col gap-1.5">
           <span className="eyebrow">Tone · constraints</span>
-          <span className="text-[13px] text-[#4a4b44]">
+          <span className="text-[13px] text-ink">
             {data.tone ?? <span className="text-muted">Brand kit tone</span>}
             {data.constraints?.length ? (
               <span className="block text-[12px] text-muted">
@@ -239,14 +239,14 @@ export default async function BriefPage({
             {Array.from({ length: 6 }, (_, i) => (
               <div key={i} className="panel flex flex-col gap-3 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="h-5 w-14 animate-pulse rounded bg-[#efeee8]" />
-                  <span className="h-3 w-20 animate-pulse rounded bg-[#efeee8]" />
+                  <span className="h-5 w-14 animate-pulse rounded bg-well" />
+                  <span className="h-3 w-20 animate-pulse rounded bg-well" />
                 </div>
-                <span className="h-7 w-11/12 animate-pulse rounded bg-[#efeee8]" />
-                <span className="h-7 w-2/3 animate-pulse rounded bg-[#efeee8]" />
-                <span className="h-3 w-full animate-pulse rounded bg-[#efeee8]" />
-                <span className="h-3 w-5/6 animate-pulse rounded bg-[#efeee8]" />
-                <div className="mt-2 h-[5px] overflow-hidden rounded-full bg-[#efeee8]">
+                <span className="h-7 w-11/12 animate-pulse rounded bg-well" />
+                <span className="h-7 w-2/3 animate-pulse rounded bg-well" />
+                <span className="h-3 w-full animate-pulse rounded bg-well" />
+                <span className="h-3 w-5/6 animate-pulse rounded bg-well" />
+                <div className="mt-2 h-[5px] overflow-hidden rounded-full bg-well">
                   <div className="h-full w-1/2 animate-pulse rounded-full bg-orange" />
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default async function BriefPage({
                   className={`tile concept-card flex flex-col gap-3.5 p-5 ${isRejected ? "opacity-55" : ""}`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#efeee8] px-2.5 py-1 text-[11px] font-semibold text-[#4a4b44]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-well px-2.5 py-1 text-[11px] font-semibold text-ink">
                       {c.kind !== "static" ? (
                         <PlayIcon width={10} height={10} />
                       ) : null}
@@ -305,16 +305,16 @@ export default async function BriefPage({
                     </div>
                     <div className="flex flex-col gap-0.5">
                       <dt className="eyebrow">Primary text</dt>
-                      <dd className="m-0 text-[#4a4b44]">{d.primaryText}</dd>
+                      <dd className="m-0 text-ink">{d.primaryText}</dd>
                     </div>
                     {d.description ? (
                       <div className="flex flex-col gap-0.5">
                         <dt className="eyebrow">Description</dt>
-                        <dd className="m-0 text-[#4a4b44]">{d.description}</dd>
+                        <dd className="m-0 text-ink">{d.description}</dd>
                       </div>
                     ) : null}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-[5px] border border-dashed border-[#d4d3ca] bg-paper px-2.5 py-1 text-[11px] font-medium text-[#4a4b44]">
+                      <span className="inline-flex items-center gap-1.5 rounded-[5px] border border-dashed border-line bg-paper px-2.5 py-1 text-[11px] font-medium text-ink">
                         <span className="text-[9px] font-semibold uppercase tracking-[0.8px] text-muted">CTA</span>
                         {d.cta}
                       </span>
@@ -328,14 +328,14 @@ export default async function BriefPage({
 
                   <div className="flex flex-col gap-0.5 border-t border-line pt-3 text-[12px]">
                     <span className="eyebrow">Visual direction</span>
-                    <p className="m-0 text-[#4a4b44]">{d.visualDirection}</p>
+                    <p className="m-0 text-ink">{d.visualDirection}</p>
                   </div>
 
                   {excerpt ? (
                     <div className="flex flex-col gap-1 rounded-[7px] bg-paper px-3 py-2.5 text-[12px]">
                       <span className="eyebrow">Script</span>
                       {excerpt.lines.map((line, i) => (
-                        <p key={i} className="m-0 text-[#4a4b44]">
+                        <p key={i} className="m-0 text-ink">
                           {line}
                         </p>
                       ))}

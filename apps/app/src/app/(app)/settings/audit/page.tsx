@@ -70,7 +70,7 @@ export default async function AuditPage() {
           <ul className="m-0 list-none divide-y divide-line p-0">
             {entries.map((e) => (
               <li key={e.id} className="flex items-start gap-3 px-5 py-3 text-[13px]">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-white">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-paper">
                   {(e.actor?.name ?? e.actor?.email ?? "·").slice(0, 1).toUpperCase()}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">

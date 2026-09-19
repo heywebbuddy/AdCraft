@@ -52,7 +52,7 @@ export default async function PerformancePage({
                 <Link
                   key={d}
                   href={`/performance?days=${d}`}
-                  className={`inline-flex min-h-9 items-center rounded-[5px] px-3 ${d === days ? "bg-ink text-white" : "text-[#4a4b44] hover:bg-paper"}`}
+                  className={`inline-flex min-h-9 items-center rounded-[5px] px-3 ${d === days ? "bg-ink text-paper" : "text-ink hover:bg-paper"}`}`}
                 >
                   {d}d
                 </Link>
@@ -229,7 +229,7 @@ export default async function PerformancePage({
                             className="h-[48px] w-[38px] shrink-0 rounded-[5px] border border-line object-cover"
                           />
                         ) : (
-                          <div className="h-[48px] w-[38px] shrink-0 rounded-[5px] bg-[#efeee8]" />
+                          <div className="h-[48px] w-[38px] shrink-0 rounded-[5px] bg-well" />
                         )}
                         {c.creativeId.startsWith("ad:") ? (
                           <span className="font-semibold">{c.name}</span>

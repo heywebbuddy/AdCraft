@@ -31,7 +31,7 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
     <div className="flex flex-col gap-2">
       <label
         htmlFor={id}
-        className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-[7px] border border-dashed border-[#d4d3ca] bg-surface text-center hover:border-ink ${
+        className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-[7px] border border-dashed border-line bg-surface text-center hover:border-ink ${
           compact ? "h-[120px] w-[120px]" : "min-h-[240px] w-full"
         }`}
         style={shown ? { backgroundImage: "linear-gradient(45deg,#f1f0ea 25%,transparent 25%,transparent 75%,#f1f0ea 75%),linear-gradient(45deg,#f1f0ea 25%,transparent 25%,transparent 75%,#f1f0ea 75%)", backgroundSize: "16px 16px", backgroundPosition: "0 0,8px 8px" } : undefined}
