@@ -48,7 +48,7 @@
 [data-theme=dark] .hero p,[data-theme=dark] .hero-note,[data-theme=dark] .section-kicker,[data-theme=dark] h2 em,[data-theme=dark] .platform-name,[data-theme=dark] .card-bottom{color:var(--muted)}
 [data-theme=dark] .feature-orange{background:#2a221c}
 [data-theme=dark] .feature-cream{background:#22211c}
-[data-theme=dark] .feature-green{background:#1e221c}
+[data-theme=dark] .feature-green{background:#1e221c}[data-theme=dark] .preview-prompt strong,[data-theme=dark] .preview-voice-heading strong{color:var(--ink)}[data-theme=dark] .feature-caption{color:var(--muted)}[data-theme=dark] .character-story>strong,[data-theme=dark] .character-story>span,[data-theme=dark] .character-story>div{color:var(--ink)}[data-theme=dark] .character-story>span,[data-theme=dark] .character-story>div{color:var(--muted);border-color:var(--line)}[data-theme=dark] .preview-photo-label{color:var(--muted)}[data-theme=dark] .workflow-mini>div{background:#2b2f27;border-color:#3f4638;box-shadow:none;color:var(--ink)}[data-theme=dark] .workflow-mini>div>i,[data-theme=dark] .workflow-mini>div>b,[data-theme=dark] .connector{color:#aab894}[data-theme=dark] .avatars b{border-color:#2b2f27;color:#242521}[data-theme=dark] .caption-bubble{background:#f2efe6;color:#242521;box-shadow:0 2px 6px #00000040}
 [data-theme=dark] .type-ad{background:#2a2e24;color:#c5d0b4}
 [data-theme=dark] .filter-tabs button:not(.active):hover,[data-theme=dark] .billing-switch,[data-theme=dark] .price-card,[data-theme=dark] .creative-dialog,[data-theme=dark] .site-footer{background:var(--surface);border-color:var(--line)}
 [data-theme=dark] .filter-tabs button.active{background:var(--ink);color:var(--paper)}
