@@ -1,4 +1,5 @@
 "use server";
+import { hydrateVoiceCatalog } from "@/server/voice-catalog";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, notInArray } from "drizzle-orm";
@@ -199,6 +200,7 @@ export async function loadPresenterLooks(groupId: string): Promise<PresenterLook
 /** Paged voice search across ElevenLabs and HeyGen for the voice picker. */
 export async function searchVoicesAction(q: VoiceQuery): Promise<{ items: CatalogVoice[]; total: number; languages: string[] }> {
   const ctx = await requireOrg();
+  await hydrateVoiceCatalog();
   const query = String(q.query ?? "").slice(0, 60);
   const gender = q.gender === "male" || q.gender === "female" ? q.gender : undefined;
   const language = q.language ? String(q.language).slice(0, 40) : undefined;

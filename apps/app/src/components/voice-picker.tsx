@@ -53,15 +53,22 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
 
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // After a few seconds of loading, say why: the first load after a deploy reads the whole library.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!loading) { setSlow(false); return; }
+    const t = setTimeout(() => setSlow(true), 4_000);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   useEffect(() => {
     const id = ++seq.current;
     setLoading(true);
     setFailed(false);
-    const run = (retry: boolean) =>
+    const run = (retry: number) =>
       Promise.race([
         search({ query, gender: gender === "all" ? undefined : gender, language: language || undefined, provider: source === "all" ? undefined : source, offset: 0 }),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 30_000)),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 60_000)),
       ])
         .then((r) => {
           if (id !== seq.current) return;
@@ -72,11 +79,12 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
         })
         .catch(() => {
           if (id !== seq.current) return;
-          // A server action can be aborted by a concurrent navigation; one quiet retry, then say so.
-          if (retry) setTimeout(() => id === seq.current && run(false), 500);
+          // A server action can be aborted by a concurrent navigation, and the very first load
+          // after a deploy fetches the whole library; retry quietly before saying so.
+          if (retry > 0) setTimeout(() => id === seq.current && run(retry - 1), 800);
           else { setFailed(true); setLoading(false); }
         });
-    const t = setTimeout(() => run(true), query ? 200 : 0);
+    const t = setTimeout(() => run(2), query ? 200 : 0);
     return () => clearTimeout(t);
   }, [query, gender, language, source, search, attempt]);
 
@@ -132,7 +140,7 @@ export function VoicePicker({ search, audition, selectedId, initialGender, onSel
         </select>
       </div>
       <div className={`vp-list ${page ? "vp-columns" : ""}`} role="listbox" aria-label="Voices">
-        {loading && items.length === 0 ? <p className="pl-empty">Loading voices…</p> : null}
+        {loading && items.length === 0 ? <p className="pl-empty">{slow ? "Loading the voice library — the first load after an update can take up to a minute…" : "Loading voices…"}</p> : null}
         {!loading && failed ? <p className="pl-empty" role="alert">Couldn't load voices. <button type="button" className="cs-text-button vp-retry" onClick={() => setAttempt((n) => n + 1)}>Try again</button></p> : null}
         {!loading && !failed && items.length === 0 ? <p className="pl-empty">No voices match.</p> : null}
         {items.map((v) => (

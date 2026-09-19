@@ -1,4 +1,5 @@
 "use client";
+import { useFileDrop } from "@/lib/file-drop";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { VoiceField, type CatalogVoice } from "@/components/voice-picker";
@@ -31,10 +32,11 @@ async function upload(file: File, onProgress: (pct: number) => void): Promise<{ 
 }
 
 function FileDrop({ file, onFile, accept, label, hint }: { file: File | null; onFile: (f: File | null) => void; accept: string; label: string; hint: string }) {
+  const drop = useFileDrop();
   return (
-    <label className={`vt-drop ${file ? "has-file" : ""}`}>
+    <label className={`vt-drop ${file ? "has-file" : ""} ${drop.over ? "is-over" : ""}`} {...drop.props}>
       <input type="file" accept={accept} onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
-      {file ? <><strong>{file.name}</strong><small>{(file.size / 1024 / 1024).toFixed(1)} MB · click to change</small></> : <><strong>{label}</strong><small>{hint}</small></>}
+      {file ? <><strong>{file.name}</strong><small>{(file.size / 1024 / 1024).toFixed(1)} MB · click or drop to change</small></> : <><strong>{drop.over ? "Drop it here" : label}</strong><small>{hint}</small><small className="vt-drop-or">or drag the file onto this box</small></>}
     </label>
   );
 }

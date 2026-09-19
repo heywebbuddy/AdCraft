@@ -1,4 +1,5 @@
 "use client";
+import { useFileDrop } from "@/lib/file-drop";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Spark } from "@/components/spark";
@@ -86,6 +87,7 @@ const LANGUAGES: Array<[string, string]> = [["", "Detect automatically"], ["en",
 
 function CloneDialog({ ref, onCreated }: { ref: React.RefObject<HTMLDialogElement | null>; onCreated: (v: CatalogVoice) => void }) {
   const [file, setFile] = useState<File | null>(null);
+  const drop = useFileDrop();
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
   const form = useRef<HTMLFormElement>(null);
@@ -110,9 +112,9 @@ function CloneDialog({ ref, onCreated }: { ref: React.RefObject<HTMLDialogElemen
           <label className="cs-field">Voice name<input className="cs-input" name="name" required maxLength={60} placeholder="e.g. Priya — brand voice" /></label>
           <label className="cs-field">Language<select className="cs-input" name="language" defaultValue="">{LANGUAGES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
         </div>
-        <label className={`vt-drop ${file ? "has-file" : ""}`}>
+        <label className={`vt-drop ${file ? "has-file" : ""} ${drop.over ? "is-over" : ""}`} {...drop.props}>
           <input type="file" name="audio" accept="audio/*,.mp3,.wav,.m4a" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          {file ? <><strong>{file.name}</strong><small>{(file.size / 1024 / 1024).toFixed(1)} MB · click to change</small></> : <><strong>Choose a recording</strong><small>mp3, wav or m4a · up to 10 MB</small></>}
+          {file ? <><strong>{file.name}</strong><small>{(file.size / 1024 / 1024).toFixed(1)} MB · click or drop to change</small></> : <><strong>{drop.over ? "Drop it here" : "Choose a recording"}</strong><small>mp3, wav or m4a · up to 10 MB</small><small className="vt-drop-or">or drag the file onto this box</small></>}
         </label>
         <label className="vt-consent"><input type="checkbox" name="consent" value="yes" required /> I have this person's permission to clone their voice, and I will use it responsibly.</label>
         {error ? <p className="cs-error" role="alert">{error}</p> : null}

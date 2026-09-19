@@ -35,6 +35,23 @@ export type CatalogVoice = {
 const API = process.env.HEYGEN_API_BASE ?? "https://api.heygen.com";
 const SIX_HOURS = 6 * 60 * 60_000;
 let heygenCache: { at: number; list: CatalogVoice[] } | null = null;
+let heygenInflight: Promise<CatalogVoice[]> | null = null;
+let heygenSink: ((snapshot: { at: number; list: CatalogVoice[] }) => void | Promise<void>) | null = null;
+let elevenCache: { at: number; list: CatalogVoice[] } | null = null;
+
+/**
+ * Seed the HeyGen cache from somewhere durable (the app keeps a copy in platform_settings), so a
+ * fresh process answers the voice picker at once instead of fetching ~3,000 voices first.
+ */
+export function primeHeyGenVoices(snapshot: { at: number; list: CatalogVoice[] } | null | undefined) {
+  if (!snapshot?.list?.length) return;
+  if (!heygenCache || snapshot.at > heygenCache.at) heygenCache = { at: snapshot.at, list: snapshot.list };
+}
+
+/** Called with every fresh fetch of the HeyGen library so the caller can persist it. */
+export function onHeyGenVoices(sink: typeof heygenSink) {
+  heygenSink = sink;
+}
 
 /** HeyGen mixes names and codes ("en", "Turkey", "unknown") in `language`; present one spelling. */
 const LANGUAGE_ALIASES: Record<string, string> = { en: "English", es: "Spanish", fr: "French", de: "German", it: "Italian", pt: "Portuguese", nl: "Dutch", hi: "Hindi", ja: "Japanese", ko: "Korean", zh: "Chinese", ar: "Arabic", ru: "Russian", tr: "Turkish", turkey: "Turkish", pl: "Polish", sv: "Swedish", da: "Danish", fi: "Finnish", no: "Norwegian", cs: "Czech", el: "Greek", he: "Hebrew", id: "Indonesian", th: "Thai", vi: "Vietnamese", uk: "Ukrainian", ro: "Romanian", hu: "Hungarian", ta: "Tamil", te: "Telugu", ur: "Urdu", bn: "Bangla", ms: "Malay" };
@@ -50,7 +67,18 @@ type RawHeyGenVoice = { voice_id: string; name: string; gender?: string; languag
 export async function listHeyGenVoices(): Promise<CatalogVoice[]> {
   const key = process.env.HEYGEN_API_KEY;
   if (!key) return [];
-  if (heygenCache && Date.now() - heygenCache.at < SIX_HOURS) return heygenCache.list;
+  const fresh = heygenCache && Date.now() - heygenCache.at < SIX_HOURS;
+  if (heygenCache && fresh) return heygenCache.list;
+  // One fetch at a time; while a stale copy exists, serve it and refresh in the background.
+  heygenInflight ??= fetchHeyGenVoices(key).finally(() => (heygenInflight = null));
+  if (heygenCache) {
+    void heygenInflight.catch(() => undefined);
+    return heygenCache.list;
+  }
+  return heygenInflight;
+}
+
+async function fetchHeyGenVoices(key: string): Promise<CatalogVoice[]> {
   try {
     const res = await fetch(`${API}/v2/voices`, { headers: { "x-api-key": key, accept: "application/json" }, signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`HeyGen /v2/voices ${res.status}`);
@@ -72,22 +100,34 @@ export async function listHeyGenVoices(): Promise<CatalogVoice[]> {
       };
     });
     heygenCache = { at: Date.now(), list };
+    if (heygenSink) void Promise.resolve(heygenSink(heygenCache)).catch((e) => console.warn("[heygen] could not persist voice catalogue", e instanceof Error ? e.message : e));
     return list;
   } catch (err) {
     console.warn("[heygen] listVoices failed", err instanceof Error ? err.message : err);
-    return heygenCache?.list ?? [];
+    if (heygenCache) return heygenCache.list;
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
 
 /** ElevenLabs voices in catalogue shape. */
 export async function listElevenLabsCatalog(): Promise<CatalogVoice[]> {
-  const list = await listElevenLabsVoices();
-  return list.map((v) => {
+  if (elevenCache && Date.now() - elevenCache.at < SIX_HOURS) return elevenCache.list;
+  let list: Awaited<ReturnType<typeof listElevenLabsVoices>>;
+  try {
+    list = await listElevenLabsVoices();
+  } catch (err) {
+    // ElevenLabs being down must not hide HeyGen's library.
+    console.warn("[elevenlabs] listVoices failed", err instanceof Error ? err.message : err);
+    return elevenCache?.list ?? [];
+  }
+  const mapped = list.map((v) => {
     const [name, ...rest] = v.label.split(/\s+[-–·]\s+/);
     // "premade" / "cloned" is ElevenLabs' category, not a style — keep only the descriptive part.
     const style = rest.filter((r) => !/^(premade|cloned|generated|professional)$/i.test(r.trim())).join(" · ").trim() || undefined;
     return { id: v.id, provider: "elevenlabs" as const, name: (name ?? v.label).trim(), style, gender: v.gender, accent: v.accent, language: "English", previewUrl: v.previewUrl };
   });
+  elevenCache = { at: Date.now(), list: mapped };
+  return mapped;
 }
 
 /** Everything, ElevenLabs first (they are the account's curated set). */

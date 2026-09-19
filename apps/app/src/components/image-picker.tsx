@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { MAX_UPLOAD_BYTES } from "@/lib/uploads";
+import { useFileDrop } from "@/lib/file-drop";
 
 type Props = {
   name: string;
@@ -23,6 +24,7 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [tooLarge, setTooLarge] = useState<string | null>(null);
+  const drop = useFileDrop();
 
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
 
@@ -31,9 +33,10 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
     <div className="flex flex-col gap-2">
       <label
         htmlFor={id}
-        className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-[7px] border border-dashed border-line bg-surface text-center hover:border-ink ${
-          compact ? "h-[120px] w-[120px]" : "min-h-[240px] w-full"
-        }`}
+        {...drop.props}
+        className={`flex cursor-pointer items-center justify-center overflow-hidden rounded-[7px] border border-dashed bg-surface text-center transition hover:border-ink ${
+          drop.over ? "border-ink bg-paper ring-2 ring-orange/40" : "border-line"
+        } ${compact ? "h-[120px] w-[120px]" : "min-h-[240px] w-full"}`}
         style={shown ? { backgroundImage: "linear-gradient(45deg,#f1f0ea 25%,transparent 25%,transparent 75%,#f1f0ea 75%),linear-gradient(45deg,#f1f0ea 25%,transparent 25%,transparent 75%,#f1f0ea 75%)", backgroundSize: "16px 16px", backgroundPosition: "0 0,8px 8px" } : undefined}
       >
         {shown ? (
@@ -42,11 +45,11 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
         ) : (
           <span className="flex flex-col items-center gap-1.5 p-4">
             <span className="text-[22px] leading-none text-orange">+</span>
-            <span className="text-[13px] font-semibold">{label}</span>
+            <span className="text-[13px] font-semibold">{drop.over ? "Drop it here" : label}</span>
             {hint ? <span className="text-[11px] text-muted">{hint}</span> : null}
+            {!compact ? <span className="text-[11px] text-muted">or drag an image onto this box</span> : null}
           </span>
         )}
-      </label>
       <input
         id={id}
         name={name}
@@ -70,6 +73,7 @@ export function ImagePicker({ name, accept, required, currentUrl, label = "Choos
           onPreview?.(url);
         }}
       />
+      </label>
       {tooLarge ? (
         <span role="alert" className="text-[11px] text-[#b3261e]">
           {tooLarge}
