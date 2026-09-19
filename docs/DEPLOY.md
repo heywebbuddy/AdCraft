@@ -98,5 +98,6 @@ service. Create a Cloudflare **R2 Object Read & Write** API token and add `R2_AC
 
 - **Health**: `GET /api/health` → 200 when database and storage answer (503 otherwise); includes per-check latency.
 - **Errors**: unhandled server errors are logged with route and digest; set `SENTRY_DSN` to also post them as Sentry events (no SDK).
+- **Storage**: R2 bucket `adcraft-media` (`R2_*` on the service) since 19 Sep 2026. Files written to disk before that were copied in with `scripts/migrate-storage-to-r2.mjs` (run it inside the container: `railway ssh --service app -- sh -c 'cd /app && node scripts/migrate-storage-to-r2.mjs /data/files'`); it skips objects already present, so it is safe to re-run.
 - **Backups**: `DATABASE_URL=… ./scripts/backup-db.sh` (cron nightly) — gzip `pg_dump`, 14-day retention, optional upload to `R2_BACKUP_BUCKET`.
 - **Guardrails**: platform defaults in `platform_settings.guardrails` (monthly provider budget per workspace, spend-approval threshold, HeyGen voice slots, rate limit); per-workspace overrides under Settings → Guardrails.
