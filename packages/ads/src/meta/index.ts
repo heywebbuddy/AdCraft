@@ -244,6 +244,8 @@ export class MetaAdsProvider implements AdsProvider {
         buying_type: "AUCTION",
         special_ad_categories: input.extra?.specialAdCategories ?? [],
         // Budget lives on the ad set (no Advantage campaign budget) so one campaign can hold per-placement sets later.
+        // Meta now insists the choice is explicit: false = each ad set keeps its own daily budget.
+        is_adset_budget_sharing_enabled: false,
       },
       isError,
     });
