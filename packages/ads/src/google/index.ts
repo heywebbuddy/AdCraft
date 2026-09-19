@@ -1,7 +1,7 @@
 /**
- * Google Ads adapter (REST API v18, OAuth + developer token). Covers Demand Gen / YouTube.
+ * Google Ads adapter (REST API v25, OAuth + developer token). Covers Demand Gen / YouTube.
  *
- * Endpoints used (all under https://googleads.googleapis.com/v18):
+ * Endpoints used (all under https://googleads.googleapis.com/v25):
  *   GET  https://accounts.google.com/o/oauth2/v2/auth, POST https://oauth2.googleapis.com/token
  *   GET  /customers:listAccessibleCustomers, POST /customers/{cid}/googleAds:search (customer fields)
  *   POST /customers/{cid}/googleAds:mutate            — campaign budget + campaign in one atomic call
@@ -36,7 +36,7 @@ import type {
 } from "../types";
 import { validateCreative } from "../validation";
 
-export const GOOGLE_ADS_API_VERSION = "v18";
+export const GOOGLE_ADS_API_VERSION = "v25";
 const API = `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}`;
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";

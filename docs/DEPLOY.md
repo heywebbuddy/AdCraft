@@ -5,7 +5,7 @@ Two deployables: the marketing site (`dist/`, static, already hosted) and the pr
 ## Product app on Railway (current production)
 
 Repo: https://github.com/heywebbuddy/AdCraft — Railway project **adcraft**, services **app** and **Postgres**,
-app URL https://app-production-9ee2.up.railway.app.
+app URL https://adcrafts.co (Railway service domain remains https://app-production-9ee2.up.railway.app).
 
 One always-on container built from the root `Dockerfile` (`railway.json` points at it): Node 22 on Debian
 bookworm with the Chromium libraries Remotion needs, Chrome Headless Shell downloaded at build time, and
@@ -26,8 +26,9 @@ service. Create a Cloudflare **R2 Object Read & Write** API token and add `R2_AC
 - Still to do by hand: R2 API token keys (see above), a Stripe webhook endpoint for
   `https://<domain>/api/stripe/webhook` (then set `STRIPE_WEBHOOK_SECRET`) when paid billing goes live,
   the Railway domain in Google's OAuth redirect list if Google sign-in is wanted (`AUTH_GOOGLE_ID/SECRET`),
-  and Meta app credentials (`META_APP_ID` / `META_APP_SECRET`) plus the OAuth redirect
-  `https://<domain>/api/connect/meta/callback`. Stripe is left as-is for now.
+  Meta (`META_APP_ID` / `META_APP_SECRET`) and Google Ads (`GOOGLE_ADS_*`) plus the OAuth redirects
+  `https://adcrafts.co/api/connect/meta/callback` and `https://adcrafts.co/api/connect/google/callback`.
+  Stripe is left as-is for now.
 - Public legal pages: `/privacy`, `/terms`, `/dpa`. Owners request workspace deletion under Settings → Privacy.
 
 ## Product app on Vercel (alternative)

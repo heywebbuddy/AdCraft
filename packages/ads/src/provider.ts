@@ -77,7 +77,13 @@ export class AdsApiError extends Error {
 }
 
 function summarise(body: unknown): string {
-  if (typeof body === "string") return body.slice(0, 300);
+  if (typeof body === "string") {
+    if (/<!DOCTYPE|<html/i.test(body)) {
+      const title = body.match(/<title>([^<]+)/i)?.[1]?.replace(/\s+/g, " ").trim();
+      return title ? `HTML error (${title})` : "non-JSON error from the API";
+    }
+    return body.slice(0, 300);
+  }
   try {
     return JSON.stringify(body).slice(0, 300);
   } catch {
