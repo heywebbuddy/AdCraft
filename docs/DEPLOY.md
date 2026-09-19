@@ -5,15 +5,16 @@ Two deployables: the marketing site (`dist/`, static, already hosted) and the pr
 ## Product app on Railway (current production)
 
 Repo: https://github.com/heywebbuddy/AdCraft — Railway project **adcraft**, services **app** and **Postgres**,
-app URL https://adcrafts.co (Railway service domain remains https://app-production-9ee2.up.railway.app).
+app URL https://www.adcrafts.co (Railway service domain remains https://app-production-9ee2.up.railway.app).
 
-Custom domains (DNS at onlydomains.com, NS `ns*.onlydomains.com`, record TTLs are 24 h — Railway's checker can lag
-by 20–30 min after a change; `railway domain status <domain> --service app` shows what it currently sees):
-- `www.adcrafts.co` → CNAME `qts11frr.up.railway.app` (+ TXT `_railway-verify.www` = the token Railway shows) — live, certificate valid.
-- `adcrafts.co` (apex) → CNAME/ALIAS `tu9z13mz.up.railway.app` — attached to the service on 19 Sep 2026; the apex
-  record still has to be changed at onlydomains (it currently points at `5d8vmcs6.up.railway.app`, a target that is
-  not in this account, so the apex answers "Application not found"). `AUTH_URL` is the apex, so magic links and
-  OAuth callbacks use it — fix the record before inviting anyone.
+Custom domains (DNS at onlydomains.com, NS `ns*.onlydomains.com`; record TTLs are 24 h and Railway's checker lags
+~20 min after a change — `railway domain status <domain> --service app` shows what it currently sees):
+- **Canonical host: `https://www.adcrafts.co`** — CNAME `www` → `qts11frr.up.railway.app` (+ TXT `_railway-verify.www`);
+  live with a valid certificate. `AUTH_URL` points here, so magic links and OAuth callbacks use `www`.
+- **Apex `adcrafts.co` → redirect to www** at onlydomains (URL forwarding), not a Railway domain. A CNAME at `@`
+  next to SOA/NS is rejected by strict resolvers, which made Railway's check flap and the certificate never issue
+  (tried 19 Sep 2026; removed). If onlydomains ever offers a real ALIAS/ANAME record, the apex can be added back
+  with `railway domain adcrafts.co --service app`.
 
 One always-on container built from the root `Dockerfile` (`railway.json` points at it): Node 22 on Debian
 bookworm with the Chromium libraries Remotion needs, Chrome Headless Shell downloaded at build time, and
@@ -35,7 +36,7 @@ service. Create a Cloudflare **R2 Object Read & Write** API token and add `R2_AC
   `https://<domain>/api/stripe/webhook` (then set `STRIPE_WEBHOOK_SECRET`) when paid billing goes live,
   the Railway domain in Google's OAuth redirect list if Google sign-in is wanted (`AUTH_GOOGLE_ID/SECRET`),
   Meta (`META_APP_ID` / `META_APP_SECRET`) and Google Ads (`GOOGLE_ADS_*`) plus the OAuth redirects
-  `https://adcrafts.co/api/connect/meta/callback` and `https://adcrafts.co/api/connect/google/callback`.
+  `https://www.adcrafts.co/api/connect/meta/callback` and `https://www.adcrafts.co/api/connect/google/callback`.
   Stripe is left as-is for now.
 - Public legal pages: `/privacy`, `/terms`, `/dpa`. Owners request workspace deletion under Settings → Privacy.
 
