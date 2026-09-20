@@ -95,6 +95,9 @@ export const ConceptsOutputSchema = z.object({
 export type Concept = z.infer<typeof ConceptSchema>;
 export type ConceptsOutput = z.infer<typeof ConceptsOutputSchema>;
 
+/** Called only for a complete, schema-validated concept, in generation order. */
+export type OnConcept = (concept: Concept, index: number, model: string) => Promise<void>;
+
 /** Which copy fields overflow the tightest limit across the platforms a concept targets. */
 export function copyIssues(concept: Concept, limits: Record<string, PlatformTextLimits> | undefined) {
   if (!limits) return [];

@@ -165,10 +165,10 @@ export async function startConceptsRun(input: {
       model: await conceptsModel(),
       status: "started",
       credits: 1,
-      meta: { label: `${input.title} · concepts`, detail: `${input.count} hooks and angles` },
+      meta: { label: `${input.title} · concepts`, detail: `${input.count} hooks and angles`, requestedConcepts: input.count, concepts: 0 },
     })
     .returning();
-  await dispatch("concepts.generate", { orgId: input.orgId, briefId: input.briefId, count: input.count });
+  await dispatch("concepts.generate", { orgId: input.orgId, briefId: input.briefId, count: input.count, eventId: event!.id });
   return event;
 }
 

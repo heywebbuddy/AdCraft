@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db, dbReady, memberships } from "@adcraft/db";
 import { requireViewer } from "@/server/org";
 import { createWorkspace } from "@/server/onboarding";
+import { BrandDiscovery } from "@/components/brand-discovery";
 
 const inputClass =
   "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
@@ -17,8 +18,8 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
   const { error } = await searchParams;
 
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16">
-      <div className="w-full max-w-[440px]">
+    <main className="flex flex-1">
+      <BrandDiscovery action={createWorkspace}>
         <div className="mb-8">
           <Wordmark size={26} />
         </div>
@@ -35,7 +36,7 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
         ) : error ? (
           <p className="mt-4 text-sm text-orange">Both names are needed.</p>
         ) : null}
-        <form action={createWorkspace} className="mt-8 flex flex-col gap-5">
+        <div className="mt-8 flex flex-col gap-5">
           <label className="flex flex-col gap-2 text-sm font-medium">
             Workspace name
             <input name="orgName" required placeholder="Éclat Studio" className={inputClass} />
@@ -46,14 +47,15 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
           </label>
           <label className="flex flex-col gap-2 text-sm font-medium">
             Brand website <span className="font-normal text-muted">(optional)</span>
-            <input name="website" type="url" placeholder="https://eclatskin.com" className={inputClass} />
+            {/* A bare domain is what people type; the importer adds the scheme. */}
+            <input name="website" type="text" inputMode="url" autoComplete="url" placeholder="eclatskin.com" className={inputClass} />
           </label>
           <PendingButton className="btn btn-orange h-12 justify-between text-[15px]" pendingLabel="Setting up your studio…">
             Open my studio <span aria-hidden="true">↗︎</span>
           </PendingButton>
           <p className="text-xs text-muted">Starts with 50 free credits. No card needed.</p>
-        </form>
-      </div>
+        </div>
+      </BrandDiscovery>
     </main>
   );
 }

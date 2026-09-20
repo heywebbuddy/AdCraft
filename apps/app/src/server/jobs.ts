@@ -29,7 +29,7 @@ export type JobPayloads = {
   "character.looks": { orgId: string; characterId: string; eventId: string; source: "pack" | "prompt" | "remix"; packId?: string; gender?: "female" | "male"; prompt?: string; /** remix: any HeyGen library look used as a single template (two looks). */ templateLookId?: string; lookName: string; aspectRatio?: "16:9" | "9:16"; credits: number; meta?: Record<string, unknown> };
   /** A character born on HeyGen: digital twin from footage, photo avatar, or prompt character. */
   "avatar.create": { orgId: string; characterId: string; eventId: string; type: "digital_twin" | "photo" | "prompt"; sourceKey?: string; prompt?: string; aspectRatio?: "16:9" | "9:16" | "1:1"; rerouteUrl?: string; meta?: Record<string, unknown> };
-  "concepts.generate": { orgId: string; briefId: string; count?: number };
+  "concepts.generate": { orgId: string; briefId: string; count?: number; eventId?: string };
   "static.generate": { orgId: string; creativeId: string; model?: string; mode?: "editable" | "ai"; instructions?: string; onlyMissing?: boolean };
   "product.cutout": { orgId: string; productId: string };
   "render.variants": { orgId: string; creativeId: string };

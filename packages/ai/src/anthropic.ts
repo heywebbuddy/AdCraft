@@ -9,7 +9,9 @@ import {
   type ConceptKind,
   type ConceptsOutput,
   type PlatformTextLimits,
+  type OnConcept,
 } from "./concepts";
+import { ConceptStreamParser } from "./text/concept-stream";
 
 export const ANTHROPIC_MODEL = "claude-opus-5";
 
@@ -243,10 +245,12 @@ export function briefToPrompt(brief: ConceptBrief): string {
  */
 export async function generateConcepts(
   brief: ConceptBrief,
-  opts: { client?: Anthropic; model?: string } = {},
+  opts: { client?: Anthropic; model?: string; onConcept?: OnConcept } = {},
 ): Promise<GenerationResult<ConceptsOutput>> {
   if (!opts.client && !isAnthropicConfigured()) {
-    return sampleConcepts(brief);
+    const result = sampleConcepts(brief);
+    for (const [index, concept] of result.output.concepts.entries()) await opts.onConcept?.(concept, index, result.usage.model);
+    return result;
   }
 
   const client = opts.client ?? new Anthropic();
@@ -269,6 +273,17 @@ export async function generateConcepts(
       format: betaZodOutputFormat(ConceptsOutputSchema),
     },
   });
+  let published = 0;
+  if (opts.onConcept) {
+    const parser = new ConceptStreamParser();
+    let servingModel = model;
+    for await (const event of stream) {
+      if (event.type === "message_start") servingModel = event.message.model;
+      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+        for (const concept of parser.push(event.delta.text)) await opts.onConcept(concept, published++, servingModel);
+      }
+    }
+  }
   const message = await stream.finalMessage();
 
   if (message.stop_reason === "refusal") throw refusalError(message);
@@ -290,6 +305,11 @@ export async function generateConcepts(
   const usage = usageFrom(model, message.usage, startedAt);
   // A fallback model may have served the request; record what actually ran.
   usage.model = message.model ?? model;
+  // A compatible response can still be valid JSON without the expected streaming
+  // prefix. Ensure those concepts are saved when the final response is available.
+  for (let index = published; opts.onConcept && index < output.concepts.length; index++) {
+    await opts.onConcept(output.concepts[index]!, index, usage.model);
+  }
   return { output, usage };
 }
 

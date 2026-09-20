@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import type { ConceptData } from "@adcraft/db";
 import { requireOrg } from "@/server/org";
 import {
+  DEFAULT_CONCEPT_COUNT,
   FORMATS,
   OBJECTIVES,
   PLATFORMS,
@@ -74,6 +75,9 @@ export default async function BriefPage({
   const generating = event?.status === "started";
   const failed = event?.status === "failed";
   const waiting = generating && concepts.length === 0;
+  const requested = Math.max(1, Number(event?.meta?.requestedConcepts ?? DEFAULT_CONCEPT_COUNT));
+  const completed = Math.min(requested, Math.max(0, Number(event?.meta?.concepts ?? 0)));
+  const remaining = generating ? Math.max(0, requested - completed) : 0;
   const selected = concepts.filter((c) => c.status === "selected").length;
   const isSample =
     concepts.some((c) => c.model === "sample") || event?.model === "sample";
@@ -90,7 +94,7 @@ export default async function BriefPage({
 
   return (
     <>
-      {generating ? <Poller intervalMs={3000} /> : null}
+      {generating ? <Poller intervalMs={1000} /> : null}
 
       <FlowSteps current="ideas" links={{ brief: "/briefs/new" }} format={brief.data.formats[0] === "video" ? "Product video" : brief.data.formats[0] === "ugc" ? "Presenter video" : "Static ad"} />
       {guardrail ? <div role="alert" className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">The brief is saved, but the ideas did not start: {decodeURIComponent(guardrail)}</div> : null}
@@ -204,7 +208,7 @@ export default async function BriefPage({
             <p className="m-0 text-[12px] text-muted">
               {isSample
                 ? "Sample ideas · Connect an AI provider for generated directions."
-                : "Eight directions from your brief. Pick one to make the ad — or a few, and compare."}
+                : "Ideas arrive one by one. Pick one to make the ad — or a few, and compare."}
             </p>
           </div>
           <span className="text-[12px] text-muted">
@@ -217,7 +221,7 @@ export default async function BriefPage({
         {failed ? (
           <div className="rounded-[7px] border border-[#f0c9c2] bg-[#fdf1ee] px-4 py-3 text-[13px] text-[#b4382a]">
             The last run failed{event?.error ? `: ${event.error}` : "."} Credits
-            were not charged.{" "}
+            were not charged. {concepts.length > 0 ? "Your completed ideas are saved and ready to use. " : ""}{" "}
             <form
               action={generateMoreConcepts.bind(null, brief.id)}
               className="inline"
@@ -229,35 +233,17 @@ export default async function BriefPage({
           </div>
         ) : null}
 
-        {waiting ? (
-          <div className="flex flex-col gap-4">
-          <div className="status-working flex items-center gap-2.5 text-[13px] text-muted">
-            <Spark size={18} animate="spin" className="text-orange" />
-            Claude is writing hooks, angles and scripts. About a minute.
+        {generating ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[9px] border border-line bg-surface px-4 py-3" role="status" aria-live="polite" aria-atomic="true">
+            <div className="flex items-center gap-2.5 text-[13px]">
+              <Spark size={18} animate="spin" className="text-orange" />
+              <span>{completed === 0 ? "Writing your first idea…" : completed < requested ? `${completed} of ${requested} new ideas ready. Writing the next one…` : "All ideas are ready. Finishing up…"}</span>
+            </div>
+            <span className="text-[12px] text-muted">{concepts.length > 0 ? "You can select an idea while we keep writing." : "Each idea will appear here as soon as it’s ready."}</span>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="panel flex flex-col gap-3 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="h-5 w-14 animate-pulse rounded bg-well" />
-                  <span className="h-3 w-20 animate-pulse rounded bg-well" />
-                </div>
-                <span className="h-7 w-11/12 animate-pulse rounded bg-well" />
-                <span className="h-7 w-2/3 animate-pulse rounded bg-well" />
-                <span className="h-3 w-full animate-pulse rounded bg-well" />
-                <span className="h-3 w-5/6 animate-pulse rounded bg-well" />
-                <div className="mt-2 h-[5px] overflow-hidden rounded-full bg-well">
-                  <div className="h-full w-1/2 animate-pulse rounded-full bg-orange" />
-                </div>
-              </div>
-            ))}
-            <p className="m-0 text-[13px] text-muted sm:col-span-2 xl:col-span-3">
-              Claude is reading the brand kit and the brief. This page updates
-              on its own.
-            </p>
-          </div>
-          </div>
-        ) : concepts.length === 0 && !failed ? (
+        ) : null}
+
+        {concepts.length === 0 && !generating && !failed ? (
           <div className="panel flex flex-col items-start gap-3 border-dashed p-6">
             <div className="font-serif text-[22px] italic">
               Nothing here yet.
@@ -427,6 +413,19 @@ export default async function BriefPage({
                 </article>
               );
             })}
+            {Array.from({ length: remaining }, (_, i) => (
+              <div key={`pending-${completed + i}`} className="panel flex min-h-[270px] flex-col gap-4 border-dashed p-5" aria-hidden="true">
+                <div className="flex items-center justify-between text-[11px] text-muted">
+                  <span>Idea {String(completed + i + 1).padStart(2, "0")}</span>
+                  <span>{i === 0 ? "Writing…" : "Up next"}</span>
+                </div>
+                <span className="mt-3 h-6 w-11/12 motion-safe:animate-pulse rounded bg-well" />
+                <span className="h-6 w-2/3 motion-safe:animate-pulse rounded bg-well" />
+                <span className="mt-4 h-3 w-full motion-safe:animate-pulse rounded bg-well" />
+                <span className="h-3 w-5/6 motion-safe:animate-pulse rounded bg-well" />
+                <span className="mt-auto h-9 w-24 rounded bg-well" />
+              </div>
+            ))}
           </div>
         )}
       </section>

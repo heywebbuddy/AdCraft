@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import {
   db,
@@ -19,6 +20,7 @@ import {
   type ConceptBrief,
   type ConceptKind,
   type PlatformTextLimits,
+  type OnConcept,
 } from "@adcraft/ai";
 import { placementsFor, type Platform } from "@adcraft/specs";
 import { getCatalog } from "@/server/model-catalog";
@@ -95,12 +97,13 @@ export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]
         eq(generationEvents.orgId, orgId),
         eq(generationEvents.briefId, briefId),
         eq(generationEvents.capability, "text"),
-        eq(generationEvents.status, "started"),
+        data.eventId ? eq(generationEvents.id, data.eventId) : eq(generationEvents.status, "started"),
       ),
     )
     .orderBy(desc(generationEvents.createdAt))
     .limit(1);
   if (!event) {
+    if (data.eventId) throw new Error("Concept generation event not found for this brief and workspace");
     [event] = await db
       .insert(generationEvents)
       .values({
@@ -111,11 +114,15 @@ export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]
         model: isTextModelConfigured(textModel) ? textModel.id : SAMPLE_MODEL,
         status: "started",
         credits: CREDITS_PER_RUN,
-        meta: { label: `${row.brief.title} · concepts`, detail: `${count} hooks and angles` },
+        meta: { label: `${row.brief.title} · concepts`, detail: `${count} hooks and angles`, requestedConcepts: count, concepts: 0 },
       })
       .returning();
   }
   const eventId = event!.id;
+  if (event!.status === "succeeded") return { briefId, eventId, count: Number(event!.meta?.concepts ?? count), model: event!.model };
+  let savedCount = Number(event!.meta?.concepts ?? 0);
+  const runMeta = () => ({ ...(event!.meta ?? {}), requestedConcepts: count, concepts: savedCount });
+  await db.update(generationEvents).set({ status: "started", error: null, meta: runMeta() }).where(eq(generationEvents.id, eventId));
 
   const briefData = row.brief.data as StoredBriefData;
   const input: ConceptBrief = {
@@ -150,12 +157,11 @@ export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]
   };
 
   try {
-    const { output, usage } = await generateConceptsWith(input, textModel.id);
-
     // Keep the model's format when it is one the brief asked for; otherwise round-robin
     // across the requested formats so every format gets concepts.
     const formats = briefData.formats.length ? briefData.formats : (["static"] as ConceptKind[]);
-    const rows = output.concepts.map((c, i) => {
+    const saveConcept: OnConcept = async (c, i, model) => {
+      if (i >= count) throw new Error("The model returned more concepts than requested");
       const wanted = toKind(c.kind);
       const kind = formats.includes(wanted) ? wanted : formats[i % formats.length]!;
       const conceptData: ConceptData & { platformFit: string[] } = {
@@ -166,53 +172,66 @@ export async function runConceptsPipeline(data: JobPayloads["concepts.generate"]
         description: c.description || undefined,
         cta: c.cta,
         visualDirection: c.visualDirection,
+        scenePrompt: c.scenePrompt,
         script: kind === "static" ? undefined : c.script || undefined,
         platformFit: c.platformFit.length ? c.platformFit : briefData.platforms,
       };
-      return {
-        orgId,
-        briefId,
-        title: c.title,
-        kind,
-        status: "proposed" as const,
-        data: conceptData,
-        model: usage.model,
-      };
+      // Stable per-run ids make a retried stream safe without replacing a card the
+      // user may already have selected or used to make an ad.
+      const hash = createHash("sha256").update(`${eventId}:concept:${i}`).digest("hex");
+      const id = `${hash.slice(0, 8)}-${hash.slice(8, 12)}-${hash.slice(12, 16)}-${hash.slice(16, 20)}-${hash.slice(20, 32)}`;
+      const nextCount = Math.max(savedCount, i + 1);
+      await db.transaction(async (tx) => {
+        await tx.insert(concepts).values({
+          id,
+          orgId,
+          briefId,
+          title: c.title,
+          kind,
+          status: "proposed" as const,
+          data: conceptData,
+          model,
+        }).onConflictDoNothing();
+        await tx.update(generationEvents).set({ model, meta: { ...runMeta(), concepts: nextCount } }).where(eq(generationEvents.id, eventId));
+      });
+      savedCount = nextCount;
+    };
+    const { output, usage } = await generateConceptsWith(input, textModel.id, saveConcept);
+    if (output.concepts.length !== count) throw new Error(`Only ${output.concepts.length} of ${count} concepts were generated. Completed ideas have been saved.`);
+
+    await db.transaction(async (tx) => {
+      await tx
+        .update(generationEvents)
+        .set({
+          status: "succeeded",
+          model: usage.model,
+          inputTokens: usage.inputTokens ?? 0,
+          outputTokens: usage.outputTokens ?? 0,
+          durationMs: Date.now() - startedAt,
+          costUsd: (usage.costUsd ?? 0).toFixed(6),
+          credits: CREDITS_PER_RUN,
+          meta: runMeta(),
+        })
+        .where(eq(generationEvents.id, eventId));
+
+      await tx
+        .insert(creditLedger)
+        .values({
+          orgId,
+          delta: -CREDITS_PER_RUN,
+          reason: "generation",
+          referenceId: eventId,
+          meta: { briefId, capability: "text", model: usage.model },
+        })
+        .onConflictDoNothing();
     });
-    // Insert one at a time so created_at reflects generation order (a batch insert shares one timestamp).
-    for (const r of rows) await db.insert(concepts).values(r);
 
-    await db
-      .update(generationEvents)
-      .set({
-        status: "succeeded",
-        model: usage.model,
-        inputTokens: usage.inputTokens ?? 0,
-        outputTokens: usage.outputTokens ?? 0,
-        durationMs: Date.now() - startedAt,
-        costUsd: (usage.costUsd ?? 0).toFixed(6),
-        credits: CREDITS_PER_RUN,
-        meta: { ...(event!.meta ?? {}), concepts: rows.length },
-      })
-      .where(eq(generationEvents.id, eventId));
-
-    await db
-      .insert(creditLedger)
-      .values({
-        orgId,
-        delta: -CREDITS_PER_RUN,
-        reason: "generation",
-        referenceId: eventId,
-        meta: { briefId, capability: "text", model: usage.model },
-      })
-      .onConflictDoNothing();
-
-    return { briefId, eventId, count: rows.length, model: usage.model };
+    return { briefId, eventId, count: savedCount, model: usage.model };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await db
       .update(generationEvents)
-      .set({ status: "failed", error: message.slice(0, 2000), durationMs: Date.now() - startedAt })
+      .set({ status: "failed", error: message.slice(0, 2000), durationMs: Date.now() - startedAt, meta: runMeta() })
       .where(eq(generationEvents.id, eventId));
     throw err;
   }

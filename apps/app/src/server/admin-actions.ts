@@ -159,7 +159,7 @@ async function recoverJob(e: typeof generationEvents.$inferSelect): Promise<Reco
     if (c.kind === "video") return { name: "video.generate", data: { orgId: e.orgId, creativeId: c.id } };
     if (c.kind === "ugc") return { name: "ugc.generate", data: { orgId: e.orgId, creativeId: c.id } };
   }
-  if (e.briefId) return { name: "concepts.generate", data: { orgId: e.orgId, briefId: e.briefId } };
+  if (e.briefId) return { name: "concepts.generate", data: { orgId: e.orgId, briefId: e.briefId, eventId: e.id, count: typeof meta.requestedConcepts === "number" ? meta.requestedConcepts : undefined } };
   if (typeof meta.productId === "string") return { name: "product.cutout", data: { orgId: e.orgId, productId: meta.productId } };
   return null;
 }
@@ -182,11 +182,11 @@ export async function retryGeneration(formData: FormData) {
     await logAudit(e.orgId, admin.userId, "admin.generation_marked", "generation_event", eventId, { from: "failed", to: "canceled", reason: "no recoverable job" });
     redirect(`${to}${sep}ok=marked`);
   }
-  await dispatch(job.name, job.data as never);
   await db
     .update(generationEvents)
     .set({ meta: { ...(e.meta ?? {}), adminRetriedBy: admin.email, adminRetriedAt: new Date().toISOString(), adminRetryJob: job.name } })
     .where(eq(generationEvents.id, eventId));
+  await dispatch(job.name, job.data as never);
   await logAudit(e.orgId, admin.userId, "admin.generation_retried", "generation_event", eventId, { job: job.name, data: job.data });
   redirect(`${to}${sep}ok=retried`);
 }
