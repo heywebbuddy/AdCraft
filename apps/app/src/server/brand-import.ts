@@ -283,6 +283,7 @@ function scanCss(css: string, colors: Map<string, { rgb: RGB; score: number; css
 // ── Screenshot ─────────────────────────────────────────────────────────────────
 
 let chromePath: Promise<string | null> | null = null;
+let chromeNoSandbox = false;
 async function chrome(): Promise<string | null> {
   if (!chromePath) {
     chromePath = (async () => {
@@ -315,16 +316,44 @@ async function screenshot(url: string): Promise<Buffer | null> {
   const resolverRules = [`MAP ${target.hostname} ${pinned}`, "MAP localhost ~NOTFOUND", "MAP *.internal ~NOTFOUND", "MAP *.local ~NOTFOUND", "MAP metadata.google.internal ~NOTFOUND"].join(",");
   const dir = await mkdtemp(path.join(os.tmpdir(), "adcraft-site-"));
   const file = path.join(dir, "shot.png");
-  try {
-    await new Promise<void>((resolve, reject) =>
+  const run = (noSandbox: boolean) =>
+    new Promise<void>((resolve, reject) =>
       execFile(
         exe,
-        ["--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", "--hide-scrollbars", "--window-size=1440,900", "--virtual-time-budget=5000", "--timeout=15000", `--host-resolver-rules=${resolverRules}`, `--user-agent=${UA}`, `--screenshot=${file}`, url],
-        { timeout: 25_000 },
+        [
+          "--headless",
+          "--disable-gpu",
+          ...(noSandbox ? ["--no-sandbox"] : []),
+          "--disable-dev-shm-usage",
+          "--hide-scrollbars",
+          `--user-data-dir=${path.join(dir, "profile")}`,
+          "--window-size=1440,900",
+          "--virtual-time-budget=5000",
+          "--timeout=15000",
+          `--host-resolver-rules=${resolverRules}`,
+          `--user-agent=${UA}`,
+          `--screenshot=${file}`,
+          url,
+        ],
+        { timeout: 12_000 },
         // Chrome logs page console output to stderr; only a non-zero exit means it failed.
         (err) => (err ? reject(new Error(String(err.message).slice(0, 300))) : resolve()),
       ),
     );
+  try {
+    // Prefer Chrome's own sandbox; containers without user namespaces need it off, and that is
+    // remembered for the process so only the first screenshot pays for the retry.
+    if (chromeNoSandbox) await run(true);
+    else {
+      try {
+        await run(false);
+      } catch (err) {
+        if (!/sandbox|namespace|SUID|setuid|No usable/i.test(String(err))) throw err;
+        console.warn("[brand-import] Chrome sandbox unavailable here; continuing without it");
+        chromeNoSandbox = true;
+        await run(true);
+      }
+    }
     return await readFile(file);
   } catch (err) {
     console.warn("[brand-import] screenshot failed:", err instanceof Error ? err.message : err);

@@ -25,7 +25,12 @@ export const metadata: Metadata = {
   title: "Adcraft",
   description: "AI ad creation for growth teams.",
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }, { url: "/favicon-32.png", type: "image/png", sizes: "32x32" }],
+    // Safari picks /favicon.ico over the SVG, so it must be the brand mark too (app/favicon.ico).
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+    ],
     apple: "/apple-touch-icon.png",
   },
 };

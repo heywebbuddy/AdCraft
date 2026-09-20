@@ -29,6 +29,11 @@ RUN pnpm turbo build --filter=@adcraft/app
 RUN rm -rf apps/app/.next/cache
 
 FROM build AS runtime
-ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 LOCAL_STORAGE_DIR=/data/files
+# The server runs as an unprivileged user: a bug in the app — or in the headless browser that
+# opens customers' websites — should not own the container. HOME and the cache point at /tmp so
+# nothing needs to write inside the read-only /app tree; the entrypoint starts as root only long
+# enough to hand the mounted volume over, then drops to this user.
+ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 LOCAL_STORAGE_DIR=/data/files     HOME=/tmp XDG_CACHE_HOME=/tmp/.cache XDG_CONFIG_HOME=/tmp/.config APP_UID=10001 APP_GID=10001
+RUN groupadd --system --gid 10001 adcraft  && useradd --system --uid 10001 --gid 10001 --home-dir /tmp --shell /usr/sbin/nologin adcraft  && mkdir -p /app/apps/app/.next/cache /data  && chown -R 10001:10001 /app/apps/app/.next/cache
 EXPOSE 3000
 CMD ["sh", "scripts/start.sh"]
