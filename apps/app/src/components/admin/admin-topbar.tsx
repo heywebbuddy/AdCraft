@@ -11,6 +11,7 @@ const names: Array<[string, string]> = [
   ["/admin/providers", "Providers"],
   ["/admin/billing", "Billing"],
   ["/admin/campaigns", "Campaigns"],
+  ["/admin/errors", "Errors"],
   ["/admin/settings", "Settings & flags"],
   ["/admin/audit", "Audit log"],
 ];

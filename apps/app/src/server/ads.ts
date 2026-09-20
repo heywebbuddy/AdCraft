@@ -194,6 +194,30 @@ export async function listAdAccounts(orgId: string, brandId: string | null): Pro
   return rows.map(toAccount);
 }
 
+/**
+ * Pages ads can run from, per connected account. Meta refuses to publish a link ad without one,
+ * so the builder offers the account's own Pages instead of asking for an id. Failures are
+ * swallowed: the builder falls back to a text field.
+ */
+export async function listPagesByAccount(orgId: string, brandId: string | null): Promise<Record<string, Array<{ id: string; name: string; category?: string }>>> {
+  const accounts = (await listAdAccounts(orgId, brandId)).filter((a) => a.status === "connected");
+  const out: Record<string, Array<{ id: string; name: string; category?: string }>> = {};
+  await Promise.all(
+    accounts.map(async (account) => {
+      try {
+        const [row] = await db.select().from(adAccounts).where(eq(adAccounts.id, account.id)).limit(1);
+        if (!row) return;
+        const { provider, ctx } = await accountContext(row);
+        if (!provider.listPages) return;
+        out[account.id] = await provider.listPages(ctx(`${account.id}:pages`));
+      } catch (err) {
+        console.warn("[ads] could not list pages", account.id, err instanceof Error ? err.message : err);
+      }
+    }),
+  );
+  return out;
+}
+
 export async function platformCards(orgId: string, brandId: string | null): Promise<PlatformCard[]> {
   const accounts = await listAdAccounts(orgId, brandId);
   return (["meta", "tiktok", "google"] as const).map((platform) => ({

@@ -50,6 +50,9 @@ importers:
       '@auth/drizzle-adapter':
         specifier: ^1.10.0
         version: 1.11.3
+      '@aws-sdk/client-s3':
+        specifier: ^3.700.0
+        version: 3.986.0
       '@electric-sql/pglite':
         specifier: ^0.5.8
         version: 0.5.8

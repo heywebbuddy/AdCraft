@@ -80,10 +80,13 @@ export function CampaignBuilder(props: {
   /** Daily budget (major units) above which only an owner may publish active. */
   spendApprovalAbove: number | null;
   isOwner: boolean;
+  /** Pages each connected account can publish from, keyed by account id. */
+  pagesByAccount: Record<string, Array<{ id: string; name: string; category?: string }>>;
 }) {
   const first = props.accounts.find((a) => a.id === props.initialAccountId) ?? props.accounts[0]!;
   const [accountId, setAccountId] = useState(first.id);
   const account = props.accounts.find((a) => a.id === accountId) ?? first;
+  const pages = props.pagesByAccount[account.id] ?? [];
   const platformPlacements = useMemo(() => props.placements.filter((p) => p.platform === account.platform), [props.placements, account.platform]);
   const [placementIds, setPlacementIds] = useState<string[]>(() => platformPlacements.map((p) => p.id));
   const seed = props.initialCreativeId ? props.creatives.find((c) => c.id === props.initialCreativeId) : null;
@@ -207,8 +210,19 @@ export function CampaignBuilder(props: {
 
           {account.platform === "meta" && !account.sandbox ? (
             <div className="grid gap-6 md:grid-cols-2">
-              <Field label="Facebook Page id" hint="Required for link ads">
-                <input name="pageId" placeholder="1234567890" className={`${fieldClass} h-11`} />
+              <Field label="Facebook Page" hint="Ads run from this Page">
+                {pages.length ? (
+                  <select name="pageId" defaultValue={pages[0]!.id} className={`${fieldClass} h-11`}>
+                    {pages.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                        {p.category ? ` · ${p.category}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input name="pageId" placeholder="1234567890" className={`${fieldClass} h-11`} />
+                )}
               </Field>
               <Field label="Pixel id" hint="Optional · enables conversion optimisation">
                 <input name="pixelId" placeholder="Meta pixel id" className={`${fieldClass} h-11`} />

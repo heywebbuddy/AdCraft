@@ -207,6 +207,13 @@ export interface CampaignUpdate {
   raw?: Record<string, unknown>;
 }
 
+/** A Facebook Page (or the platform's equivalent) that ads are published from. */
+export interface AdPage {
+  id: string;
+  name: string;
+  category?: string;
+}
+
 export interface CreativeUpload {
   creative: Creative;
   bytes: Uint8Array;

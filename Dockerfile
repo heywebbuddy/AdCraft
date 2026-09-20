@@ -12,7 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libxkbcommon0 libxfixes3 libxcomposite1 libxdamage1 libpango-1.0-0 libcairo2 libcups2 \
       libdrm2 libxshmfence1 libx11-xcb1 libxcb-dri3-0 libxext6 libgtk-3-0 \
       fonts-liberation fonts-noto-color-emoji fonts-dejavu-core \
+      gnupg \
     && rm -rf /var/lib/apt/lists/*
+# pg_dump for the nightly backup. The client major version must match the server (Railway runs
+# Postgres 18), so take it from the PostgreSQL project's own repository rather than Debian's 15.
+RUN install -d /usr/share/postgresql-common/pgdg \
+ && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+ && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+ && apt-get update && apt-get install -y --no-install-recommends postgresql-client-18 \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 FROM base AS build

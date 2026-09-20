@@ -1,4 +1,4 @@
-import { boolean, index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { id } from "./_shared";
 import { organizations } from "./orgs";
 import { users } from "./auth";
@@ -12,6 +12,30 @@ export const platformSettings = pgTable("platform_settings", {
   updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Unhandled server errors, so a customer hitting a bug leaves a trace someone can read
+ * (Admin → Errors) even when no external error tracker is configured. Pruned to 14 days.
+ */
+export const errorEvents = pgTable(
+  "error_events",
+  {
+    id: id(),
+    orgId: uuid("org_id").references(() => organizations.id, { onDelete: "set null" }),
+    route: text("route").notNull(),
+    method: text("method").notNull(),
+    path: text("path").notNull(),
+    name: text("name").notNull(),
+    message: text("message").notNull(),
+    digest: text("digest"),
+    stack: text("stack"),
+    release: text("release"),
+    count: integer("count").notNull().default(1),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("error_events_last_seen_idx").on(t.lastSeenAt)],
+);
 
 /** Internal notes a platform admin leaves on an organisation (never shown to customers). */
 export const adminNotes = pgTable(

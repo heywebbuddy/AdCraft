@@ -10,6 +10,11 @@ export async function onRequestError(err: unknown, request: { path: string; meth
   const digest = (err as { digest?: string } | null)?.digest;
   const line = `[error] ${request.method} ${request.path} (${context.routePath}) ${error.name}: ${error.message}${digest ? ` digest=${digest}` : ""}`;
   console.error(line);
+  // Keep a copy in the database so errors are visible in Admin → Errors even without Sentry.
+  // Only the Node runtime can reach the database; the edge bundle must not pull it in.
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    void import("./server/error-log").then((m) => m.recordError(error, request, context, digest)).catch(() => undefined);
+  }
   const dsn = process.env.SENTRY_DSN;
   if (!dsn) return;
   try {

@@ -16,6 +16,7 @@ import {
   ArrowIcon,
   StarIcon,
   BrandIcon,
+  AlertIcon,
 } from "../icons";
 
 export type AdminSidebarProps = {
@@ -51,6 +52,7 @@ const groups = [
   {
     label: "PLATFORM",
     items: [
+      { href: "/admin/errors", label: "Errors", Icon: AlertIcon },
       { href: "/admin/settings", label: "Settings & flags", Icon: SettingsIcon },
       { href: "/admin/audit", label: "Audit log", Icon: BriefIcon },
     ],

@@ -22,3 +22,15 @@ export const publishCampaign = inngest.createFunction(
   { event: "publish/campaign" },
   async ({ event, step }) => step.run("publish", () => runPublishPipeline(event.data)),
 );
+
+/** Nightly database backup, 03:15 UTC. Keeps 14 days in the media bucket under `db/`. */
+export const nightlyBackup = inngest.createFunction(
+  { id: "backup-nightly", retries: 2 },
+  { cron: "15 3 * * *" },
+  async ({ step }) => step.run("pg_dump", async () => {
+    const { backupDatabase } = await import("@/server/backup");
+    const r = await backupDatabase();
+    console.log(`[backup] ${r.name} · ${(r.bytes / 1048576).toFixed(1)} MB → ${r.destination} · pruned ${r.pruned} · ${r.ms} ms`);
+    return r;
+  }),
+);

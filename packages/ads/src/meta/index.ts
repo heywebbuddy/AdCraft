@@ -32,6 +32,7 @@ import type {
   UploadedCreative,
   ValidationIssue,
   CampaignUpdate,
+  AdPage
 } from "../types";
 import { validateCreative } from "../validation";
 
@@ -364,6 +365,15 @@ export class MetaAdsProvider implements AdsProvider {
 
   async setStatus(ctx: AdsContext, target: { externalId: string }, status: LiveStatus) {
     await request("meta", `${GRAPH}/${target.externalId}`, { headers: auth(ctx.tokens), json: { status: STATUS[status] }, isError });
+  }
+
+  async listPages(ctx: AdsContext): Promise<AdPage[]> {
+    const res = await request<{ data?: Array<{ id: string; name: string; category?: string }> }>("meta", `${GRAPH}/me/accounts`, {
+      headers: auth(ctx.tokens),
+      query: { fields: "id,name,category", limit: "50" },
+      isError,
+    });
+    return (res.data ?? []).map((p) => ({ id: p.id, name: p.name, category: p.category }));
   }
 
   async updateCampaign(ctx: AdsContext, input: CampaignUpdate) {

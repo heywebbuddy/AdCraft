@@ -8,7 +8,7 @@ import { runAvatarCreatePipeline } from "@/pipelines/avatar-create";
 import { runStaticPipeline } from "@/pipelines/static";
 import { runRenderPipeline } from "@/pipelines/render";
 import { runProductCutout } from "@/pipelines/product-cutout";
-import { insightsCron, insightsSync, publishCampaign } from "./insights-cron";
+import { insightsCron, insightsSync, nightlyBackup, publishCampaign } from "./insights-cron";
 import { hydrateModels } from "@/server/model-catalog";
 
 /** Every generation job reads the model catalog (admin edits, custom models) before it runs. */
@@ -91,4 +91,5 @@ export const functions = [
   publishCampaign,
   insightsSync,
   insightsCron,
+  nightlyBackup,
 ];

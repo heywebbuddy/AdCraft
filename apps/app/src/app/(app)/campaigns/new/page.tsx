@@ -8,6 +8,7 @@ import { planAllows, spendApprovalThreshold } from "@/server/platform-settings";
 import { currentSubscription } from "@/server/billing";
 import {
   listAdAccounts,
+  listPagesByAccount,
   listPublishableCreatives,
   placementsForPlatform,
 } from "@/server/ads";
@@ -32,7 +33,10 @@ export default async function NewCampaignPage({
   ]);
   const connected = accounts.filter((a) => a.status === "connected");
   if (connected.length === 0) redirect(`/campaigns?connect=1${creative ? `&creative=${encodeURIComponent(creative)}` : ""}`);
-  const spendApprovalAbove = await spendApprovalThreshold(ctx.org.id);
+  const [spendApprovalAbove, pagesByAccount] = await Promise.all([
+    spendApprovalThreshold(ctx.org.id),
+    listPagesByAccount(ctx.org.id, ctx.brand?.id ?? null),
+  ]);
 
   const placements: BuilderPlacement[] = (
     ["meta", "tiktok", "google"] as const
@@ -95,6 +99,7 @@ export default async function NewCampaignPage({
         initialAccountId={account ?? null}
         initialCreativeId={creative ?? null}
         spendApprovalAbove={spendApprovalAbove}
+        pagesByAccount={pagesByAccount}
         isOwner={ctx.role === "owner"}
       />
     </>

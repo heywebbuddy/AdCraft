@@ -17,6 +17,7 @@ import type {
   UploadedCreative,
   ValidationIssue,
   CampaignUpdate,
+  AdPage
 } from "./types";
 
 /** Context passed on every call: which connected account, plus an idempotency key for writes. */
@@ -57,6 +58,9 @@ export interface AdsProvider {
 
   /** Push name / daily budget / schedule changes to a campaign that is already on the platform. */
   updateCampaign(ctx: AdsContext, input: CampaignUpdate): Promise<void>;
+
+  /** Pages/profiles ads can run from. Meta requires one; platforms without the concept omit this. */
+  listPages?(ctx: AdsContext): Promise<AdPage[]>;
 
   /** Daily rows, one per (ad, date). */
   fetchInsights(ctx: AdsContext, query: InsightsQuery): Promise<Metrics[]>;

@@ -87,6 +87,10 @@ export class SandboxAdsProvider implements AdsProvider {
     /* nothing to call */
   }
 
+  async listPages() {
+    return [{ id: "sandbox-page", name: `Sandbox ${this.label} page` }];
+  }
+
   async fetchAdReviews(_ctx: AdsContext, adExternalIds: string[]) {
     return Object.fromEntries(adExternalIds.map((id) => [id, reviewFor(id)]));
   }

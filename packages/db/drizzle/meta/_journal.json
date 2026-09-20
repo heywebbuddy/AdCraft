@@ -57,6 +57,13 @@
       "when": 1789732199150,
       "tag": "0007_org_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789915383515,
+      "tag": "0008_giant_praxagora",
+      "breakpoints": true
     }
   ]
 }
