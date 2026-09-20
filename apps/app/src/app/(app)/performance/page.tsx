@@ -198,7 +198,7 @@ export default async function PerformancePage({
           </span>
         </div>
         {p.creatives.length ? (
-          <div className="panel overflow-x-auto">
+          <div className="panel relative overflow-x-auto">
             <table className="w-full border-collapse text-[13px]">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-[1.5px] text-muted">
@@ -291,7 +291,7 @@ export default async function PerformancePage({
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div id="fatigue" className="panel flex flex-col gap-3 px-4 py-3.5">
+        <div id="fatigue" className="panel flex min-w-0 flex-col gap-3 px-4 py-3.5">
           <div className="flex items-baseline justify-between">
             <span className="eyebrow">Creative fatigue</span>
             <span className="text-[11px] text-muted">
@@ -336,7 +336,7 @@ export default async function PerformancePage({
           )}
         </div>
 
-        <div className="panel flex flex-col gap-3 px-4 py-3.5">
+        <div className="panel flex min-w-0 flex-col gap-3 px-4 py-3.5">
           <div className="flex items-baseline justify-between">
             <span className="eyebrow">Disapproved ads</span>
             <span className="text-[11px] text-muted">

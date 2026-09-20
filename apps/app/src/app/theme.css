@@ -15,6 +15,20 @@
 }
 .theme-toggle:hover { border-color: var(--ink); }
 .theme-toggle:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+/* Orange buttons use the lighter orange in dark mode; white text fails on it, ink reads. */
+[data-theme="dark"] .app-shell .btn-orange,
+[data-theme="dark"] .sidebar-create.btn { color: #14130f; }
+[data-theme="dark"] .app-shell .btn-orange:hover { background: var(--orange); color: #fff; }
+/* Semantic greens / reds need lighter tones on the dark surface. */
+[data-theme="dark"] .home-delta.up, [data-theme="dark"] .flow-step.done > a, [data-theme="dark"] .flow-step.done > span { color: #8fc7a3; }
+[data-theme="dark"] .home-delta.down { color: #f0917f; }
+[data-theme="dark"] .dash-greeting-note span { color: #a9c090; }
+[data-theme="dark"] .flow-step.current > span { color: var(--paper); }
+[data-theme="dark"] .status-chip.tone-ok { background: #1d3125; color: #8fc7a3; }
+[data-theme="dark"] .status-chip.tone-warn { background: #35291a; color: #e5b96a; }
+[data-theme="dark"] .status-chip.tone-bad { background: #3a2422; color: #f0917f; }
+[data-theme="dark"] .status-chip.tone-info { background: #232a3f; color: #a9b6e6; }
+[data-theme="dark"] .status-chip.tone-orange { background: #3a2a22; color: var(--orange-text); }
 /* Full-screen: the topbar still shows, but give the page the extra room. */
 :fullscreen .app-shell { min-height: 100vh; }
 @media (max-width: 720px) { .fullscreen-toggle { display: none; } }
@@ -370,3 +384,35 @@
 [data-theme="dark"] [class*="bg-[#eef0f7]"] {
   background-color: #1a1e2a !important;
 }
+
+/* Generated dark-mode variants for hard-coded Tailwind tints used in notices and chips (see scripts in git history). */
+[data-theme="dark"] .bg-\[\#c9c8bf\] { background-color: #302f26; }
+[data-theme="dark"] .bg-\[\#e6f2ea\] { background-color: #183f25; }
+[data-theme="dark"] .bg-\[\#e9f3ec\] { background-color: #1a3d24; }
+[data-theme="dark"] .bg-\[\#e9f6ec\] { background-color: #164120; }
+[data-theme="dark"] .bg-\[\#eef0f7\] { background-color: #161f41; }
+[data-theme="dark"] .bg-\[\#f1f0ea\] { background-color: #37341f; }
+[data-theme="dark"] .bg-\[\#fbe3d9\] { background-color: #412216; }
+[data-theme="dark"] .bg-\[\#fbf3ef\] { background-color: #412416; }
+[data-theme="dark"] .bg-\[\#fdeae6\] { background-color: #411d16; }
+[data-theme="dark"] .bg-\[\#fdf1ee\] { background-color: #411e16; }
+[data-theme="dark"] .bg-\[\#fdf3e2\] { background-color: #413116; }
+[data-theme="dark"] .bg-\[\#fdf6e7\] { background-color: #413316; }
+[data-theme="dark"] .bg-\[\#fff6ee\] { background-color: #412a16; }
+[data-theme="dark"] .border-\[\#bfe0c8\] { border-color: #326740; }
+[data-theme="dark"] .border-\[\#c9c8c0\] { border-color: #525147; }
+[data-theme="dark"] .border-\[\#cfe3d6\] { border-color: #386146; }
+[data-theme="dark"] .border-\[\#efd4c7\] { border-color: #733f26; }
+[data-theme="dark"] .border-\[\#f0c4b8\] { border-color: #733726; }
+[data-theme="dark"] .border-\[\#f0c987\] { border-color: #735626; }
+[data-theme="dark"] .border-\[\#f0c9c2\] { border-color: #733226; }
+[data-theme="dark"] .border-\[\#f3c1b8\] { border-color: #733226; }
+[data-theme="dark"] .text-\[\#3c4a7a\] { color: #9da9d2; }
+[data-theme="dark"] .text-\[\#3f7a55\] { color: #9fd1b1; }
+[data-theme="dark"] .text-\[\#7c8868\] { color: #bac2ad; }
+[data-theme="dark"] .text-\[\#8a5a0c\] { color: #fac776; }
+[data-theme="dark"] .text-\[\#9b683a\] { color: #dbb694; }
+[data-theme="dark"] .text-\[\#aa5034\] { color: #e1a28e; }
+[data-theme="dark"] .text-\[\#b3261e\] { color: #f08680; }
+[data-theme="dark"] .text-\[\#b4382a\] { color: #e89187; }
+[data-theme="dark"] .text-\[\#b7791f\] { color: #efc280; }

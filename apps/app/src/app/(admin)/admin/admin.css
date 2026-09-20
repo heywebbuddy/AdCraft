@@ -868,6 +868,10 @@
   .admin-panel-head {
     flex-wrap: wrap;
   }
+  /* The note sits on its own line once the head wraps; nowrap would push the page wide. */
+  .admin-panel-note {
+    white-space: normal;
+  }
   .admin-table .cell-primary small {
     max-width: 200px;
   }
@@ -1018,3 +1022,7 @@
   color: var(--ink);
   opacity: 0.85;
 }
+
+/* Dark mode: the semantic greens and reds need lighter tones on the dark surface. */
+[data-theme="dark"] .admin-shell { --good: #8fc7a3; --bad: #f0917f; }
+[data-theme="dark"] .chip.ink { color: var(--paper); }

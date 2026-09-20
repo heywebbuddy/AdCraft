@@ -121,7 +121,7 @@ export default async function CampaignsPage({
           {cards.map((card) => (
             <section
               key={card.platform}
-              className="panel flex flex-col gap-3 p-5"
+              className="panel flex min-w-0 flex-col gap-3 p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-0.5">

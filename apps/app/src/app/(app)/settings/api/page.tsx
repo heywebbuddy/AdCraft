@@ -115,9 +115,9 @@ export default async function ApiPage({
 
           <div className="flex flex-col gap-2 rounded-[7px] bg-paper p-3.5 text-[12px]">
             <span className="eyebrow">Endpoints</span>
-            <code className="block">GET {origin}/api/v1/creatives?brandId=&amp;limit=50&amp;cursor=</code>
-            <code className="block">GET {origin}/api/v1/creatives/:id</code>
-            <code className="block">GET {origin}/api/v1/files/:key</code>
+            <code className="block break-all">GET {origin}/api/v1/creatives?brandId=&amp;limit=50&amp;cursor=</code>
+            <code className="block break-all">GET {origin}/api/v1/creatives/:id</code>
+            <code className="block break-all">GET {origin}/api/v1/files/:key</code>
             <span className="text-muted">
               Send <code>Authorization: Bearer ak_live_…</code>. Each creative lists a render per size with a download URL that accepts the same key.
             </span>

@@ -3,3 +3,23 @@
 @media(min-width:1600px){.section{padding:28px 30px}.studio{grid-template-columns:minmax(0,1fr) 320px}.templateTitle{font-size:13px}.templateNote{font-size:11px}.templates{gap:17px}}
 @media(max-width:1250px){.studio{grid-template-columns:1fr}.aside{position:static;max-height:none;display:grid;grid-template-columns:2fr 1fr}.brief{grid-row:span 2}.micro{display:none}}
 @media(max-width:700px){.section{padding:20px 16px}.sectionHead h2{font-size:13px}.modes{grid-template-columns:1fr}.mode{padding:15px}.modeIcon{display:none}.modeTitle{padding-right:25px}.mode strong{margin-top:8px}.templates{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px}.templateTitle{font-size:12px}.templateNote{font-size:10px}.outputGrid{grid-template-columns:1fr;gap:22px}.quality span{font-size:10px}.sizes span{font-size:9px}.footer{flex-direction:column;align-items:stretch;padding:18px 16px;gap:14px}.aside{display:flex}.advanced summary>span{float:none;margin-left:8px}.exampleNote{font-size:9px}}
+
+/* Dark mode: the studio shell keeps its layout but every hard-coded paper tint maps to the theme tokens. */
+[data-theme="dark"] .main{border-color:var(--line);box-shadow:none}
+[data-theme="dark"] .section{border-bottom-color:var(--line)}
+[data-theme="dark"] .step{color:var(--muted);border-color:var(--line)}
+[data-theme="dark"] .micro,[data-theme="dark"] .mode p,[data-theme="dark"] .modeHint,[data-theme="dark"] .templateNote,[data-theme="dark"] .templateTitle>span,[data-theme="dark"] .exampleNote,[data-theme="dark"] .quality span,[data-theme="dark"] .modelName,[data-theme="dark"] .sizes span,[data-theme="dark"] .advanced summary>span,[data-theme="dark"] .footer p,[data-theme="dark"] .footer strong span,[data-theme="dark"] .product>div>span,[data-theme="dark"] .label,[data-theme="dark"] .briefCopy p,[data-theme="dark"] .direction p,[data-theme="dark"] .brandFooter,[data-theme="dark"] .asideNote,[data-theme="dark"] .asideNote p,[data-theme="dark"] .back{color:var(--muted)}
+[data-theme="dark"] .advanced summary,[data-theme="dark"] .asideNote strong,[data-theme="dark"] .cta,[data-theme="dark"] .liveDot{color:var(--ink)}
+[data-theme="dark"] .mode,[data-theme="dark"] .quality label,[data-theme="dark"] .sizes label,[data-theme="dark"] .advanced select,[data-theme="dark"] .cta,[data-theme="dark"] .brief,[data-theme="dark"] .art{border-color:var(--line)}
+[data-theme="dark"] .selected{border-color:var(--orange);background:color-mix(in srgb, var(--orange) 12%, var(--surface));box-shadow:none}
+[data-theme="dark"] .modeTitle small{background:#3a2a22;color:var(--orange-text)}
+[data-theme="dark"] .quality .qualityActive,[data-theme="dark"] .sizes .sizeSelected{background:var(--well);border-color:var(--muted)}
+[data-theme="dark"] .advanced{border-top-color:var(--line)}
+[data-theme="dark"] .notice{background:var(--well);border-color:var(--line);color:var(--ink)}
+[data-theme="dark"] .briefHeading,[data-theme="dark"] .direction,[data-theme="dark"] .brandFooter{border-color:var(--line)}
+[data-theme="dark"] .brandFooter{background:var(--well)}
+[data-theme="dark"] .productInitial{background:var(--well);color:var(--muted)}
+[data-theme="dark"] .error{color:#f0917f}
+[data-theme="dark"] .footer{background:var(--surface-2)}
+[data-theme="dark"] .template:hover .art{border-color:var(--muted)}
+[data-theme="dark"] .check{background:var(--surface);color:var(--orange-text)}

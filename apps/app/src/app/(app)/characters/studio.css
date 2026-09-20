@@ -26,7 +26,7 @@
 .pl-cell{position:relative;display:block;overflow:hidden;background:#e7e8e2}.pl-hero{grid-row:1/-1}.pl-cell img,.pl-cell video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pl-cell video{opacity:0;transition:opacity .2s}.pl-cell video.on{opacity:1}
 .pl-caption{display:block;padding:9px 2px 0}.pl-caption strong{display:block;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pl-caption small{display:block;font-size:11px;color:var(--cs-muted);margin-top:1px}
 .pl-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:0 26px 12px}.pl-chips>button{border:1px solid var(--cs-border);background: var(--surface);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--ink)}.pl-chips>button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}.pl-chips-hint{font-size:11px;color:var(--cs-muted);margin-left:6px}
-.pl-kind{position:absolute;left:8px;top:8px;font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:3px 6px;border-radius:5px;background:#ffffffe6;color:var(--ink)}.pl-kind.studio{background:#242521e6;color:#fff}.pl-fit{position:absolute;left:8px;bottom:8px;font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;background:#e65c32;color:#fff}.pl-sheet.solo.wide{aspect-ratio:4/3}
+.pl-kind{position:absolute;left:8px;top:8px;font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:3px 6px;border-radius:5px;background:#ffffffe6;color:#242521}.pl-kind.studio{background:#242521e6;color:#fff}.pl-fit{position:absolute;left:8px;bottom:8px;font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;background:#e65c32;color:#fff}.pl-sheet.solo.wide{aspect-ratio:4/3}
 .pl-looks-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.pl-fit-toggle{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink);cursor:pointer}.pl-fit-toggle input{accent-color:#e65c32;width:14px;height:14px;margin:0}.pl-fit-toggle span{font-size:10px;color:var(--cs-muted);background: var(--well);padding:2px 6px;border-radius:4px}
 .cs-field-label{font-size:11px;font-weight:500;color:var(--cs-muted)}.cs-field-row{display:flex;align-items:baseline;gap:6px}.cs-field-hint{font-size:10px;font-weight:400;color:var(--cs-muted);line-height:1.5}.cs-field .vf-field{gap:8px}
 /* ---------- Libraries as pages (Presenter library / Voice library tabs) ---------- */
@@ -69,7 +69,7 @@
 .cs-pickbar-text small{font-size:11px;color:var(--cs-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cs-pickbar .cs-primary{min-height:40px;padding:0 16px;gap:10px;white-space:nowrap}
 .cs-pickbar .cs-secondary{min-height:40px;white-space:nowrap}
-@media(max-width:900px){.pl-page .pl-head{flex-direction:column;align-items:flex-start}.pl-stats{width:100%}.pl-stat{flex:1;min-width:0}}
+@media(max-width:900px){.pl-head,.pl-page .pl-head,.ld-root .pl-head,.ac-root .pl-head{flex-direction:column;align-items:flex-start}.pl-stats{width:100%}.pl-stat{flex:1;min-width:0}}
 @media(max-width:640px){.cs-pickbar{flex-wrap:wrap;bottom:8px}.cs-pickbar-text{flex-basis:calc(100% - 66px)}.cs-pickbar .cs-secondary,.cs-pickbar .cs-primary{flex:1}.vp-list.vp-columns{grid-template-columns:minmax(0,1fr)}}
 /* ---------- Voice tools: clone / design cards, your voices ---------- */
 .vt-root{display:flex;flex-direction:column;gap:18px;margin-bottom:28px}
@@ -217,3 +217,5 @@
 
 /* Single-line fields share the select height without squeezing their text. */
 .character-studio input.cs-input:not([type="file"]){padding-block:0}
+
+[data-theme="dark"] .cs-primary{color:#14130f}[data-theme="dark"] .cs-primary:hover{color:#fff}

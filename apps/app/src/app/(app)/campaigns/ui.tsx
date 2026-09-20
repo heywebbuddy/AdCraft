@@ -4,20 +4,20 @@ import type { Platform } from "@adcraft/ads";
 export const PLATFORM_NAMES: Record<Platform, string> = { meta: "Meta", tiktok: "TikTok", google: "Google" };
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: "bg-well text-ink",
-  publishing: "bg-[#fbe3d9] text-orange",
-  paused: "bg-[#fdf6e7] text-[#b7791f]",
-  active: "bg-[#e9f3ec] text-[#3f7a55]",
-  archived: "bg-well text-muted",
-  error: "bg-[#fdf1ee] text-[#b4382a]",
-  connected: "bg-[#e9f3ec] text-[#3f7a55]",
-  expired: "bg-[#fdf6e7] text-[#b7791f]",
-  revoked: "bg-well text-muted",
-  approved: "bg-[#e9f3ec] text-[#3f7a55]",
-  pending: "bg-[#fdf6e7] text-[#b7791f]",
-  disapproved: "bg-[#fdf1ee] text-[#b4382a]",
-  unknown: "bg-well text-muted",
-  sandbox: "bg-[#eef0f7] text-[#3c4a7a]",
+  draft: "status-chip tone-ink",
+  publishing: "status-chip tone-orange",
+  paused: "status-chip tone-warn",
+  active: "status-chip tone-ok",
+  archived: "status-chip tone-neutral",
+  error: "status-chip tone-bad",
+  connected: "status-chip tone-ok",
+  expired: "status-chip tone-warn",
+  revoked: "status-chip tone-neutral",
+  approved: "status-chip tone-ok",
+  pending: "status-chip tone-warn",
+  disapproved: "status-chip tone-bad",
+  unknown: "status-chip tone-neutral",
+  sandbox: "status-chip tone-info",
 };
 
 export function StatusChip({ status, label }: { status: string; label?: string }) {

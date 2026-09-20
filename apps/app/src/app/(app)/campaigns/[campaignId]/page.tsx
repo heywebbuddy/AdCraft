@@ -133,83 +133,85 @@ export default async function CampaignPage({ params, searchParams }: { params: P
                 ) : null}
               </div>
               {set.ads.length ? (
-                <table className="w-full border-collapse text-[13px]">
-                  <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-[1.5px] text-muted">
-                      <th className="px-4 py-2.5 font-semibold">Ad</th>
-                      <th className="px-3 py-2.5 font-semibold">Placement</th>
-                      <th className="px-3 py-2.5 font-semibold">Status</th>
-                      <th className="px-3 py-2.5 font-semibold">Review</th>
-                      <th className="px-4 py-2.5 text-right font-semibold">Platform id</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {set.ads.map((ad) => (
-                      <tr key={ad.id} className="border-t border-line align-top">
-                        <td className="px-4 py-3">
-                          <div className="flex gap-3">
-                            {ad.creative.previewUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={ad.creative.previewUrl} alt="" className="h-[56px] w-[44px] shrink-0 rounded-[5px] border border-line object-cover" />
-                            ) : (
-                              <div className="h-[56px] w-[44px] shrink-0 rounded-[5px] bg-well" />
-                            )}
-                            <div className="flex min-w-0 flex-col gap-0.5">
-                              {ad.creative.id ? (
-                                <Link href={`/creatives/${ad.creative.id}`} className="truncate font-semibold hover:text-orange">
-                                  {ad.creative.name}
-                                </Link>
-                              ) : (
-                                <span className="truncate font-semibold">{ad.creative.name}</span>
-                              )}
-                              <span className="text-[11px] text-muted">{ad.name}</span>
-                              {ad.error ? <span className="text-[11px] text-[#b4382a]">{ad.error}</span> : null}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-3">
-                          <span className="flex flex-col">
-                            <span>{ad.creative.placementLabel}</span>
-                            <span className="text-[11px] text-muted">{ad.creative.ratio}</span>
-                          </span>
-                        </td>
-                        <td className="px-3 py-3">
-                          <div className="flex flex-col items-start gap-1.5">
-                            <StatusChip status={ad.status === "draft" ? "publishing" : ad.status} label={ad.status === "draft" ? "Publishing" : undefined} />
-                            {canEdit && !isPending(ad.externalId) && (ad.status === "active" || ad.status === "paused") ? (
-                              <form action={setAdStatusAction.bind(null, ad.id, ad.status === "active" ? "paused" : "active")}>
-                                <button type="submit" className="whitespace-nowrap text-[11px] font-semibold text-muted hover:text-ink">
-                                  {ad.status === "active" ? "Pause ad" : "Resume ad"}
-                                </button>
-                              </form>
-                            ) : null}
-                          </div>
-                        </td>
-                        <td className="px-3 py-3">
-                          {ad.review ? (
-                            <div className="flex flex-col gap-1">
-                              <StatusChip status={ad.review.status} />
-                              {ad.review.reasons?.length ? <span className="max-w-[26ch] text-[11px] text-[#b4382a]">{ad.review.reasons.join("; ")}</span> : null}
-                              <span className="text-[11px] text-muted">{ad.review.effectiveStatus ?? ""}</span>
-                            </div>
-                          ) : (
-                            <span className="text-[11px] text-muted">{isPending(ad.externalId) ? "—" : "Not checked yet"}</span>
-                          )}
-                        </td>
-                        <td className="tabular px-4 py-3 text-right text-[11px] text-muted">
-                          <span className="block max-w-[22ch] truncate" title={ad.externalId}>
-                            {isPending(ad.externalId) ? "pending" : ad.externalId}
-                          </span>
-                          {ad.creativeExternalId ? (
-                            <span className="block max-w-[22ch] truncate" title={ad.creativeExternalId}>
-                              creative {ad.creativeExternalId}
-                            </span>
-                          ) : null}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr className="text-left text-[10px] uppercase tracking-[1.5px] text-muted">
+                        <th className="px-4 py-2.5 font-semibold">Ad</th>
+                        <th className="px-3 py-2.5 font-semibold">Placement</th>
+                        <th className="px-3 py-2.5 font-semibold">Status</th>
+                        <th className="px-3 py-2.5 font-semibold">Review</th>
+                        <th className="px-4 py-2.5 text-right font-semibold">Platform id</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {set.ads.map((ad) => (
+                        <tr key={ad.id} className="border-t border-line align-top">
+                          <td className="px-4 py-3">
+                            <div className="flex gap-3">
+                              {ad.creative.previewUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={ad.creative.previewUrl} alt="" className="h-[56px] w-[44px] shrink-0 rounded-[5px] border border-line object-cover" />
+                              ) : (
+                                <div className="h-[56px] w-[44px] shrink-0 rounded-[5px] bg-well" />
+                              )}
+                              <div className="flex min-w-0 flex-col gap-0.5">
+                                {ad.creative.id ? (
+                                  <Link href={`/creatives/${ad.creative.id}`} className="truncate font-semibold hover:text-orange">
+                                    {ad.creative.name}
+                                  </Link>
+                                ) : (
+                                  <span className="truncate font-semibold">{ad.creative.name}</span>
+                                )}
+                                <span className="text-[11px] text-muted">{ad.name}</span>
+                                {ad.error ? <span className="text-[11px] text-[#b4382a]">{ad.error}</span> : null}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <span className="flex flex-col">
+                              <span>{ad.creative.placementLabel}</span>
+                              <span className="text-[11px] text-muted">{ad.creative.ratio}</span>
+                            </span>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="flex flex-col items-start gap-1.5">
+                              <StatusChip status={ad.status === "draft" ? "publishing" : ad.status} label={ad.status === "draft" ? "Publishing" : undefined} />
+                              {canEdit && !isPending(ad.externalId) && (ad.status === "active" || ad.status === "paused") ? (
+                                <form action={setAdStatusAction.bind(null, ad.id, ad.status === "active" ? "paused" : "active")}>
+                                  <button type="submit" className="whitespace-nowrap text-[11px] font-semibold text-muted hover:text-ink">
+                                    {ad.status === "active" ? "Pause ad" : "Resume ad"}
+                                  </button>
+                                </form>
+                              ) : null}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3">
+                            {ad.review ? (
+                              <div className="flex flex-col gap-1">
+                                <StatusChip status={ad.review.status} />
+                                {ad.review.reasons?.length ? <span className="max-w-[26ch] text-[11px] text-[#b4382a]">{ad.review.reasons.join("; ")}</span> : null}
+                                <span className="text-[11px] text-muted">{ad.review.effectiveStatus ?? ""}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-muted">{isPending(ad.externalId) ? "—" : "Not checked yet"}</span>
+                            )}
+                          </td>
+                          <td className="tabular px-4 py-3 text-right text-[11px] text-muted">
+                            <span className="block max-w-[22ch] truncate" title={ad.externalId}>
+                              {isPending(ad.externalId) ? "pending" : ad.externalId}
+                            </span>
+                            {ad.creativeExternalId ? (
+                              <span className="block max-w-[22ch] truncate" title={ad.creativeExternalId}>
+                                creative {ad.creativeExternalId}
+                              </span>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div className="px-4 py-4 text-[13px] text-muted">No ads in this set.</div>
               )}

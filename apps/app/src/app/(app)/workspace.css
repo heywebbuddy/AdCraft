@@ -3412,7 +3412,7 @@
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--orange-text);
-  background: #fbeee8;
+  background: color-mix(in srgb, var(--orange) 14%, var(--surface));
   padding: 4px 8px;
   border-radius: 5px;
 }
@@ -3441,7 +3441,7 @@
 }
 .flow-step.current > span {
   background: var(--ink);
-  color: #fff;
+  color: var(--paper);
   font-weight: 600;
 }
 .flow-step.done > a,
@@ -3518,3 +3518,12 @@
   font-weight: 600;
   color: #8a5a0c;
 }
+
+/* Status chips: one class per tone so dark mode can restyle them in theme.css. */
+.status-chip.tone-ok { background: #e9f3ec; color: #3f7a55; }
+.status-chip.tone-warn { background: #fdf6e7; color: #b7791f; }
+.status-chip.tone-bad { background: #fdf1ee; color: #b4382a; }
+.status-chip.tone-info { background: #eef0f7; color: #3c4a7a; }
+.status-chip.tone-orange { background: #fbe3d9; color: var(--orange-text); }
+.status-chip.tone-neutral { background: var(--well); color: var(--muted); }
+.status-chip.tone-ink { background: var(--well); color: var(--ink); }
