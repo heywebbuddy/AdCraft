@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   const failedCount = data.tiles.filter((t) => t.status === "failed").length;
   const recent = data.tiles.filter((t) => t.status !== "failed").slice(0, 4);
   const attention =
-    data.counts.failedPipelines.length + data.changeRequests.length + perf.alerts.length + (data.counts.failedRenders > 0 ? 1 : 0) + (ctx.credits.balance <= 10 ? 1 : 0);
+    data.counts.failedPipelines.length + data.changeRequests.length + perf.alerts.length + (data.counts.failedRenders > 0 ? 1 : 0) + (ctx.credits.balance < 2 ? 1 : 0);
 
   const headline =
     data.queue.length > 0
@@ -373,13 +373,13 @@ export default async function DashboardPage() {
                   </span>
                 </div>
               ) : null}
-              {ctx.credits.balance <= 10 ? (
+              {ctx.credits.balance < 2 ? (
                 <div className="home-alert">
                   <AlertIcon className="warning" />
                   <span>
                     <strong>{ctx.credits.balance} credits left</strong>
                     <span>
-                      A UGC video needs 40. <Link href="/settings/billing">Top up</Link>
+                      A static ad needs 2, a UGC video 40. <Link href="/settings/billing">Top up</Link>
                     </span>
                   </span>
                 </div>

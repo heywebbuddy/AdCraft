@@ -101,7 +101,7 @@ Long jobs (concepts 75 s, character ads 3–5 min, digital twins up to an hour) 
 - "Presenter / avatar / character / look" → keep **Character**, **Look**, **Voice**; "presenter library" → **Cast library**.
 - "Brief" stays but only as the input step.
 
-**2d. Onboarding that ends in an ad.** The welcome flow creates a brand; it should continue: add a product (or skip with a URL → we scrape name/description/image), pick a format, generate one ad, then show the dashboard. Credits banner explains what 50 credits buys (≈ 25 static ads or 1 presenter video).
+**2d. Onboarding that ends in an ad.** The welcome flow creates a brand; it should continue: add a product (or skip with a URL → we scrape name/description/image), pick a format, generate one ad, then show the dashboard. Credits banner explains what 10 credits buys (≈ 5 static ads).
 
 **2e. Mobile.** Everything works at 375 px but the builders are cramped; ship read-only mobile (review, approve, comment, pause) and push creation to desktop with a clear message.
 

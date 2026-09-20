@@ -53,7 +53,7 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
           <PendingButton className="btn btn-orange h-12 justify-between text-[15px]" pendingLabel="Setting up your studio…">
             Open my studio <span aria-hidden="true">↗︎</span>
           </PendingButton>
-          <p className="text-xs text-muted">Starts with 50 free credits. No card needed.</p>
+          <p className="text-xs text-muted">Starts with 10 free credits. No card needed.</p>
         </div>
       </BrandDiscovery>
     </main>

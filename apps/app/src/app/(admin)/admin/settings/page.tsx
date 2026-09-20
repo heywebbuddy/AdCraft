@@ -57,7 +57,7 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
               </label>
               <label>
                 <span>
-                  Trial credits <small>granted at onboarding · was 50</small>
+                  Trial credits <small>granted at onboarding · default 10</small>
                 </span>
                 <input type="number" name="trialCredits" min={0} max={100000} step={1} defaultValue={s.trialCredits} />
               </label>

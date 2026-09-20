@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS: PlatformSettings = {
   maintenanceBanner: "",
   guardrails: DEFAULT_GUARDRAILS,
   signupsEnabled: true,
-  trialCredits: 50,
+  trialCredits: 10,
   planFeatures: {
     starter: { video: true, ugc: true, publishing: true },
     studio: { video: true, ugc: true, publishing: true },

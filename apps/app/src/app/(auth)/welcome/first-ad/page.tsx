@@ -41,7 +41,9 @@ export default async function FirstAdPage({ searchParams }: { searchParams: Prom
           <Link href="/characters" className="font-semibold text-ink hover:text-orange">Start with a presenter video ↗︎</Link>
           <Link href="/dashboard" className="hover:text-ink">Skip for now</Link>
         </div>
-        <p className="mt-6 text-xs text-muted">{ctx.credits.balance} free credits — about {Math.floor(ctx.credits.balance / 2)} static ads, or one presenter video.</p>
+        <p className="mt-6 text-xs text-muted">
+          {ctx.credits.balance} free credits — about {Math.floor(ctx.credits.balance / 2)} static ads{ctx.credits.balance >= 40 ? ", or one presenter video" : ""}.
+        </p>
       </div>
     </main>
   );
