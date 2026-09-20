@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Instrument_Serif } from "next/font/google";
 import { THEME_BOOT } from "@/lib/theme";
+import { SkewGuard } from "@/components/skew-guard";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -35,7 +36,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SkewGuard />
+        {children}
+      </body>
     </html>
   );
 }

@@ -9,6 +9,7 @@ import { db, dbReady, brands, brandKits, type BrandKitData } from "@adcraft/db";
 import { getStorage, objectKey } from "@adcraft/storage";
 import { KIT_FONTS, KIT_TONES, DEFAULT_KIT, withDefaults, type KitFont, type KitTone } from "@/lib/brand-kit";
 import { UA } from "./product-import";
+import { assertPublicHost, BlockedUrlError, safeFetch } from "./net";
 
 /**
  * Build a brand kit from a website. Four sources, combined:
@@ -47,7 +48,7 @@ export function normaliseSiteUrl(input: string): URL {
     throw new Error("That doesn't look like a web address.");
   }
   if (!/^https?:$/.test(u.protocol)) throw new Error("Only http(s) links work.");
-  if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[::1\])/.test(u.hostname) || !u.hostname.includes(".")) throw new Error("That address is not public.");
+  if (!u.hostname.includes(".")) throw new Error("That address is not public.");
   return u;
 }
 
@@ -302,15 +303,26 @@ async function chrome(): Promise<string | null> {
 async function screenshot(url: string): Promise<Buffer | null> {
   const exe = await chrome();
   if (!exe) return null;
+  const target = new URL(url);
+  // Pin the hostname to the address we verified, and make internal names unresolvable, so the
+  // page (and anything it loads) cannot reach our own network. See server/net.ts.
+  let pinned: string;
+  try {
+    pinned = await assertPublicHost(target.hostname);
+  } catch {
+    return null;
+  }
+  const resolverRules = [`MAP ${target.hostname} ${pinned}`, "MAP localhost ~NOTFOUND", "MAP *.internal ~NOTFOUND", "MAP *.local ~NOTFOUND", "MAP metadata.google.internal ~NOTFOUND"].join(",");
   const dir = await mkdtemp(path.join(os.tmpdir(), "adcraft-site-"));
   const file = path.join(dir, "shot.png");
   try {
     await new Promise<void>((resolve, reject) =>
       execFile(
         exe,
-        ["--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", "--hide-scrollbars", "--window-size=1440,900", "--virtual-time-budget=5000", "--timeout=15000", `--user-agent=${UA}`, `--screenshot=${file}`, url],
+        ["--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", "--hide-scrollbars", "--window-size=1440,900", "--virtual-time-budget=5000", "--timeout=15000", `--host-resolver-rules=${resolverRules}`, `--user-agent=${UA}`, `--screenshot=${file}`, url],
         { timeout: 25_000 },
-        (err, _out, stderr) => (err ? reject(new Error(String(stderr || err.message).slice(0, 300))) : resolve()),
+        // Chrome logs page console output to stderr; only a non-zero exit means it failed.
+        (err) => (err ? reject(new Error(String(err.message).slice(0, 300))) : resolve()),
       ),
     );
     return await readFile(file);
@@ -463,11 +475,10 @@ async function storeLogo(orgId: string, cands: LogoCandidate[]): Promise<string 
         return `/api/files/${key}`;
       }
       if (!c.url) continue;
-      const res = await fetch(c.url, { headers: { "user-agent": UA, accept: "image/*,*/*" }, redirect: "follow", signal: AbortSignal.timeout(10_000) });
+      const { res, buffer: buf } = await safeFetch(c.url, { headers: { "user-agent": UA, accept: "image/*,*/*" }, timeoutMs: 10_000, maxBytes: 8 * 1024 * 1024 });
       if (!res.ok) continue;
       const type = (res.headers.get("content-type") ?? "").split(";")[0]!.trim();
-      const buf = Buffer.from(await res.arrayBuffer());
-      if (!buf.byteLength || buf.byteLength > 8 * 1024 * 1024) continue;
+      if (!buf.byteLength) continue;
       if (type === "image/svg+xml" || /\.svg(\?|$)/i.test(c.url)) {
         if (!/<svg/i.test(buf.subarray(0, 2000).toString())) continue;
         const key = objectKey(orgId, "logos", "svg");
@@ -493,10 +504,9 @@ async function storeLogo(orgId: string, cands: LogoCandidate[]): Promise<string 
 /** Read a website and work out its kit. Stores the logo and screenshot; does not touch the database. */
 export async function readWebsite(orgId: string, input: string): Promise<SiteImport> {
   const u = normaliseSiteUrl(input);
-  const res = await fetch(u, { headers: { "user-agent": UA, accept: "text/html,*/*" }, redirect: "follow", signal: AbortSignal.timeout(15_000) });
+  const { res, url: finalUrl, buffer } = await safeFetch(u, { headers: { "user-agent": UA, accept: "text/html,*/*" }, maxBytes: 8 * 1024 * 1024 });
   if (!res.ok) throw new Error(`${u.hostname} answered ${res.status}.`);
-  const finalUrl = new URL(res.url || u.toString());
-  const html = (await res.text()).slice(0, HTML_LIMIT);
+  const html = buffer.toString("utf8").slice(0, HTML_LIMIT);
 
   const colors = new Map<string, { rgb: RGB; score: number; css: number; pixels: number }>();
   const fontCounts = new Map<string, number>();
@@ -509,8 +519,8 @@ export async function readWebsite(orgId: string, input: string): Promise<SiteImp
     Promise.all(
       stylesheetUrls(html, finalUrl).map(async (href) => {
         try {
-          const r = await fetch(href, { headers: { "user-agent": UA, accept: "text/css,*/*" }, redirect: "follow", signal: AbortSignal.timeout(8_000) });
-          return r.ok ? (await r.text()).slice(0, CSS_LIMIT) : "";
+          const { res: r, buffer: b } = await safeFetch(href, { headers: { "user-agent": UA, accept: "text/css,*/*" }, timeoutMs: 8_000, maxBytes: 4 * 1024 * 1024 });
+          return r.ok ? b.toString("utf8").slice(0, CSS_LIMIT) : "";
         } catch {
           return "";
         }

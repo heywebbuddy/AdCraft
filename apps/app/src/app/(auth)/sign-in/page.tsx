@@ -3,6 +3,8 @@ import { PendingButton } from "@/components/pending-button";
 import { Wordmark } from "@/components/spark";
 import { LegalLinks } from "@/components/legal-links";
 import { auth, signIn, devLoginEnabled } from "@/auth";
+import { headers } from "next/headers";
+import { checkRate } from "@/server/guardrails";
 
 const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
 const hasEmail = Boolean(process.env.RESEND_API_KEY);
@@ -36,7 +38,7 @@ export default async function SignInPage({
 
         {error ? (
           <p className="mt-6 rounded-[7px] border border-orange/40 bg-orange/10 px-3 py-2 text-sm">
-            Sign-in didn’t go through ({error}). Try again.
+            {error === "rate" ? "Too many sign-in emails just went out. Wait a minute and try again." : `Sign-in didn’t go through (${error}). Try again.`}
           </p>
         ) : null}
 
@@ -46,7 +48,18 @@ export default async function SignInPage({
               className="flex flex-col gap-3"
               action={async (formData) => {
                 "use server";
-                await signIn("resend", { email: String(formData.get("email") ?? ""), redirectTo: callbackUrl });
+                const email = String(formData.get("email") ?? "").trim().toLowerCase();
+                // Unauthenticated endpoint: cap sign-in emails per caller and per address so
+                // the form cannot be used to flood someone's inbox.
+                const h = await headers();
+                const ip = (h.get("x-forwarded-for") ?? "").split(",")[0]!.trim() || h.get("x-real-ip") || "unknown";
+                try {
+                  checkRate(`signin:${ip}`, "magic-link", 5);
+                  if (email) checkRate(`signin-email:${email}`, "magic-link", 3);
+                } catch {
+                  redirect(`/sign-in?error=rate${callbackUrl ? `&callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`);
+                }
+                await signIn("resend", { email, redirectTo: callbackUrl });
               }}
             >
               <label className="text-sm font-medium" htmlFor="email">

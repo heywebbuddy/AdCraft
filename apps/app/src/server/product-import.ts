@@ -2,6 +2,7 @@ import "server-only";
 import { db, dbReady, products } from "@adcraft/db";
 import { getStorage, objectKey } from "@adcraft/storage";
 import { dispatch } from "./jobs";
+import { BlockedUrlError, safeFetch } from "./net";
 import type { ProductAttributes } from "./library-data";
 import "@/pipelines";
 
@@ -56,10 +57,10 @@ async function shopifyProduct(u: URL): Promise<ImportedProduct | null> {
   const m = u.pathname.match(/\/products\/([a-z0-9-]+)\/?$/i);
   if (!m) return null;
   try {
-    const res = await fetch(new URL(`/products/${m[1]}.js`, u), { headers: { "user-agent": UA, accept: "application/json" }, signal: AbortSignal.timeout(10_000) });
+    const { res, buffer } = await safeFetch(new URL(`/products/${m[1]}.js`, u), { headers: { "user-agent": UA, accept: "application/json" }, timeoutMs: 10_000, maxBytes: 2 * 1024 * 1024 });
     if (!res.ok) return null;
     // Shopify serves this as text/javascript; it is plain JSON.
-    const d = JSON.parse(await res.text()) as { title?: string; description?: string; featured_image?: string; images?: string[]; price?: number; vendor?: string };
+    const d = JSON.parse(buffer.toString("utf8")) as { title?: string; description?: string; featured_image?: string; images?: string[]; price?: number; vendor?: string };
     if (!d.title) return null;
     const image = d.featured_image ?? d.images?.[0] ?? null;
     return {
@@ -82,12 +83,11 @@ export async function fetchProductPage(url: string): Promise<ImportedProduct> {
     throw new Error("That doesn't look like a web address.");
   }
   if (!/^https?:$/.test(u.protocol)) throw new Error("Only http(s) links work.");
-  if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[::1\])/.test(u.hostname)) throw new Error("That address is not public.");
   const shopify = await shopifyProduct(u);
   if (shopify) return shopify;
-  const res = await fetch(u, { headers: { "user-agent": UA, accept: "text/html,*/*" }, redirect: "follow", signal: AbortSignal.timeout(15_000) });
+  const { res, buffer } = await safeFetch(u, { headers: { "user-agent": UA, accept: "text/html,*/*" }, maxBytes: 4 * 1024 * 1024 });
   if (!res.ok) throw new Error(`The page answered ${res.status}.`);
-  const html = (await res.text()).slice(0, 1_500_000);
+  const html = buffer.toString("utf8").slice(0, 1_500_000);
   const ld = jsonLdProduct(html);
   const title = ld?.name ?? meta(html, ["og:title", "twitter:title"]) ?? html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() ?? u.hostname;
   const description = ld?.description ?? meta(html, ["og:description", "description", "twitter:description"]);
@@ -104,14 +104,19 @@ export async function fetchProductPage(url: string): Promise<ImportedProduct> {
 
 /** Download the page's main image into product storage; returns null if it isn't an image we can use. */
 async function storeRemoteImage(orgId: string, imageUrl: string): Promise<{ key: string; attributes: Record<string, unknown> } | null> {
-  const res = await fetch(imageUrl.replace(/^http:\/\//, "https://"), { headers: { "user-agent": UA, accept: "image/*,*/*" }, redirect: "follow", signal: AbortSignal.timeout(20_000) });
+  let res: Response, buf: Buffer;
+  try {
+    ({ res, buffer: buf } = await safeFetch(imageUrl.replace(/^http:\/\//, "https://"), { headers: { "user-agent": UA, accept: "image/*,*/*" }, timeoutMs: 20_000 }));
+  } catch (err) {
+    console.warn("[import] image fetch", err instanceof Error ? err.message : err, imageUrl);
+    return null;
+  }
   if (!res.ok) {
     console.warn("[import] image fetch", res.status, imageUrl);
     return null;
   }
   const type = (res.headers.get("content-type") ?? "").split(";")[0]!.trim();
-  const buf = Buffer.from(await res.arrayBuffer());
-  if (!buf.byteLength || buf.byteLength > 25 * 1024 * 1024) return null;
+  if (!buf.byteLength) return null;
   const sharp = (await import("sharp")).default;
   try {
     const img = sharp(buf).rotate();

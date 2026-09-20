@@ -23,6 +23,7 @@ const errors: Record<string, string> = {
   comments_off: "Comments are off for this link.",
   approve_off: "Approving is off for this link.",
   missing: "Add your name and a message.",
+  rate: "That was a lot at once — wait a moment and try again.",
 };
 
 function relative(d: Date) {

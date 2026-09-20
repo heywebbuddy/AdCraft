@@ -8,6 +8,21 @@ import { validShareLink } from "./share";
 import { logAudit } from "./audit";
 import { emitWebhook } from "./webhooks";
 import { creativeSummary } from "./collab-data";
+import { checkRate, GuardrailError } from "./guardrails";
+import { headers } from "next/headers";
+
+/** Share links are unauthenticated, so anonymous writes are limited per caller and per link. */
+async function limitShare(token: string, kind: string, perMinute: number, back: (q: string) => never) {
+  const h = await headers();
+  const ip = (h.get("x-forwarded-for") ?? "").split(",")[0]!.trim() || h.get("x-real-ip") || "unknown";
+  try {
+    checkRate(`share:${ip}`, kind, perMinute);
+    checkRate(`share-token:${token}`, kind, perMinute * 2);
+  } catch (err) {
+    if (err instanceof GuardrailError) back("error=rate");
+    throw err;
+  }
+}
 
 // Actions available to external reviewers through /share/[token]. The token is the only
 // credential; each action re-validates it and the link's permissions.
@@ -22,6 +37,7 @@ function back(token: string, q: string): never {
 
 export async function shareComment(formData: FormData) {
   const token = str(formData, "token");
+  await limitShare(token, "comment", 10, (q) => back(token, q));
   const v = await validShareLink(token);
   if (!v.ok) back(token, `error=${v.reason}`);
   const { link } = v;
@@ -44,6 +60,7 @@ export async function shareComment(formData: FormData) {
 
 export async function shareDecide(formData: FormData) {
   const token = str(formData, "token");
+  await limitShare(token, "decide", 10, (q) => back(token, q));
   const v = await validShareLink(token);
   if (!v.ok) back(token, `error=${v.reason}`);
   const { link } = v;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStorage } from "@adcraft/storage";
 import { shareLinkCoversKey, validShareLink } from "@/server/share";
+import { fileHeaders } from "@/server/file-headers";
 
 /**
  * Serves render outputs to holders of a valid share link, without a session.
@@ -15,7 +16,5 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string;
   if (!(await shareLinkCoversKey(v.link, k))) return new NextResponse("Not found", { status: 404 });
   const obj = await getStorage().get(k);
   if (!obj) return new NextResponse("Not found", { status: 404 });
-  return new NextResponse(new Uint8Array(obj.body), {
-    headers: { "content-type": obj.contentType, "cache-control": "private, max-age=600" },
-  });
+  return new NextResponse(new Uint8Array(obj.body), { headers: fileHeaders(k, obj.contentType, "private, max-age=600") });
 }

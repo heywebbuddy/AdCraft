@@ -1,7 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
+
 /** Last-resort boundary for errors thrown by the root layout itself; keeps its own markup. */
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  // A deploy while the tab was open leaves stale chunks; one reload picks up the new build.
+  useEffect(() => {
+    if (!/loading chunk|chunkloaderror|failed to fetch dynamically imported|server action/i.test(String(error?.message ?? ""))) return;
+    const KEY = "adcraft-skew-reload";
+    try {
+      if (Date.now() - Number(sessionStorage.getItem(KEY) ?? 0) < 30_000) return;
+      sessionStorage.setItem(KEY, String(Date.now()));
+    } catch {}
+    const t = setTimeout(() => window.location.reload(), 400);
+    return () => clearTimeout(t);
+  }, [error]);
   return (
     <html lang="en">
       <body style={{ margin: 0, background: "#f8f7f3", color: "#242521", fontFamily: "system-ui, sans-serif", display: "grid", placeItems: "center", minHeight: "100vh" }}>

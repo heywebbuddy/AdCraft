@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/server/file-headers";
 import { getStorage } from "@adcraft/storage";
 import { authenticateApiKey, unauthorized } from "@/server/api-auth";
 
@@ -14,6 +15,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ key: string[] }
   const obj = await getStorage().get(k);
   if (!obj) return new NextResponse("Not found", { status: 404 });
   return new NextResponse(new Uint8Array(obj.body), {
-    headers: { "content-type": obj.contentType, "cache-control": "private, max-age=3600" },
+    headers: fileHeaders(k, obj.contentType, "private, max-age=3600"),
   });
 }
