@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db, subscriptions } from "@adcraft/db";
 import { requireOrg } from "./org";
-import { PLANS, TOP_UP, ensureStripeCustomer, grantCredits, priceIdFor, stripe, stripeConfigured, type PlanId } from "./billing";
+import { PLANS, TOP_UP, ensureStripeCustomer, grantCredits, priceIdFor, simulatedBillingAllowed, stripe, stripeConfigured, type PlanId } from "./billing";
 
 async function baseUrl() {
   const h = await headers();
@@ -23,6 +23,7 @@ export async function startCheckout(formData: FormData) {
 
   if (!stripeConfigured) {
     // Local development: emulate the purchase so the product can be exercised.
+    if (!simulatedBillingAllowed()) redirect("/settings/billing?error=unavailable");
     await db.insert(subscriptions).values({
       orgId: ctx.org.id,
       plan,
@@ -68,7 +69,10 @@ async function stripeCall<T>(fn: () => Promise<T>): Promise<T> {
 
 export async function startTopUp() {
   const ctx = await requireOrg();
+  // Workspace roles are owner, editor and viewer; only owners buy plans or credits.
+  if (ctx.role !== "owner") redirect("/settings/billing?error=owner");
   if (!stripeConfigured) {
+    if (!simulatedBillingAllowed()) redirect("/settings/billing?error=unavailable");
     await grantCredits(ctx.org.id, TOP_UP.credits, "top_up", `dev:topup:${Date.now()}`, { dev: true });
     redirect("/settings/billing?ok=dev");
   }
@@ -91,6 +95,7 @@ export async function startTopUp() {
 
 export async function openPortal() {
   const ctx = await requireOrg();
+  if (ctx.role !== "owner") redirect("/settings/billing?error=owner");
   if (!stripeConfigured) redirect("/settings/billing");
   const customer = await ensureStripeCustomer(ctx.org.id, ctx.viewer.email);
   const url = await baseUrl();

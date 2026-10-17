@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { db, dbReady, adminNotes, creatives, generationEvents, memberships, organizations, subscriptions, users } from "@adcraft/db";
-import { ADMIN_ORG_COOKIE, requireAdmin } from "./admin";
+import { ADMIN_ORG_COOKIE, adminEmails, requireAdmin } from "./admin";
 import { logAudit } from "./audit";
 import { PLANS, grantCredits, type PlanId } from "./billing";
 import { dispatch, type JobName, type JobPayloads } from "./jobs";
@@ -140,6 +140,8 @@ export async function togglePlatformAdmin(formData: FormData) {
   const u = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { id: true, isPlatformAdmin: true, email: true } });
   if (!u) redirect(to);
   const next = !u.isPlatformAdmin;
+  // A listed address is re-promoted on its next request (admin.ts syncAdminFlag): refuse instead.
+  if (!next && u.email && adminEmails().includes(u.email.toLowerCase())) redirect(`${to}${to.includes("?") ? "&" : "?"}error=listed`);
   await db.update(users).set({ isPlatformAdmin: next }).where(eq(users.id, userId));
   await logAudit(null, admin.userId, next ? "admin.admin_granted" : "admin.admin_revoked", "user", userId, { email: u.email });
   redirect(`${to}${to.includes("?") ? "&" : "?"}ok=${next ? "granted" : "revoked"}`);

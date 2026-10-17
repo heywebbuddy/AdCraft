@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
 import { db, dbReady, organizations, memberships, brands, creditLedger, users } from "@adcraft/db";
 import { auth } from "@/auth";
-import { ADMIN_ORG_COOKIE, promoteIfListed } from "./admin";
+import { ADMIN_ORG_COOKIE, syncAdminFlag } from "./admin";
 
 export const ORG_COOKIE = "adcraft_org";
 export const BRAND_COOKIE = "adcraft_brand";
@@ -40,7 +40,7 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
   });
   // A session can outlive its user row (database reset in development). Force a fresh sign-in.
   if (!exists) redirect("/sign-in?stale=1");
-  const isPlatformAdmin = await promoteIfListed(exists.id, exists.email, exists.isPlatformAdmin);
+  const isPlatformAdmin = await syncAdminFlag(exists.id, exists.email, exists.isPlatformAdmin);
   return {
     userId: session.user.id,
     email: session.user.email ?? "",
@@ -65,15 +65,17 @@ export const requireOrg = cache(async (): Promise<OrgContext> => {
     .where(eq(memberships.userId, viewer.userId));
 
   // ---- Platform admin "view as support" (see server/admin.ts) --------------------------
-  // When a platform admin has picked an organisation in /admin, that org is loaded as if the
-  // admin were an owner, regardless of membership. The (app) layout shows a banner and an
-  // exit link while this is active; the choice is logged as "admin.view_as" when it is made.
+  // When a platform admin has picked an organisation in /admin, that org is loaded regardless of
+  // membership, with the "viewer" role: support can look but every owner/editor check (billing,
+  // team, API keys, privacy, generation where gated) refuses it. Changes go through /admin's own
+  // audited actions. The (app) layout shows a banner and an exit link while this is active; the
+  // choice is logged as "admin.view_as" when it is made.
   let supportMode = false;
   const supportOrg = viewer.isPlatformAdmin ? jar.get(ADMIN_ORG_COOKIE)?.value : undefined;
   if (supportOrg) {
     const org = await db.query.organizations.findFirst({ where: eq(organizations.id, supportOrg) });
     if (org) {
-      rows = [{ org, role: "owner" as const }];
+      rows = [{ org, role: "viewer" as const }];
       supportMode = true;
     }
   }

@@ -1,9 +1,26 @@
 /** Shared copy for /privacy, /terms and /dpa. Counsel should review before paid launch. */
 export const LEGAL_UPDATED = "19 September 2026";
+/**
+ * Contact addresses and site name come from the deployment's env (PRIVACY_EMAIL, SUPPORT_EMAIL,
+ * AUTH_URL or NEXT_PUBLIC_APP_URL), so each install shows its own. The fallbacks are placeholders.
+ * Read at request time: /privacy is rendered per request so a Docker build without these vars cannot
+ * bake the placeholders in.
+ */
 export const LEGAL_CONTACT = {
-  privacy: "privacy@adcraft.app",
-  support: "support@adcraft.app",
-} as const;
+  privacy: process.env.PRIVACY_EMAIL?.trim() || process.env.SUPPORT_EMAIL?.trim() || "privacy@example.com",
+  support: process.env.SUPPORT_EMAIL?.trim() || process.env.PRIVACY_EMAIL?.trim() || "support@example.com",
+};
+
+/** The site's host name ("example.com" from https://www.example.com), or null when unset. */
+function siteHost(): string | null {
+  const url = process.env.AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+  try {
+    return url ? new URL(url).hostname.replace(/^www\./, "") : null;
+  } catch {
+    return null;
+  }
+}
+const SITE = siteHost();
 
 export type LegalSection = { heading: string; paragraphs: string[]; bullets?: string[] };
 export type LegalDoc = { slug: "privacy" | "terms" | "dpa"; title: string; kicker: string; lede: string; sections: LegalSection[] };
@@ -18,7 +35,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "Who we are",
         paragraphs: [
-          "Adcraft (“we”, “us”) operates the website and studio at adcraft.app and related domains. For questions about this policy, write to privacy@adcraft.app.",
+          `Adcraft (“we”, “us”) operates the website and studio at ${SITE ?? "this site"} and related domains. For questions about this policy, write to ${LEGAL_CONTACT.privacy}.`,
           "If you use Adcraft for a brand or agency, you are the controller of your workspace data. We process it to provide the service. The Data processing addendum at /dpa applies when you need processor terms.",
         ],
       },
@@ -64,7 +81,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "Your rights",
         paragraphs: [
-          "Depending on where you live (including the GDPR and similar laws), you can ask to access, correct, export or delete personal data, or object to some processing. Workspace owners can request deletion of a workspace under Settings → Privacy. Anyone can write to privacy@adcraft.app. We will reply within 30 days.",
+          `Depending on where you live (including the GDPR and similar laws), you can ask to access, correct, export or delete personal data, or object to some processing. Workspace owners can request deletion of a workspace under Settings → Privacy. Anyone can write to ${LEGAL_CONTACT.privacy}. We will reply within 30 days.`,
           "If we cannot verify the request, we will say so and ask for enough detail to find the right account.",
         ],
       },

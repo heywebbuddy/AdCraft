@@ -21,7 +21,7 @@ const providers = [
     ? [
         Resend({
           apiKey: process.env.RESEND_API_KEY,
-          from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>",
+          from: process.env.EMAIL_FROM || "Adcraft <onboarding@resend.dev>",
           // Branded magic-link email (default is Auth.js's grey "Sign in to host:port" card).
           async sendVerificationRequest({ identifier, url, provider }) {
             const { html, text } = renderEmail({

@@ -1,6 +1,7 @@
 import { signOut } from "@/auth";
 import { Wordmark } from "@/components/spark";
 import { requireViewer } from "@/server/org";
+import { LEGAL_CONTACT } from "@/lib/legal";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,8 @@ export default async function SuspendedPage() {
         </h1>
         <p className="mt-4 text-[15px] text-muted">
           Hi {viewer.name}. Your workspace has been suspended by the Adcraft team. Nothing has been deleted. Write to{" "}
-          <a href="mailto:support@adcraft.app" className="text-ink underline">
-            support@adcraft.app
+          <a href={`mailto:${LEGAL_CONTACT.support}`} className="text-ink underline">
+            {LEGAL_CONTACT.support}
           </a>{" "}
           and we will sort it out.
         </p>

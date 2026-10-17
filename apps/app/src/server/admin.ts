@@ -5,13 +5,14 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db, dbReady, users } from "@adcraft/db";
 import { auth } from "@/auth";
+import { syncAdminFlag } from "./admin-emails";
 
 /**
  * Platform admin gate (PLAN.md section 14).
  *
  * A user is a platform admin when `users.is_platform_admin` is true. Emails listed in
- * `ADMIN_EMAILS` are promoted on sign-in (auth.ts) and, as a fallback, here, so a fresh
- * database and a fresh `.env` line both work without a manual UPDATE.
+ * `ADMIN_EMAILS` are promoted on sign-in (auth.ts) and on every request (syncAdminFlag, admin-emails.ts),
+ * so a fresh database and a fresh `.env` line both work without a manual UPDATE.
  */
 
 /** Cookie holding the organisation a platform admin is currently viewing as support. */
@@ -23,22 +24,7 @@ export type AdminViewer = {
   name: string;
 };
 
-export function adminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-/** Promote a user when their email is in ADMIN_EMAILS. Returns the resulting flag. */
-export async function promoteIfListed(userId: string, email: string | null | undefined, current: boolean): Promise<boolean> {
-  if (current) return true;
-  const e = (email ?? "").toLowerCase();
-  if (!e || !adminEmails().includes(e)) return false;
-  await dbReady;
-  await db.update(users).set({ isPlatformAdmin: true }).where(eq(users.id, userId));
-  return true;
-}
+export { adminEmails, syncAdminFlag } from "./admin-emails";
 
 /** Whether the signed-in user (if any) is a platform admin. Never redirects. */
 export const currentAdmin = cache(async (): Promise<AdminViewer | null> => {
@@ -50,7 +36,7 @@ export const currentAdmin = cache(async (): Promise<AdminViewer | null> => {
     columns: { id: true, email: true, name: true, isPlatformAdmin: true },
   });
   if (!row) return null;
-  const isAdmin = await promoteIfListed(row.id, row.email, row.isPlatformAdmin);
+  const isAdmin = await syncAdminFlag(row.id, row.email, row.isPlatformAdmin);
   if (!isAdmin) return null;
   return { userId: row.id, email: row.email ?? "", name: row.name ?? row.email?.split("@")[0] ?? "Admin" };
 });

@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { db, dbReady, approvals, brands, comments, shareLinks, templates } from "@adcraft/db";
 import { requireOrg, type OrgContext } from "./org";
 import { logAudit } from "./audit";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { emitWebhook } from "./webhooks";
 import { creativeSummary, listTemplatesFor, type TemplateRow } from "./collab-data";
 
@@ -266,7 +267,7 @@ export async function createShareLinkForm(formData: FormData) {
     kind: str(formData, "kind") === "gallery" ? "gallery" : "review",
   };
   const link = creativeId ? await createShareLink({ creativeId }, options) : await createShareLink({ brandId }, options);
-  const returnTo = str(formData, "returnTo") || (creativeId ? `/creatives/${creativeId}/review` : "/brands");
+  const returnTo = safeRedirectPath(str(formData, "returnTo"), creativeId ? `/creatives/${creativeId}/review` : "/brands");
   redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}shared=${link.id}`);
 }
 
@@ -277,7 +278,7 @@ export async function revokeShareLinkForm(formData: FormData) {
 export async function saveAsTemplateForm(formData: FormData) {
   const creativeId = str(formData, "creativeId");
   await saveAsTemplate(creativeId, str(formData, "name"), formData.get("isShared") === "on");
-  const returnTo = str(formData, "returnTo") || `/creatives/${creativeId}/review`;
+  const returnTo = safeRedirectPath(str(formData, "returnTo"), `/creatives/${creativeId}/review`);
   redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}template=saved`);
 }
 

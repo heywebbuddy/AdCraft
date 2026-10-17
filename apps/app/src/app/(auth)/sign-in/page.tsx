@@ -5,6 +5,7 @@ import { LegalLinks } from "@/components/legal-links";
 import { auth, signIn, devLoginEnabled } from "@/auth";
 import { headers } from "next/headers";
 import { checkRate } from "@/server/guardrails";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
 const hasEmail = Boolean(process.env.RESEND_API_KEY);
@@ -18,7 +19,9 @@ export default async function SignInPage({
   searchParams: Promise<{ callbackUrl?: string; error?: string; stale?: string }>;
 }) {
   const session = await auth();
-  const { callbackUrl = "/dashboard", error, stale } = await searchParams;
+  const { callbackUrl: requested, error, stale } = await searchParams;
+  // Only same-origin paths: an unchecked callbackUrl would make sign-in an open redirect.
+  const callbackUrl = safeRedirectPath(requested);
   if (session?.user && stale) redirect("/api/auth/reset");
   if (session?.user) redirect(callbackUrl);
 

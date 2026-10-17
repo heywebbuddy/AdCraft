@@ -616,10 +616,10 @@ const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "last
   { id: "replicate", name: "Replicate", area: "Images, video (any owner/name model)", env: ["REPLICATE_API_TOKEN"], eventKey: "replicate", note: "Add models from Admin → Models; two examples ship disabled." },
   { id: "elevenlabs", name: "ElevenLabs", area: "Voice-over", env: ["ELEVENLABS_API_KEY"], eventKey: "elevenlabs" },
   { id: "heygen", name: "HeyGen", area: "UGC presenter", env: ["HEYGEN_API_KEY"], eventKey: "heygen" },
-  { id: "resend", name: "Resend", area: "Magic-link sign-in, invites", env: ["RESEND_API_KEY"], note: "Dev sign-in is enabled while unset." },
+  { id: "resend", name: "Resend", area: "Magic-link sign-in, invites", env: ["RESEND_API_KEY"], note: "Unset: no magic links or invite emails. Dev sign-in is separate: on outside production unless DEV_LOGIN=0, never in production." },
   { id: "google-auth", name: "Google sign-in", area: "OAuth", env: ["AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"] },
   { id: "stripe", name: "Stripe", area: "Subscriptions, top-ups", env: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"], note: "Purchases are simulated while unset." },
-  { id: "r2", name: "Cloudflare R2", area: "Media storage", env: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"], note: "Bucket adcraft-media (APAC). Local disk while keys are unset." },
+  { id: "r2", name: "Cloudflare R2", area: "Media storage", env: ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"], note: "Local disk while keys are unset." },
   { id: "inngest", name: "Inngest", area: "Background jobs", env: ["INNGEST_EVENT_KEY", "INNGEST_SIGNING_KEY"], note: "Pipelines run inline while unset." },
   { id: "meta", name: "Meta Marketing API", area: "Publishing, insights", env: ["META_APP_ID", "META_APP_SECRET"], note: "Sandbox provider while unset." },
   { id: "tiktok", name: "TikTok Marketing API", area: "Publishing, insights", env: ["TIKTOK_APP_ID", "TIKTOK_APP_SECRET"], note: "Sandbox provider while unset." },
@@ -649,8 +649,11 @@ export async function loadProviders(): Promise<ProviderStatus[]> {
   return PROVIDER_DEFS.map((d) => {
     const missing = d.env.filter((k) => !process.env[k]);
     const r = d.eventKey ? byProvider.get(d.eventKey) : undefined;
+    // The bucket comes from this deployment's own env, never a name baked into the code.
+    const note = d.id === "r2" && process.env.R2_BUCKET ? `Bucket ${process.env.R2_BUCKET}. ${d.note}` : d.note;
     return {
       ...d,
+      note,
       configured: missing.length === 0,
       missing,
       lastSuccessAt: r?.lastSuccessAt ? new Date(r.lastSuccessAt) : null,

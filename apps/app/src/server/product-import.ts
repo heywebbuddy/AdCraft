@@ -13,7 +13,7 @@ import "@/pipelines";
  */
 export type ImportedProduct = { name: string; description: string | null; price: string | null; imageUrl: string | null; url: string };
 
-export const UA = "Mozilla/5.0 (compatible; AdcraftBot/1.0; +https://adcraft.app)";
+export const UA = `Mozilla/5.0 (compatible; AdcraftBot/1.0${process.env.AUTH_URL ? `; +${process.env.AUTH_URL}` : ""})`;
 
 function meta(html: string, keys: string[]): string | null {
   for (const key of keys) {

@@ -39,6 +39,15 @@ export const CREDIT_COSTS = { concepts: 1, staticAd: 2, productVideo15s: 20, ugc
 
 export const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
 
+/**
+ * Without STRIPE_SECRET_KEY, plan and top-up purchases are simulated: credits are granted with no
+ * payment. That is for local development. In production it is refused unless the deployment opts
+ * in with ALLOW_SIMULATED_BILLING=true (a demo site that deliberately hands out free credits).
+ */
+export function simulatedBillingAllowed(env: Record<string, string | undefined> = process.env) {
+  return env.NODE_ENV !== "production" || env.ALLOW_SIMULATED_BILLING === "true";
+}
+
 let stripeClient: Stripe | null = null;
 export function stripe() {
   if (!process.env.STRIPE_SECRET_KEY) throw new Error("Stripe is not configured");

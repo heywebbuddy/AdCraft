@@ -35,7 +35,7 @@ async function sendInviteEmail(to: string, orgName: string, inviter: string, url
       footer: orgName,
     });
     await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>",
+      from: process.env.EMAIL_FROM || "Adcraft <onboarding@resend.dev>",
       to,
       subject: `${inviter} invited you to ${orgName} on Adcraft`,
       text,

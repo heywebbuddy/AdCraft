@@ -28,7 +28,7 @@ export async function sendEmail(to: string[], subject: string, content: Paramete
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: process.env.EMAIL_FROM ?? "Adcraft <login@adcraft.app>", to, subject, html, text }),
+    body: JSON.stringify({ from: process.env.EMAIL_FROM || "Adcraft <onboarding@resend.dev>", to, subject, html, text }),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) console.warn("[notify] resend failed", res.status, (await res.text()).slice(0, 200));

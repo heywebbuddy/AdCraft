@@ -26,6 +26,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
           "ok:granted": "Platform admin granted. It takes effect on their next request.",
           "ok:revoked": "Platform admin revoked.",
           "error:self": "You can’t change your own admin flag. Ask another admin.",
+          "error:listed": "That address is in ADMIN_EMAILS, so it stays an admin. Remove it from ADMIN_EMAILS to revoke it.",
         }}
       />
 

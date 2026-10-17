@@ -6,7 +6,7 @@ export function SupportBanner({ orgName }: { orgName: string }) {
   return (
     <div className="support-banner" role="status">
       <span>
-        Viewing <strong>{orgName}</strong> as support
+        Viewing <strong>{orgName}</strong> as support (viewer access)
       </span>
       <form action={exitSupportMode}>
         <button type="submit">Exit</button>
