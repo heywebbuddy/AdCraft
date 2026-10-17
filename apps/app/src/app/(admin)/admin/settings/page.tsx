@@ -7,6 +7,7 @@ import { getPlatformSettings, settingsMeta, type PlanFeatures } from "@/server/p
 import { savePlatformSettings } from "@/server/admin-actions";
 import { PLANS, type PlanId } from "@/server/billing";
 import { Flash, Panel, ago } from "@/components/admin/ui";
+import { viewingAsDemoAdmin } from "@/server/admin-data";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,8 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
   const { ok, error } = await searchParams;
   const [s, meta] = await Promise.all([getPlatformSettings(), settingsMeta()]);
   const editorIds = [...new Set(Object.values(meta).map((m) => m.updatedBy).filter((x): x is string => Boolean(x)))];
-  const editors = editorIds.length ? await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, editorIds)) : [];
+  // The public demo admin (DEMO_MODE) is not told who the real admins are.
+  const editors = editorIds.length && !(await viewingAsDemoAdmin()) ? await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, editorIds)) : [];
   const who = (key: string) => {
     const m = meta[key];
     if (!m) return "default";

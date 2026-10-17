@@ -10,6 +10,7 @@ import { emitWebhook } from "./webhooks";
 import { creativeSummary } from "./collab-data";
 import { checkRate, GuardrailError } from "./guardrails";
 import { headers } from "next/headers";
+import { isDemoOrg } from "./demo";
 
 /** Share links are unauthenticated, so anonymous writes are limited per caller and per link. */
 async function limitShare(token: string, kind: string, perMinute: number, back: (q: string) => never) {
@@ -41,6 +42,8 @@ export async function shareComment(formData: FormData) {
   const v = await validShareLink(token);
   if (!v.ok) back(token, `error=${v.reason}`);
   const { link } = v;
+  // Share links are anonymous, so the demo guard on accounts does not reach them: check the org.
+  if (await isDemoOrg(link.orgId)) back(token, "error=demo");
   if (!link.allowComments || !link.creativeId) back(token, "error=comments_off");
   const name = str(formData, "name").slice(0, 80);
   const body = str(formData, "body").slice(0, 4000);
@@ -64,6 +67,7 @@ export async function shareDecide(formData: FormData) {
   const v = await validShareLink(token);
   if (!v.ok) back(token, `error=${v.reason}`);
   const { link } = v;
+  if (await isDemoOrg(link.orgId)) back(token, "error=demo");
   if (!link.allowApprove || !link.creativeId) back(token, "error=approve_off");
   const name = str(formData, "name").slice(0, 80);
   const note = str(formData, "note").slice(0, 2000) || null;

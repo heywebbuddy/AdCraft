@@ -4,6 +4,8 @@ import { db, dbReady, memberships } from "@adcraft/db";
 import { getStorage } from "@adcraft/storage";
 import { auth } from "@/auth";
 import { currentAdmin } from "@/server/admin";
+import { isDemoEmail } from "@/lib/demo";
+import { isDemoOrg } from "@/server/demo";
 import { fileHeaders } from "@/server/file-headers";
 
 /**
@@ -25,7 +27,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ key: string[] 
   const rows = await db.select({ orgId: memberships.orgId }).from(memberships).where(eq(memberships.userId, userId));
   if (!rows.some((r) => r.orgId === orgId)) {
     // Platform admins support every workspace; everyone else gets a flat 404.
-    if (!(await currentAdmin())) return new NextResponse("Not found", { status: 404 });
+    const admin = await currentAdmin();
+    if (!admin) return new NextResponse("Not found", { status: 404 });
+    // The public demo admin (DEMO_MODE) only ever sees the demo world's files.
+    if (isDemoEmail(admin.email) && !(await isDemoOrg(orgId))) return new NextResponse("Not found", { status: 404 });
   }
 
   const obj = await getStorage().get(k);

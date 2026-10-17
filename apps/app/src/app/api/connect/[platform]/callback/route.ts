@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { db, dbReady, adAccounts } from "@adcraft/db";
 import { getAdsProvider, isPlatform } from "@adcraft/ads";
 import { requireOrg } from "@/server/org";
+import { demoRouteRefusal } from "@/server/demo";
 import { encryptTokens } from "@/server/crypto";
 import { CONNECT_COOKIE, appOrigin, type ConnectState } from "../../shared";
 
@@ -16,6 +17,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ platform
   const origin = appOrigin(req);
   const back = (q: string) => NextResponse.redirect(new URL(`/campaigns?${q}`, origin));
   if (!isPlatform(platform)) return new NextResponse("Unknown platform", { status: 404 });
+  if (await demoRouteRefusal()) return back("error=" + encodeURIComponent("This is a shared demo — changes are switched off."));
 
   const url = new URL(req.url);
   const jar = await cookies();

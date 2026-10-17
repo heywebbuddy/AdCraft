@@ -18,11 +18,13 @@ async function recipients(orgId: string): Promise<string[]> {
     .from(memberships)
     .innerJoin(users, eq(users.id, memberships.userId))
     .where(and(eq(memberships.orgId, orgId), inArray(memberships.role, ["owner", "editor"])));
-  return rows.map((r) => r.email).filter((e): e is string => typeof e === "string" && e.length > 0 && !e.endsWith(".local") && !e.endsWith(".test"));
+  return rows.map((r) => r.email).filter((e): e is string => typeof e === "string" && e.length > 0 && !e.endsWith(".local") && !e.endsWith(".test") && !e.endsWith(".invalid"));
 }
 
 export async function sendEmail(to: string[], subject: string, content: Parameters<typeof renderEmail>[0]): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
+  // Never mail the read-only demo world (`@demo.invalid`, server/demo.ts).
+  to = to.filter((addr) => !addr.trim().toLowerCase().endsWith(".invalid"));
   if (!key || !to.length) return false;
   const { html, text } = renderEmail(content);
   const res = await fetch("https://api.resend.com/emails", {

@@ -101,3 +101,24 @@ service. Create a Cloudflare **R2 Object Read & Write** API token and add `R2_AC
 - **Storage**: R2 bucket `adcraft-media` (`R2_*` on the service) since 19 Sep 2026. Files written to disk before that were copied in with `scripts/migrate-storage-to-r2.mjs` (run it inside the container: `railway ssh --service app -- sh -c 'cd /app && node scripts/migrate-storage-to-r2.mjs /data/files'`); it skips objects already present, so it is safe to re-run.
 - **Backups**: `DATABASE_URL=… ./scripts/backup-db.sh` (cron nightly) — gzip `pg_dump`, 14-day retention, optional upload to `R2_BACKUP_BUCKET`.
 - **Guardrails**: platform defaults in `platform_settings.guardrails` (monthly provider budget per workspace, spend-approval threshold, HeyGen voice slots, rate limit); per-workspace overrides under Settings → Guardrails.
+
+## Read-only public demo (`DEMO_MODE`)
+
+`DEMO_MODE=true` (off by default) turns on a public, read-only demo on the same install as real customers.
+
+**What visitors get.** The sign-in page shows two doors. "Explore the ad studio" signs the visitor into `demo-studio@demo.invalid`, owner of the *Éclat Skin Co.* workspace (Agency plan, a few thousand credits). "Explore the admin panel" signs them into `demo-admin@demo.invalid`, a platform admin while `DEMO_MODE` is on, whatever `ADMIN_EMAILS` says. One click, no password, no email: the sign-in goes through a server-side `demo` credentials provider that picks the account by door name. A slim strip across the studio and the admin says "You're exploring a read-only demo · Start your own workspace".
+
+**The demo world** is built once, at startup (`instrumentation.ts`), or on the first door click (`server/demo-seed.ts`, idempotent; found by the slug `demo-eclat-skin`). It costs nothing to build: product photos and the UGC and product videos are files the repo ships (`dist/assets/ads`, copied to `public/assets/ads` at build), the finished static ads are rendered by the app's own local Satori renderer, and the campaigns are published to the built-in sandbox ad platforms (`sandbox-…` accounts never leave the process) with 30 days of the sandbox's synthetic numbers. It also creates ten sample customer workspaces (subscriptions, credits, usage, failures, notes, audit entries) so the admin panel looks like a healthy install. Every demo-world address is on the reserved `demo.invalid` domain; every demo-world workspace carries `settings.demoWorld = true`.
+
+**Read-only, on the server.** `requireViewer`, `requireOrg` and `requireAdmin` (`server/org.ts`, `server/admin.ts`) refuse a demo-world account whenever the request is not a page render, i.e. inside any Server Action, Route Handler or `after()` callback (`server/demo.ts`). This is deny-by-default: a new action is covered as soon as it asks who the viewer is. A handful of read-only actions (activity tray poll, voice and presenter pickers, CSV and ZIP downloads) opt out with `readOrg()`; `apps/app/tests/demo.test.ts` pins that list. On top of that:
+
+- `dispatch()` (`server/jobs.ts`), the entry to every paid pipeline (AI text, image, video, voice, presenter, Remotion renders, ad publishing), refuses demo-world workspaces whoever asks; the hourly insights cron skips them.
+- Route handlers that write (`/api/uploads`, `/api/connect/*`) return 403 or redirect with the demo message.
+- No email is ever sent to a `.invalid` address; share-link comments and approvals on demo workspaces are refused.
+- Sign-in for any `demo.invalid` address is refused on every other provider (magic link, Google, dev sign-in), and entirely when `DEMO_MODE` is off. A demo session that outlives the flag is signed out on its next request, and the demo admin loses admin rights.
+- Refusals carry the digest `ADCRAFT_DEMO_READ_ONLY`: the error page shows "This is a shared demo — changes are switched off." and they are not written to Admin → Errors.
+
+**The admin panel is scoped.** The demo admin sees the demo world only: no real customer's workspace, email, usage, money or files, no view-as-support, no names of real admins, no bucket name, no detailed health errors. A real admin on a `DEMO_MODE` install sees everything *except* the demo world, so the sample customers never inflate real MRR, sign-ups or usage.
+
+**Turning it on (live site).** Set `DEMO_MODE=true` on the service and redeploy. Nothing else is required: `AUTH_SECRET` (already set) encrypts the sandbox ad-account tokens, storage (R2 or the `/data` volume) receives about 25 MB of demo images, renders and videos once. Keep `STRIPE_*`, provider keys and `ADMIN_EMAILS` as they are; real customers keep using them. To remove the demo later, set `DEMO_MODE` back to off (doors disappear, demo sessions are signed out) and, if wanted, delete the workspaces whose slug starts with `demo-` and the users on `demo.invalid`.
+

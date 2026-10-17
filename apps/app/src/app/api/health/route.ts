@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { db, dbReady } from "@adcraft/db";
 import { getStorage } from "@adcraft/storage";
 import { currentAdmin } from "@/server/admin";
+import { isDemoEmail } from "@/lib/demo";
 
 /**
  * Liveness + dependencies, for the load balancer and uptime checks. Never leaks config;
@@ -37,7 +38,9 @@ export async function GET() {
   ]);
   const ok = checks.database?.ok && checks.storage?.ok;
   // Error text can name internal hosts; only platform admins see the detail.
-  const detailed = Boolean(await currentAdmin());
+  // Not for the public demo admin (DEMO_MODE): it is an admin anyone can become.
+  const admin = await currentAdmin();
+  const detailed = Boolean(admin) && !isDemoEmail(admin?.email);
   const safe = Object.fromEntries(Object.entries(checks).map(([name, c]) => [name, detailed ? c : { ok: c.ok, ms: c.ms }]));
   return NextResponse.json(
     { ok, version: process.env.NEXT_PUBLIC_APP_VERSION ?? process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "dev", checks: safe, at: new Date().toISOString() },

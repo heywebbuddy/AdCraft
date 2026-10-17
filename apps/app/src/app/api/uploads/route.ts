@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStorage, objectKey, extFromMime } from "@adcraft/storage";
 import { requireOrg } from "@/server/org";
 import { checkRate } from "@/server/guardrails";
+import { demoRouteRefusal } from "@/server/demo";
 
 /**
  * Large uploads (twin footage, headshots) go through this route rather than a server action:
@@ -15,6 +16,8 @@ const MAX_BYTES = 600 * 1024 * 1024;
 const ALLOWED = /^(video\/(mp4|quicktime|webm|x-m4v)|image\/(png|jpeg|webp)|audio\/(mpeg|mp3|wav|x-wav|mp4|x-m4a|m4a|aac|ogg|webm|flac))$/;
 
 export async function POST(req: Request) {
+  const demo = await demoRouteRefusal();
+  if (demo) return demo;
   let ctx;
   try {
     ctx = await requireOrg();

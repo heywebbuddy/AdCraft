@@ -65,6 +65,10 @@ async function runInline<N extends JobName>(name: N, data: JobPayloads[N]) {
 }
 
 export async function dispatch<N extends JobName>(name: N, data: JobPayloads[N]) {
+  // Every paid pipeline starts here (AI text, image, video, voice, presenter, Remotion renders,
+  // ad publishing). The read-only demo world never reaches one, whoever asks (server/demo.ts).
+  const { assertNotDemoOrg } = await import("./demo");
+  await assertNotDemoOrg((data as { orgId?: string }).orgId);
   if (inngestConfigured) {
     try {
       await inngest.send({ name: name.replace(".", "/") as never, data: data as never });

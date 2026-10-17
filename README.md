@@ -30,6 +30,10 @@ Open http://localhost:3000 for the marketing site (served from `dist/` via `apps
 
 Add keys to `.env` to switch each piece on: `ANTHROPIC_API_KEY` (concepts and copy), `FAL_KEY` (scenes, cutouts, video), `RESEND_API_KEY` (magic links), `AUTH_GOOGLE_*`, `STRIPE_*` (billing), `R2_*` (storage), `INNGEST_*` (background jobs; otherwise they run inline).
 
+### Public demo
+
+Set `DEMO_MODE=true` to add two one-click doors to the sign-in page: "Explore the ad studio" and "Explore the admin panel". They open a seeded, read-only demo world (a skincare brand with products, briefs, finished ads, a UGC video, sandbox campaigns with 30 days of numbers, a team, reviews, and ten sample customer workspaces for the admin panel). Demo sessions are refused every write on the server and never start paid work; real accounts on the same install are unaffected. Details in [`docs/DEPLOY.md`](docs/DEPLOY.md#read-only-public-demo-demo_mode).
+
 ## Useful commands
 
 ```bash

@@ -1,0 +1,38 @@
+/* Read-only demo strip (DEMO_MODE), same geometry as the support banner. */
+.demo-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 4px 16px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  flex-wrap: wrap;
+}
+.demo-banner strong {
+  font-weight: 600;
+}
+.demo-banner a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.demo-banner a:hover {
+  color: var(--orange);
+}
+
+/* Keep the sticky sidebar and topbar below the banner. */
+.demo-banner + .app-shell .workspace-sidebar {
+  top: 32px;
+  height: calc(100dvh - 32px);
+}
+.demo-banner + .app-shell .workspace-topbar {
+  top: 32px;
+}

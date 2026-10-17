@@ -2,21 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { unstable_isUnrecognizedActionError as isUnrecognizedActionError } from "next/navigation";
+import { DEMO_READ_ONLY_MESSAGE, START_OWN_WORKSPACE_HREF, isDemoReadOnlyError } from "@/lib/demo";
 
 /**
  * Route error boundary. Two cases matter:
  * - Deployment skew: the tab was opened before a deploy, so a form's Server Action id no longer
  *   exists on the server. Nothing is wrong with the user's data — reload once to pick up the new
  *   build (guarded so a genuinely broken build cannot loop).
+ * - A read-only demo refusal (DEMO_MODE): say so kindly and offer the way back.
  * - Anything else: a plain message with the digest for support, and a way back.
  */
 export default function RouteError({ error: raw, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const error = raw as Error & { digest?: string };
   const message = String((error as { message?: string }).message ?? "");
-  const skew = isUnrecognizedActionError(raw) || /Server Action .* (was not found|older or newer deployment)/i.test(message);
+  const demo = isDemoReadOnlyError(raw);
+  const skew = !demo && (isUnrecognizedActionError(raw) || /Server Action .* (was not found|older or newer deployment)/i.test(message));
   const [reloading, setReloading] = useState(skew);
 
   useEffect(() => {
+    if (demo) return;
     if (!skew) {
       console.error("[adcraft] route error", error.digest ?? "", error);
       return;
@@ -37,7 +41,25 @@ export default function RouteError({ error: raw, reset }: { error: Error & { dig
       window.location.reload();
     }, 600);
     return () => clearTimeout(t);
-  }, [skew, error]);
+  }, [skew, error, demo]);
+
+  if (demo) {
+    return (
+      <div className="route-error" role="alert">
+        <div className="route-error-card">
+          <span className="route-error-mark" aria-hidden="true">✳</span>
+          <h1>{DEMO_READ_ONLY_MESSAGE}</h1>
+          <p>Everything here is open to look at, but nothing is saved and nothing is generated. Start your own workspace to make real ads.</p>
+          <div className="route-error-actions">
+            <button type="button" className="btn btn-dark h-11" onClick={() => reset()}>
+              Keep exploring
+            </button>
+            <a className="btn btn-outline h-11" href={START_OWN_WORKSPACE_HREF}>Start your own workspace</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="route-error" role="alert">

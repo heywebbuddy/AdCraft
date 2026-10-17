@@ -24,6 +24,7 @@ const errors: Record<string, string> = {
   approve_off: "Approving is off for this link.",
   missing: "Add your name and a message.",
   rate: "That was a lot at once — wait a moment and try again.",
+  demo: "This is a shared demo — changes are switched off.",
 };
 
 function relative(d: Date) {

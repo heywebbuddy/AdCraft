@@ -6,9 +6,12 @@ import { auth, signIn, devLoginEnabled } from "@/auth";
 import { headers } from "next/headers";
 import { checkRate } from "@/server/guardrails";
 import { safeRedirectPath } from "@/lib/safe-redirect";
+import { DEMO_DOORS } from "@/lib/demo";
+import { demoModeEnabled } from "@/server/demo";
 
 const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
 const hasEmail = Boolean(process.env.RESEND_API_KEY);
+const demoMode = demoModeEnabled();
 
 const inputClass =
   "h-11 w-full rounded-[7px] border border-line bg-surface px-3 text-[15px] text-ink outline-none placeholder:text-muted/70 focus:border-ink";
@@ -46,6 +49,37 @@ export default async function SignInPage({
         ) : null}
 
         <div className="mt-8 flex flex-col gap-4">
+          {demoMode ? (
+            <div className="flex flex-col gap-3">
+              {DEMO_DOORS.map((d, i) => (
+                <form
+                  key={d.door}
+                  action={async () => {
+                    "use server";
+                    // One click, no password: the demo provider picks the account by door name.
+                    await signIn("demo", { door: d.door, redirectTo: d.landing });
+                  }}
+                >
+                  <PendingButton
+                    className={`flex w-full cursor-pointer flex-col items-start gap-1 rounded-[9px] border px-4 py-3 text-left leading-snug transition-transform hover:-translate-y-0.5 ${i === 0 ? "border-ink bg-ink text-paper" : "border-line bg-surface text-ink"}`}
+                    pendingLabel="Opening the demo…"
+                  >
+                    <span className="text-[15px] font-medium">{d.label} ↗︎</span>
+                    <span className="text-[12.5px] font-normal opacity-75">{d.hint}</span>
+                  </PendingButton>
+                </form>
+              ))}
+              <p className="text-[12px] leading-relaxed text-muted">
+                A shared, read-only demo: look at everything, nothing you click is saved and nothing is generated.
+              </p>
+              <div className="my-1 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-muted">
+                <span className="h-px flex-1 bg-line" />
+                or use your own account
+                <span className="h-px flex-1 bg-line" />
+              </div>
+            </div>
+          ) : null}
+
           {hasEmail ? (
             <form
               className="flex flex-col gap-3"
@@ -109,7 +143,7 @@ export default async function SignInPage({
             </form>
           ) : null}
 
-          {!hasEmail && !hasGoogle && !devLoginEnabled ? (
+          {!hasEmail && !hasGoogle && !devLoginEnabled && !demoMode ? (
             <p className="text-sm text-muted">No sign-in method is configured. Set RESEND_API_KEY or AUTH_GOOGLE_ID.</p>
           ) : null}
         </div>

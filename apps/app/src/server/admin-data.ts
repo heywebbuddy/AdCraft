@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq, gte, ilike, inArray, isNotNull, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, ilike, inArray, isNotNull, isNull, lte, notIlike, notInArray, or, sql, type AnyColumn, type SQL } from "drizzle-orm";
 import {
   db,
   dbReady,
@@ -18,9 +18,12 @@ import {
   subscriptions,
   users,
   aiModels,
+  errorEvents,
 } from "@adcraft/db";
 import { getCatalog } from "./model-catalog";
 import { PLANS, type PlanId } from "./billing";
+import { adminScope, type AdminScope } from "./demo";
+import { DEMO_EMAIL_DOMAIN } from "@/lib/demo";
 
 /** Value of one credit at the top-up rate ($10 / 100 credits, PLAN.md section 5). Used for gross margin. */
 export const USD_PER_CREDIT = 0.1;
@@ -30,6 +33,42 @@ const since = (days: number) => new Date(Date.now() - days * DAY);
 /** Raw `sql` templates hand Date params to the driver as strings; send ISO text and cast instead. */
 const iso = (d: Date) => d.toISOString();
 const num = (v: unknown) => (v == null ? 0 : Number(v));
+
+// ---------------------------------------------------------------------------------------
+// Read-only demo scope (DEMO_MODE, server/demo.ts `adminScope`)
+//
+// The public demo admin sees the demo world only; a real admin on a DEMO_MODE install sees
+// everything except the demo world. Without DEMO_MODE the scope is null and every helper
+// below returns `undefined`, so each query is exactly what it was.
+// ---------------------------------------------------------------------------------------
+
+/** Rows whose organisation is in scope. */
+function orgIn(col: AnyColumn, scope: AdminScope): SQL | undefined {
+  if (!scope) return undefined;
+  if ("only" in scope) return scope.only.length ? inArray(col, scope.only) : sql`false`;
+  return scope.except.length ? notInArray(col, scope.except) : undefined;
+}
+
+/** Same, for nullable org columns (audit, errors): platform-level rows only for real admins. */
+function orgInNullable(col: AnyColumn, scope: AdminScope): SQL | undefined {
+  if (!scope) return undefined;
+  if ("only" in scope) return orgIn(col, scope);
+  return scope.except.length ? or(isNull(col), notInArray(col, scope.except)) : undefined;
+}
+
+/** `…@demo.invalid` and `…@<company>.demo.invalid`, as `isDemoEmail` (lib/demo.ts). */
+const demoUser = () => or(ilike(users.email, `%@${DEMO_EMAIL_DOMAIN}`), ilike(users.email, `%.${DEMO_EMAIL_DOMAIN}`))!;
+/** Users in scope: demo-world addresses for the demo admin, everyone else for real admins. */
+function userIn(scope: AdminScope): SQL | undefined {
+  if (!scope) return undefined;
+  if ("only" in scope) return demoUser();
+  return or(isNull(users.email), and(notIlike(users.email, `%@${DEMO_EMAIL_DOMAIN}`), notIlike(users.email, `%.${DEMO_EMAIL_DOMAIN}`)));
+}
+
+function orgVisible(orgId: string, scope: AdminScope): boolean {
+  if (!scope) return true;
+  return "only" in scope ? scope.only.includes(orgId) : !scope.except.includes(orgId);
+}
 
 // ---------------------------------------------------------------------------------------
 // Overview
@@ -45,6 +84,7 @@ export type ProviderHealth = {
 
 export async function loadOverview() {
   await dbReady;
+  const scope = await adminScope();
   const d7 = since(7);
   const d30 = since(30);
   const d1 = since(1);
@@ -67,24 +107,26 @@ export async function loadOverview() {
         d30: sql<number>`count(*) filter (where ${users.createdAt} >= ${iso(d30)}::timestamptz)::int`,
         total: sql<number>`count(*)::int`,
       })
-      .from(users),
+      .from(users)
+      .where(userIn(scope)),
     db
       .select({
         total: sql<number>`count(*)::int`,
         suspended: sql<number>`count(*) filter (where ${organizations.suspendedAt} is not null)::int`,
       })
-      .from(organizations),
+      .from(organizations)
+      .where(orgIn(organizations.id, scope)),
     db
       .select({ n: sql<number>`count(distinct ${generationEvents.orgId})::int` })
       .from(generationEvents)
-      .where(gte(generationEvents.createdAt, d30)),
+      .where(and(gte(generationEvents.createdAt, d30), orgIn(generationEvents.orgId, scope))),
     db
       .select({
         day: sql<string>`to_char(date_trunc('day', ${creatives.createdAt}), 'YYYY-MM-DD')`,
         n: sql<number>`count(*)::int`,
       })
       .from(creatives)
-      .where(gte(creatives.createdAt, d30))
+      .where(and(gte(creatives.createdAt, d30), orgIn(creatives.orgId, scope)))
       .groupBy(sql`1`)
       .orderBy(sql`1`),
     db
@@ -96,14 +138,14 @@ export async function loadOverview() {
         total: sql<number>`count(*)::int`,
       })
       .from(generationEvents)
-      .where(gte(generationEvents.createdAt, d30)),
+      .where(and(gte(generationEvents.createdAt, d30), orgIn(generationEvents.orgId, scope))),
     db
       .select({
         depth: sql<number>`count(*)::int`,
         oldest: sql<Date | null>`min(${generationEvents.createdAt})`,
       })
       .from(generationEvents)
-      .where(eq(generationEvents.status, "started")),
+      .where(and(eq(generationEvents.status, "started"), orgIn(generationEvents.orgId, scope))),
     db
       .select({
         provider: generationEvents.provider,
@@ -113,6 +155,7 @@ export async function loadOverview() {
         failed24h: sql<number>`count(*) filter (where ${generationEvents.createdAt} >= ${iso(d1)}::timestamptz and ${generationEvents.status} = 'failed')::int`,
       })
       .from(generationEvents)
+      .where(orgIn(generationEvents.orgId, scope))
       .groupBy(generationEvents.provider)
       .orderBy(generationEvents.provider),
     db
@@ -120,6 +163,7 @@ export async function loadOverview() {
       .from(users)
       .leftJoin(memberships, eq(memberships.userId, users.id))
       .leftJoin(organizations, eq(organizations.id, memberships.orgId))
+      .where(userIn(scope))
       .orderBy(desc(users.createdAt))
       .limit(8),
     db
@@ -135,7 +179,7 @@ export async function loadOverview() {
       })
       .from(generationEvents)
       .innerJoin(organizations, eq(organizations.id, generationEvents.orgId))
-      .where(eq(generationEvents.status, "failed"))
+      .where(and(eq(generationEvents.status, "failed"), orgIn(generationEvents.orgId, scope)))
       .orderBy(desc(generationEvents.createdAt))
       .limit(6),
     db
@@ -144,7 +188,8 @@ export async function loadOverview() {
         d7: sql<number>`count(*) filter (where ${creatives.createdAt} >= ${iso(d7)}::timestamptz)::int`,
         d30: sql<number>`count(*) filter (where ${creatives.createdAt} >= ${iso(d30)}::timestamptz)::int`,
       })
-      .from(creatives),
+      .from(creatives)
+      .where(orgIn(creatives.orgId, scope)),
   ]);
 
   // Fill the 30-day series so the chart has one point per day.
@@ -235,6 +280,8 @@ async function latestSubscriptions(orgIds?: string[]) {
 export async function listOrgs(q = "", status: "all" | "active" | "suspended" = "all"): Promise<OrgRow[]> {
   await dbReady;
   const filters: SQL[] = [];
+  const inScope = orgIn(organizations.id, await adminScope());
+  if (inScope) filters.push(inScope);
   if (q) filters.push(or(ilike(organizations.name, `%${q}%`), ilike(organizations.slug, `%${q}%`))!);
   if (status === "suspended") filters.push(isNotNull(organizations.suspendedAt));
   if (status === "active") filters.push(sql`${organizations.suspendedAt} is null`);
@@ -299,6 +346,7 @@ export async function listOrgs(q = "", status: "all" | "active" | "suspended" = 
 
 export async function loadOrgDetail(orgId: string) {
   await dbReady;
+  if (!orgVisible(orgId, await adminScope())) return null;
   const org = await db.query.organizations.findFirst({ where: eq(organizations.id, orgId) });
   if (!org) return null;
   const [members, ledger, [credits], brandRows, productCounts, events, accounts, campaignRows, notes, subs, [counts], [gen]] = await Promise.all([
@@ -366,7 +414,7 @@ export async function loadOrgDetail(orgId: string) {
 
 export async function orgNameMap(): Promise<Map<string, string>> {
   await dbReady;
-  const rows = await db.select({ id: organizations.id, name: organizations.name }).from(organizations);
+  const rows = await db.select({ id: organizations.id, name: organizations.name }).from(organizations).where(orgIn(organizations.id, await adminScope()));
   return new Map(rows.map((r) => [r.id, r.name]));
 }
 
@@ -388,7 +436,7 @@ export async function listUsers(q = ""): Promise<UserRow[]> {
   const rows = await db
     .select()
     .from(users)
-    .where(q ? or(ilike(users.email, `%${q}%`), ilike(users.name, `%${q}%`)) : undefined)
+    .where(and(q ? or(ilike(users.email, `%${q}%`), ilike(users.name, `%${q}%`)) : undefined, userIn(await adminScope())))
     .orderBy(desc(users.createdAt))
     .limit(200);
   if (rows.length === 0) return [];
@@ -396,7 +444,7 @@ export async function listUsers(q = ""): Promise<UserRow[]> {
     .select({ userId: memberships.userId, role: memberships.role, orgId: organizations.id, orgName: organizations.name })
     .from(memberships)
     .innerJoin(organizations, eq(organizations.id, memberships.orgId))
-    .where(inArray(memberships.userId, rows.map((r) => r.id)));
+    .where(and(inArray(memberships.userId, rows.map((r) => r.id)), orgIn(memberships.orgId, await adminScope())));
   return rows.map((u) => ({
     id: u.id,
     name: u.name,
@@ -422,7 +470,10 @@ export type GenerationFilters = {
 
 export async function listGenerations(f: GenerationFilters, limit = 100) {
   await dbReady;
+  const scope = await adminScope();
   const where: SQL[] = [];
+  const inScope = orgIn(generationEvents.orgId, scope);
+  if (inScope) where.push(inScope);
   if (f.provider) where.push(eq(generationEvents.provider, f.provider));
   if (f.model) where.push(eq(generationEvents.model, f.model));
   if (f.status) where.push(eq(generationEvents.status, f.status));
@@ -466,8 +517,8 @@ export async function listGenerations(f: GenerationFilters, limit = 100) {
       .where(cond)
       .groupBy(generationEvents.provider, generationEvents.model)
       .orderBy(desc(sql`sum(${generationEvents.costUsd})`)),
-    db.selectDistinct({ provider: generationEvents.provider }).from(generationEvents).orderBy(generationEvents.provider),
-    db.selectDistinct({ model: generationEvents.model }).from(generationEvents).orderBy(generationEvents.model),
+    db.selectDistinct({ provider: generationEvents.provider }).from(generationEvents).where(inScope).orderBy(generationEvents.provider),
+    db.selectDistinct({ model: generationEvents.model }).from(generationEvents).where(inScope).orderBy(generationEvents.model),
   ]);
   return {
     rows: rows.map((r) => ({ ...r.e, orgName: r.orgName, creativeKind: r.creativeKind, costUsd: r.e.costUsd == null ? null : Number(r.e.costUsd) })),
@@ -505,6 +556,7 @@ export async function loadModels() {
         lastUsed: sql<Date | null>`max(${generationEvents.createdAt})`,
       })
       .from(generationEvents)
+      .where(orgIn(generationEvents.orgId, await adminScope()))
       .groupBy(generationEvents.model),
     getCatalog(),
     db.select({ id: aiModels.id }).from(aiModels),
@@ -546,21 +598,23 @@ export async function loadModels() {
 
 export async function loadBilling() {
   await dbReady;
+  const scope = await adminScope();
   const [subs, topUps, orgRows] = await Promise.all([
     db
       .select({ s: subscriptions, orgName: organizations.name, stripeCustomerId: organizations.stripeCustomerId })
       .from(subscriptions)
       .innerJoin(organizations, eq(organizations.id, subscriptions.orgId))
+      .where(orgIn(subscriptions.orgId, scope))
       .orderBy(desc(subscriptions.createdAt))
       .limit(200),
     db
       .select({ l: creditLedger, orgName: organizations.name })
       .from(creditLedger)
       .innerJoin(organizations, eq(organizations.id, creditLedger.orgId))
-      .where(eq(creditLedger.reason, "top_up"))
+      .where(and(eq(creditLedger.reason, "top_up"), orgIn(creditLedger.orgId, scope)))
       .orderBy(desc(creditLedger.createdAt))
       .limit(50),
-    db.select({ id: organizations.id, name: organizations.name, stripeCustomerId: organizations.stripeCustomerId }).from(organizations),
+    db.select({ id: organizations.id, name: organizations.name, stripeCustomerId: organizations.stripeCustomerId }).from(organizations).where(orgIn(organizations.id, scope)),
   ]);
   const latest = new Map<string, (typeof subs)[number]>();
   for (const r of subs) if (!latest.has(r.s.orgId)) latest.set(r.s.orgId, r);
@@ -628,6 +682,7 @@ const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "last
 
 export async function loadProviders(): Promise<ProviderStatus[]> {
   await dbReady;
+  const scope = await adminScope();
   const d1 = since(1);
   const rows = await db
     .select({
@@ -638,11 +693,12 @@ export async function loadProviders(): Promise<ProviderStatus[]> {
       failed24h: sql<number>`count(*) filter (where ${generationEvents.createdAt} >= ${iso(d1)}::timestamptz and ${generationEvents.status} = 'failed')::int`,
     })
     .from(generationEvents)
+    .where(orgIn(generationEvents.orgId, scope))
     .groupBy(generationEvents.provider);
   const lastErrors = await db
     .select({ provider: generationEvents.provider, error: generationEvents.error, createdAt: generationEvents.createdAt })
     .from(generationEvents)
-    .where(eq(generationEvents.status, "failed"))
+    .where(and(eq(generationEvents.status, "failed"), orgIn(generationEvents.orgId, scope)))
     .orderBy(desc(generationEvents.createdAt))
     .limit(50);
   const byProvider = new Map(rows.map((r) => [r.provider, r]));
@@ -650,7 +706,8 @@ export async function loadProviders(): Promise<ProviderStatus[]> {
     const missing = d.env.filter((k) => !process.env[k]);
     const r = d.eventKey ? byProvider.get(d.eventKey) : undefined;
     // The bucket comes from this deployment's own env, never a name baked into the code.
-    const note = d.id === "r2" && process.env.R2_BUCKET ? `Bucket ${process.env.R2_BUCKET}. ${d.note}` : d.note;
+    // Not shown to the public demo admin (DEMO_MODE): it names this install's infrastructure.
+    const note = d.id === "r2" && process.env.R2_BUCKET && !(scope && "only" in scope) ? `Bucket ${process.env.R2_BUCKET}. ${d.note}` : d.note;
     return {
       ...d,
       note,
@@ -671,12 +728,14 @@ export async function loadProviders(): Promise<ProviderStatus[]> {
 
 export async function loadCampaigns() {
   await dbReady;
+  const scope = await adminScope();
   const [accounts, rows] = await Promise.all([
     db
       .select({ a: adAccounts, orgName: organizations.name, brandName: brands.name })
       .from(adAccounts)
       .innerJoin(organizations, eq(organizations.id, adAccounts.orgId))
       .leftJoin(brands, eq(brands.id, adAccounts.brandId))
+      .where(orgIn(adAccounts.orgId, scope))
       .orderBy(desc(adAccounts.createdAt))
       .limit(200),
     db
@@ -684,6 +743,7 @@ export async function loadCampaigns() {
       .from(campaigns)
       .innerJoin(organizations, eq(organizations.id, campaigns.orgId))
       .innerJoin(adAccounts, eq(adAccounts.id, campaigns.adAccountId))
+      .where(orgIn(campaigns.orgId, scope))
       .orderBy(desc(campaigns.createdAt))
       .limit(200),
   ]);
@@ -702,6 +762,8 @@ export type AuditFilters = { action?: string; org?: string; actor?: string; scop
 export async function listPlatformAudit(f: AuditFilters, limit = 150) {
   await dbReady;
   const where: SQL[] = [];
+  const inScope = orgInNullable(auditLog.orgId, await adminScope());
+  if (inScope) where.push(inScope);
   if (f.action) where.push(ilike(auditLog.action, `${f.action}%`));
   if (f.org) where.push(eq(auditLog.orgId, f.org));
   if (f.actor) where.push(eq(auditLog.actorId, f.actor));
@@ -716,11 +778,12 @@ export async function listPlatformAudit(f: AuditFilters, limit = 150) {
       .where(where.length ? and(...where) : undefined)
       .orderBy(desc(auditLog.createdAt))
       .limit(limit),
-    db.selectDistinct({ action: auditLog.action }).from(auditLog).orderBy(auditLog.action),
+    db.selectDistinct({ action: auditLog.action }).from(auditLog).where(inScope).orderBy(auditLog.action),
     db
       .selectDistinct({ id: users.id, name: users.name, email: users.email })
       .from(auditLog)
-      .innerJoin(users, eq(users.id, auditLog.actorId)),
+      .innerJoin(users, eq(users.id, auditLog.actorId))
+      .where(inScope),
   ]);
   return {
     rows: rows.map((r) => ({ ...r.a, orgName: r.orgName, actorName: r.actorName, actorEmail: r.actorEmail })),
@@ -731,3 +794,31 @@ export async function listPlatformAudit(f: AuditFilters, limit = 150) {
 
 /** Kinds that map a failed generation event back to a pipeline job (see admin-actions.retryGeneration). */
 export const RETRYABLE_KINDS = creativeKind.enumValues;
+
+// ---------------------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------------------
+
+/** Admin → Errors: newest first plus totals, within the viewer's scope (see `adminScope`). */
+export async function loadErrors(limit = 200) {
+  await dbReady;
+  const inScope = orgInNullable(errorEvents.orgId, await adminScope());
+  const [rows, [totals]] = await Promise.all([
+    db.select().from(errorEvents).where(inScope).orderBy(desc(errorEvents.lastSeenAt)).limit(limit),
+    db
+      .select({
+        total: sql<number>`coalesce(sum(${errorEvents.count}), 0)::int`,
+        routes: sql<number>`count(distinct ${errorEvents.route})::int`,
+        day: sql<number>`coalesce(sum(case when ${errorEvents.lastSeenAt} > now() - interval '24 hours' then ${errorEvents.count} else 0 end), 0)::int`,
+      })
+      .from(errorEvents)
+      .where(inScope),
+  ]);
+  return { rows, totals: { total: num(totals?.total), routes: num(totals?.routes), day: num(totals?.day) } };
+}
+
+/** Whether the admin panel is being shown to the public demo admin (DEMO_MODE). */
+export async function viewingAsDemoAdmin(): Promise<boolean> {
+  const scope = await adminScope();
+  return Boolean(scope && "only" in scope);
+}

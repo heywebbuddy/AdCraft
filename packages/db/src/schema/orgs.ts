@@ -16,6 +16,9 @@ export type OrgSettings = {
   /** ISO timestamp set when an owner asks us to delete the workspace. */
   deletionRequestedAt?: string;
   deletionReason?: string;
+  /** Read-only public demo (DEMO_MODE): set by the demo seed only, never by a form. */
+  demoWorld?: boolean;
+  demoSeed?: { version: number; complete: boolean; at: string };
 };
 
 export const organizations = pgTable("organizations", {

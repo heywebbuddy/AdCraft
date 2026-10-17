@@ -7,6 +7,14 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import { db, dbReady, users, accounts, sessions, verificationTokens } from "@adcraft/db";
 import { authConfig } from "./auth.config";
+import { DEMO_ADMIN_EMAIL, DEMO_STUDIO_EMAIL, isDemoEmail } from "@/lib/demo";
+
+/**
+ * Read-only public demo (server/demo.ts). With DEMO_MODE on, the sign-in page's two doors sign
+ * the visitor into a shared demo account through this provider: no password, no email. The
+ * account is chosen by door name only, so nothing a visitor types can pick another account.
+ */
+const demoModeOn = ["1", "true", "yes", "on"].includes((process.env.DEMO_MODE ?? "").trim().toLowerCase());
 
 /**
  * Local development: outside production a "dev sign-in" provider accepts any email
@@ -51,6 +59,8 @@ const providers = [
           async authorize(credentials) {
             const email = String(credentials?.email ?? "").trim().toLowerCase();
             if (!email.includes("@")) return null;
+            // Demo-world addresses only open through the demo doors.
+            if (isDemoEmail(email)) return null;
             await dbReady;
             const existing = await db.query.users.findFirst({ where: eq(users.email, email) });
             if (existing) return { id: existing.id, email: existing.email, name: existing.name };
@@ -59,6 +69,27 @@ const providers = [
               .values({ email, name: email.split("@")[0], emailVerified: new Date() })
               .returning();
             return { id: created.id, email: created.email, name: created.name };
+          },
+        }),
+      ]
+    : []),
+  ...(demoModeOn
+    ? [
+        Credentials({
+          id: "demo",
+          name: "Demo",
+          credentials: { door: { label: "Door", type: "text" } },
+          async authorize(credentials) {
+            const door = String(credentials?.door ?? "");
+            if (door !== "studio" && door !== "admin") return null;
+            // Creates the demo world the first time anyone knocks (idempotent; usually already
+            // done at startup by instrumentation.ts).
+            const { ensureDemoWorld } = await import("@/server/demo-seed");
+            await ensureDemoWorld();
+            const email = door === "admin" ? DEMO_ADMIN_EMAIL : DEMO_STUDIO_EMAIL;
+            await dbReady;
+            const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+            return user ? { id: user.id, email: user.email, name: user.name } : null;
           },
         }),
       ]
@@ -78,6 +109,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   callbacks: {
     ...authConfig.callbacks,
+    /**
+     * Demo-world addresses (`@demo.invalid`) sign in through the demo doors and nothing else:
+     * no magic link is ever sent to one, no Google account can claim one, and with DEMO_MODE off
+     * they cannot sign in at all.
+     */
+    signIn({ user, account, email }) {
+      const address = user?.email ?? (email as { email?: string } | undefined)?.email ?? null;
+      if (!isDemoEmail(address)) return true;
+      return demoModeOn && account?.provider === "demo";
+    },
     async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;

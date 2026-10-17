@@ -6,6 +6,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db, dbReady, organizations, memberships, brands, creditLedger, users } from "@adcraft/db";
 import { auth } from "@/auth";
 import { ADMIN_ORG_COOKIE, syncAdminFlag } from "./admin";
+import { assertDemoCanWrite, demoModeEnabled, isDemoEmail } from "./demo";
 
 export const ORG_COOKIE = "adcraft_org";
 export const BRAND_COOKIE = "adcraft_brand";
@@ -29,8 +30,10 @@ export type OrgContext = {
   credits: { balance: number; grant: number };
 };
 
-/** The signed-in user, or a redirect to sign-in. */
-export const requireViewer = cache(async (): Promise<Viewer> => {
+/**
+ * The signed-in user, or a redirect to sign-in. Read-only: no demo check (see requireViewer).
+ */
+const loadViewer = cache(async (): Promise<Viewer> => {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
   await dbReady;
@@ -40,22 +43,56 @@ export const requireViewer = cache(async (): Promise<Viewer> => {
   });
   // A session can outlive its user row (database reset in development). Force a fresh sign-in.
   if (!exists) redirect("/sign-in?stale=1");
+  // A demo session that outlived DEMO_MODE (JWTs last 30 days) is signed out.
+  if (isDemoEmail(exists.email) && !demoModeEnabled()) redirect("/api/auth/reset");
   const isPlatformAdmin = await syncAdminFlag(exists.id, exists.email, exists.isPlatformAdmin);
   return {
     userId: session.user.id,
-    email: session.user.email ?? "",
+    // The row, not the JWT snapshot: this is the address the demo guard checks.
+    email: exists.email ?? session.user.email ?? "",
     name: session.user.name ?? session.user.email?.split("@")[0] ?? "there",
     isPlatformAdmin,
   };
 });
 
 /**
+ * The signed-in user, or a redirect to sign-in.
+ *
+ * Every server action, route handler and page starts here (directly or through requireOrg), so
+ * this is where a read-only demo session is refused: outside a page render a demo-world account
+ * gets a DemoReadOnlyError (server/demo.ts). Deny by default — a new action is covered as soon
+ * as it asks who the viewer is.
+ */
+export async function requireViewer(): Promise<Viewer> {
+  const viewer = await loadViewer();
+  await assertDemoCanWrite(viewer.email);
+  return viewer;
+}
+
+/**
  * The viewer's current organisation and brand. Redirects to onboarding when the
  * user has no organisation yet. The selected org/brand are remembered in cookies.
+ * Refuses demo sessions outside page renders, like requireViewer.
  */
-export const requireOrg = cache(async (): Promise<OrgContext> => {
+export async function requireOrg(): Promise<OrgContext> {
+  const ctx = await loadOrg();
+  await assertDemoCanWrite(ctx.viewer.email);
+  return ctx;
+}
+
+/**
+ * requireOrg without the demo refusal, for the handful of server actions and GET route
+ * handlers that only READ (the activity tray poll, voice and presenter pickers, downloads).
+ * Never use it for anything that writes, spends credits or calls a paid provider: those must
+ * go through requireOrg. tests/demo.test.ts pins the list of callers.
+ */
+export async function readOrg(): Promise<OrgContext> {
+  return loadOrg();
+}
+
+const loadOrg = cache(async (): Promise<OrgContext> => {
   await dbReady;
-  const viewer = await requireViewer();
+  const viewer = await loadViewer();
   const jar = await cookies();
 
   let rows = await db
@@ -71,7 +108,8 @@ export const requireOrg = cache(async (): Promise<OrgContext> => {
   // audited actions. The (app) layout shows a banner and an exit link while this is active; the
   // choice is logged as "admin.view_as" when it is made.
   let supportMode = false;
-  const supportOrg = viewer.isPlatformAdmin ? jar.get(ADMIN_ORG_COOKIE)?.value : undefined;
+  // Never for a demo account: the demo admin must not open real customers' workspaces.
+  const supportOrg = viewer.isPlatformAdmin && !isDemoEmail(viewer.email) ? jar.get(ADMIN_ORG_COOKIE)?.value : undefined;
   if (supportOrg) {
     const org = await db.query.organizations.findFirst({ where: eq(organizations.id, supportOrg) });
     if (org) {

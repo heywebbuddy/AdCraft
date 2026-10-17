@@ -8,6 +8,8 @@ type Ctx = { routerKind: string; routePath: string; routeType: string; renderSou
 export async function onRequestError(err: unknown, request: { path: string; method: string; headers: Record<string, string | string[] | undefined> }, context: Ctx) {
   const error = err instanceof Error ? err : new Error(String(err));
   const digest = (err as { digest?: string } | null)?.digest;
+  // A refused write from the read-only demo (DEMO_MODE) is the system working, not a bug.
+  if (digest === "ADCRAFT_DEMO_READ_ONLY") return;
   const line = `[error] ${request.method} ${request.path} (${context.routePath}) ${error.name}: ${error.message}${digest ? ` digest=${digest}` : ""}`;
   console.error(line);
   // Keep a copy in the database so errors are visible in Admin → Errors even without Sentry.
@@ -42,5 +44,16 @@ export async function onRequestError(err: unknown, request: { path: string; meth
 }
 
 export async function register() {
-  /* no-op: hooks are the exports above */
+  // Read-only public demo: build the demo world in the background at startup so the first
+  // visitor's door click is instant. Idempotent; the door awaits the same promise if it is
+  // still running. Only on the Node runtime, which can reach the database.
+  // The runtime check must wrap the import (not return early) so the edge bundle drops it.
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const demoMode = ["1", "true", "yes", "on"].includes((process.env.DEMO_MODE ?? "").trim().toLowerCase());
+    if (demoMode && process.env.NEXT_PHASE !== "phase-production-build") {
+      void import("./server/demo-seed")
+        .then((m) => m.ensureDemoWorld())
+        .catch((err) => console.error("[demo] could not prepare the demo world at startup", err));
+    }
+  }
 }

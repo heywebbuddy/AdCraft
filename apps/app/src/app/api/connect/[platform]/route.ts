@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { getAdsProvider, isPlatform } from "@adcraft/ads";
 import { requireOrg } from "@/server/org";
+import { demoRouteRefusal } from "@/server/demo";
 import { CONNECT_COOKIE, appOrigin, type ConnectState } from "../shared";
 
 /**
@@ -13,6 +14,8 @@ import { CONNECT_COOKIE, appOrigin, type ConnectState } from "../shared";
 export async function GET(req: Request, { params }: { params: Promise<{ platform: string }> }) {
   const { platform } = await params;
   if (!isPlatform(platform)) return new NextResponse("Unknown platform", { status: 404 });
+  // Read-only demo: connecting an ad account is a write (and a third-party OAuth round trip).
+  if (await demoRouteRefusal()) return NextResponse.redirect(new URL("/campaigns?error=" + encodeURIComponent("This is a shared demo — changes are switched off."), appOrigin(req)));
   const ctx = await requireOrg();
   if (ctx.role === "viewer") return NextResponse.redirect(new URL("/campaigns?error=forbidden", appOrigin(req)));
 

@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { db, dbReady, users } from "@adcraft/db";
 import { auth } from "@/auth";
 import { syncAdminFlag } from "./admin-emails";
+import { assertDemoCanWrite, isDemoEmail } from "./demo";
 
 /**
  * Platform admin gate (PLAN.md section 14).
@@ -41,8 +42,7 @@ export const currentAdmin = cache(async (): Promise<AdminViewer | null> => {
   return { userId: row.id, email: row.email ?? "", name: row.name ?? row.email?.split("@")[0] ?? "Admin" };
 });
 
-/** The signed-in platform admin, or a redirect (sign-in when signed out, /dashboard otherwise). */
-export const requireAdmin = cache(async (): Promise<AdminViewer> => {
+const loadAdmin = cache(async (): Promise<AdminViewer> => {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in?callbackUrl=%2Fadmin");
   const admin = await currentAdmin();
@@ -50,8 +50,21 @@ export const requireAdmin = cache(async (): Promise<AdminViewer> => {
   return admin;
 });
 
-/** The org id a platform admin has chosen to view as support, if any. */
+/**
+ * The signed-in platform admin, or a redirect (sign-in when signed out, /dashboard otherwise).
+ * Every /admin mutation starts here, so the demo admin is refused here outside page renders:
+ * it can open every admin screen and change nothing (server/demo.ts).
+ */
+export async function requireAdmin(): Promise<AdminViewer> {
+  const admin = await loadAdmin();
+  await assertDemoCanWrite(admin.email);
+  return admin;
+}
+
+/** The org id a platform admin has chosen to view as support, if any. Never for a demo account. */
 export async function supportOrgId(): Promise<string | null> {
+  const admin = await currentAdmin();
+  if (!admin || isDemoEmail(admin.email)) return null;
   const jar = await cookies();
   return jar.get(ADMIN_ORG_COOKIE)?.value ?? null;
 }

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import JSZip from "jszip";
 import { getStorage } from "@adcraft/storage";
-import { requireOrg } from "@/server/org";
+import { readOrg } from "@/server/org";
 import { getCreative } from "@/server/creatives";
 
 /** Every succeeded render of a creative, zipped, named `<creative>-<ratio>-<w>x<h>.png`. */
 export async function GET(_req: Request, ctx: { params: Promise<{ creativeId: string }> }) {
   const { creativeId } = await ctx.params;
-  const org = await requireOrg();
+  // Zips renders that already exist (no rendering here): allowed in the read-only demo too.
+  const org = await readOrg();
   const c = await getCreative(org.org.id, creativeId);
   if (!c) return new NextResponse("Not found", { status: 404 });
 

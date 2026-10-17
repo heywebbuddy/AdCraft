@@ -8,6 +8,8 @@ import { AdminTopbar } from "@/components/admin/admin-topbar";
 import "../../(app)/workspace.css";
 import "./admin.css";
 import { LegalLinks } from "@/components/legal-links";
+import { DemoBanner } from "@/components/demo-banner";
+import { isDemoEmail } from "@/lib/demo";
 
 export const metadata: Metadata = { title: "Admin · Adcraft" };
 export const dynamic = "force-dynamic";
@@ -25,6 +27,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development";
 
   return (
+    <>
+    {isDemoEmail(admin.email) ? <DemoBanner /> : null}
     <div className="app-shell admin-shell">
       <a href="#admin-main" className="workspace-skip">
         Skip to content
@@ -49,5 +53,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </footer>
       </div>
     </div>
+    </>
   );
 }

@@ -1,5 +1,4 @@
-import { desc, sql } from "drizzle-orm";
-import { db, dbReady, errorEvents } from "@adcraft/db";
+import { loadErrors } from "@/server/admin-data";
 import { PageHeader } from "@/components/workspace-ui";
 import { requireAdmin } from "@/server/admin";
 import { Empty, Kpi, Kpis, Panel, Table, ago, int } from "@/components/admin/ui";
@@ -13,15 +12,10 @@ export const dynamic = "force-dynamic";
  */
 export default async function AdminErrorsPage() {
   await requireAdmin();
-  await dbReady;
-  const rows = await db.select().from(errorEvents).orderBy(desc(errorEvents.lastSeenAt)).limit(200);
-  const [{ total, routes, day }] = await db
-    .select({
-      total: sql<number>`coalesce(sum(${errorEvents.count}), 0)::int`,
-      routes: sql<number>`count(distinct ${errorEvents.route})::int`,
-      day: sql<number>`coalesce(sum(case when ${errorEvents.lastSeenAt} > now() - interval '24 hours' then ${errorEvents.count} else 0 end), 0)::int`,
-    })
-    .from(errorEvents);
+  const {
+    rows,
+    totals: { total, routes, day },
+  } = await loadErrors(200);
 
   return (
     <>

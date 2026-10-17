@@ -8,7 +8,7 @@ import { cloneHeyGenVoice, createConsentLink, designHeyGenVoices, findLookPack, 
 import { getVoiceSample, storeVoiceSample } from "@/server/voice-samples";
 import { deleteBrandVoice, discardHeyGenVoices, listBrandVoices, resolveVoice, storeBrandVoiceSample, toCatalogVoice } from "@/server/brand-voices";
 import { getPresenterLooks, type PresenterLook } from "@/server/presenter-library";
-import { requireOrg } from "@/server/org";
+import { readOrg, requireOrg } from "@/server/org";
 import { studioModels } from "@/server/character-studio";
 import { currentSubscription, CREDIT_COSTS } from "@/server/billing";
 import { planAllows } from "@/server/platform-settings";
@@ -192,14 +192,16 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
 
 /** Looks (outfits / settings) for one library presenter; fetched when a person is opened or scrolled into view. */
 export async function loadPresenterLooks(groupId: string): Promise<PresenterLook[]> {
-  await requireOrg();
+  // Read-only catalogue browse: open to the read-only demo (server/demo.ts).
+  await readOrg();
   if (!/^[a-z0-9_-]{4,80}$/i.test(groupId)) return []; // photo groups are hex, studio groups numeric
   try { return await getPresenterLooks(groupId); } catch { throw new Error("HeyGen did not answer — try again."); }
 }
 
 /** Paged voice search across ElevenLabs and HeyGen for the voice picker. */
 export async function searchVoicesAction(q: VoiceQuery): Promise<{ items: CatalogVoice[]; total: number; languages: string[] }> {
-  const ctx = await requireOrg();
+  // Read-only catalogue search: open to the read-only demo (server/demo.ts).
+  const ctx = await readOrg();
   await hydrateVoiceCatalog();
   const query = String(q.query ?? "").slice(0, 60);
   const gender = q.gender === "male" || q.gender === "female" ? q.gender : undefined;
@@ -364,7 +366,8 @@ export async function discardDesignedVoicesAction(ids: string[]): Promise<void> 
 
 /** This workspace's clones and designed voices, refreshed against HeyGen. */
 export async function brandVoicesAction(): Promise<CatalogVoice[]> {
-  const ctx = await requireOrg();
+  // Read-only list: open to the read-only demo (server/demo.ts).
+  const ctx = await readOrg();
   if (!ctx.brand) return [];
   return (await listBrandVoices(ctx.org.id, ctx.brand.id)).map(toCatalogVoice);
 }

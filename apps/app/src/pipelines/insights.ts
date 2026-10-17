@@ -134,7 +134,10 @@ async function syncAccount(account: typeof adAccounts.$inferSelect): Promise<num
 /** Every connected account across all organisations — the hourly cron entry point. */
 export async function syncAllAccounts() {
   await dbReady;
-  const rows = await db.select({ id: adAccounts.id, orgId: adAccounts.orgId }).from(adAccounts).where(eq(adAccounts.status, "connected"));
+  // The read-only demo world keeps the metrics it was seeded with (server/demo-seed.ts).
+  const { demoOrgIds } = await import("@/server/demo");
+  const demo = new Set(await demoOrgIds());
+  const rows = (await db.select({ id: adAccounts.id, orgId: adAccounts.orgId }).from(adAccounts).where(eq(adAccounts.status, "connected"))).filter((r) => !demo.has(r.orgId));
   const out: Array<{ adAccountId: string; rows: number; error?: string }> = [];
   for (const r of rows) {
     const res = await runInsightsPipeline({ orgId: r.orgId, adAccountId: r.id });

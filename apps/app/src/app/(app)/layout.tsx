@@ -10,6 +10,8 @@ import { Sidebar } from "@/components/sidebar";
 import { SupportBanner } from "@/components/admin/support-banner";
 import { getPlatformSettings } from "@/server/platform-settings";
 import { LegalLinks } from "@/components/legal-links";
+import { DemoBanner } from "@/components/demo-banner";
+import { isDemoEmail } from "@/lib/demo";
 
 export default async function AppLayout({
   children,
@@ -31,6 +33,7 @@ export default async function AppLayout({
           {settings.maintenanceBanner.trim()}
         </div>
       ) : null}
+      {isDemoEmail(ctx.viewer.email) ? <DemoBanner /> : null}
       <div className="app-shell">
         <a href="#workspace-main" className="workspace-skip">
           Skip to content

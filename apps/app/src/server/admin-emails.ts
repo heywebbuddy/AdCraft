@@ -2,6 +2,7 @@ import "server-only";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db, dbReady, auditLog, users } from "@adcraft/db";
 import { logAudit } from "./audit";
+import { isDemoAdminEmail } from "./demo";
 
 /** ADMIN_EMAILS and the platform-admin flag it controls (see admin.ts). No Next.js imports. */
 
@@ -21,10 +22,12 @@ export function adminEmails(): string[] {
  * - Unlisted → keeps admin only when another admin granted it in Admin → Users, i.e. the latest
  *   "admin.admin_granted" / "admin.admin_revoked" audit entry for the user is a grant. An admin
  *   who got it from the list loses it on their next request once the address is removed.
+ * - The read-only demo admin (DEMO_MODE, server/demo.ts) is an admin while DEMO_MODE is on,
+ *   listed or not, and is demoted like anyone else once DEMO_MODE is switched off.
  */
 export async function syncAdminFlag(userId: string, email: string | null | undefined, current: boolean): Promise<boolean> {
   const e = (email ?? "").toLowerCase();
-  if (e && adminEmails().includes(e)) {
+  if ((e && adminEmails().includes(e)) || isDemoAdminEmail(e)) {
     if (!current) {
       await dbReady;
       await db.update(users).set({ isPlatformAdmin: true }).where(eq(users.id, userId));
