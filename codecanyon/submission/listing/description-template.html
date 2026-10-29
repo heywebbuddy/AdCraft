@@ -1,4 +1,8 @@
-
+<h2>Adcraft | AI Ad Creator and UGC Video Studio</h2>
+<p>Create image ads, product videos and presenter videos in your own platform. Choose from 25,000+ presenter looks through your connected provider account, start with six UGC templates and use AI to plan your ads.</p>
+<p>Includes brand kits, a product library, eight AI ad ideas per brief, four image layouts, bulk creation, character and voice tools, campaign setup, reports, client reviews, teams, Stripe plans and credits, a read API, webhooks and an admin panel.</p>
+<p><strong>Requirements:</strong> Node.js 22+, PostgreSQL and a persistent Node server. Live generation needs your own provider accounts and paid usage. Ad publishing needs platform apps and permissions. Review the included third-party notices for video rendering terms.</p>
+<p><strong>Preview media:</strong> Photos and videos shown in the previews are not included in the buyer download. Editable SVG placeholders are included. The feature panels use illustrative sample content, not customer campaign results.</p>
 <p><img src="{{PUBLIC_ASSET_BASE}}/01-introduction.jpg" width="616" alt="Introduction"></p>
 <p><img src="{{PUBLIC_ASSET_BASE}}/02-heygen-library.jpg" width="616" alt="Heygen Library"></p>
 <p><img src="{{PUBLIC_ASSET_BASE}}/02-how-it-works.jpg" width="616" alt="How It Works"></p>
@@ -28,7 +32,7 @@
 
 <h3>Installation and setup</h3>
 
-<p>Everything below is also in <strong>documentation/index.html</strong> inside the download, so you have it locally without visiting any external link.</p>
+<p>The full guide also ships as <strong>documentation/index.html</strong> inside the download, so everything is available locally.</p>
 
 <h4>What you need</h4>
 
@@ -59,13 +63,13 @@
 <p>None are required. Adcraft ships sandbox adapters for every AI provider and ad platform, so with no keys at all the whole product is explorable and returns clearly labelled sample output. Add keys one at a time in <code>.env</code> to switch each piece on:</p>
 
 <ul>
-<li><strong>Ad ideas and copy</strong> — <code>ANTHROPIC_API_KEY</code></li>
-<li><strong>Images, video and background removal</strong> — <code>FAL_KEY</code></li>
-<li><strong>Presenters, looks and avatars</strong> — <code>HEYGEN_API_KEY</code></li>
-<li><strong>Voice-over and voice cloning</strong> — <code>ELEVENLABS_API_KEY</code></li>
-<li><strong>Sign-in emails</strong> — <code>RESEND_API_KEY</code> and <code>EMAIL_FROM</code></li>
-<li><strong>Subscriptions and credits</strong> — the <code>STRIPE_*</code> keys; <code>node scripts/stripe-setup.mjs --url https://your-domain.com</code> creates the products, prices and webhook in your own Stripe account</li>
-<li><strong>Ad publishing</strong> — <code>META_*</code>, <code>TIKTOK_*</code> and <code>GOOGLE_ADS_*</code> credentials from your own developer applications</li>
+<li><strong>Ad ideas and copy</strong> &mdash; <code>ANTHROPIC_API_KEY</code></li>
+<li><strong>Images, video and background removal</strong> &mdash; <code>FAL_KEY</code></li>
+<li><strong>Presenters, looks and avatars</strong> &mdash; <code>HEYGEN_API_KEY</code></li>
+<li><strong>Voice-over and voice cloning</strong> &mdash; <code>ELEVENLABS_API_KEY</code></li>
+<li><strong>Sign-in emails</strong> &mdash; <code>RESEND_API_KEY</code> and <code>EMAIL_FROM</code></li>
+<li><strong>Subscriptions and credits</strong> &mdash; the <code>STRIPE_*</code> keys; <code>node scripts/stripe-setup.mjs --url https://your-domain.com</code> creates the products, prices and webhook in your own Stripe account</li>
+<li><strong>Ad publishing</strong> &mdash; <code>META_*</code>, <code>TIKTOK_*</code> and <code>GOOGLE_ADS_*</code> credentials from your own developer applications</li>
 </ul>
 
 <p><code>.env.example</code> documents all 59 settings with comments, and <strong>Admin &rarr; Providers</strong> shows the same list with live status once you are signed in.</p>
@@ -76,7 +80,7 @@
 <li>Build the included Dockerfile: <code>docker build -t adcraft .</code></li>
 <li>Provision PostgreSQL and set <code>DATABASE_URL</code>. Migrations run automatically at startup.</li>
 <li>Set <code>AUTH_SECRET</code>, <code>AUTH_URL</code> (your public address), <code>ADMIN_EMAILS</code> and <code>DEV_LOGIN=0</code>.</li>
-<li>Attach durable storage: either a mounted volume at <code>LOCAL_STORAGE_DIR</code>, or the four <code>R2_*</code> variables for any S3-compatible bucket. A container's own filesystem is wiped on every deploy.</li>
+<li>Attach durable storage: either a mounted volume at <code>LOCAL_STORAGE_DIR</code>, or the four <code>R2_*</code> variables for any S3-compatible bucket. A container filesystem is wiped on every deploy.</li>
 <li>Check <code>/api/health</code>, which reports the database, storage and job runtime with latency.</li>
 </ol>
 
