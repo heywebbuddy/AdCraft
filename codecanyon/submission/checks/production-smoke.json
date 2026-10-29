@@ -1,0 +1,43 @@
+{
+  "checks": [
+    {
+      "route": "/",
+      "status": 200
+    },
+    {
+      "route": "/pricing",
+      "status": 200
+    },
+    {
+      "route": "/showcase",
+      "status": 200
+    },
+    {
+      "route": "/sign-in",
+      "status": 200
+    },
+    {
+      "route": "/api/health",
+      "status": 200
+    },
+    {
+      "route": "/dashboard",
+      "unauthenticatedRedirect": true
+    }
+  ],
+  "docs": [
+    {
+      "width": 1440,
+      "documentWidth": 1440,
+      "brokenAnchors": [],
+      "italic": 0
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "brokenAnchors": [],
+      "italic": 0
+    }
+  ],
+  "publicFilesChecked": 15
+}

@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adcraft — Documentation</title>
+<style>
+  :root{
+    --paper:#f8f7f3; --ink:#242521; --muted:#75756d; --orange:#e65c32; --orange-text:#c94823;
+    --line:#e4e3dc; --surface:#fff; --well:#f4f5f0; --warn-bg:#fdf1ee; --warn-ink:#9c3419;
+    --sans:'DM Sans',Arial,sans-serif; --serif:'Instrument Serif',Georgia,serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px;max-width:1180px;margin:0 auto;padding:0 24px 96px}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr;gap:0}}
+  nav{position:sticky;top:0;align-self:start;padding-top:40px;max-height:100vh;overflow-y:auto}
+  @media (max-width:900px){nav{position:static;max-height:none}}
+  .mark{display:flex;align-items:center;gap:8px;font-size:27px;font-weight:650;letter-spacing:-1.4px;line-height:1;margin-bottom:6px}
+  .mark .s{color:var(--orange);font-size:31px;line-height:.8}
+  .mark .d{color:var(--orange);margin-left:-5px}
+  nav .ver{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:22px}
+  nav ol{list-style:none;display:flex;flex-direction:column;gap:1px}
+  nav a{display:block;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:13.5px}
+  nav a:hover{color:var(--ink);background:var(--surface)}
+  nav .grp{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);margin:16px 0 5px;padding:0 10px}
+  main{padding-top:40px;min-width:0}
+  h1{font-size:40px;letter-spacing:-2px;font-weight:600;line-height:1.05}
+  h1 em{font-family:var(--serif);font-style:normal;font-weight:400;color:var(--orange-text)}
+  .lede{font-size:18px;color:var(--muted);margin-top:14px;max-width:62ch}
+  section{margin-top:52px;scroll-margin-top:24px}
+  h2{font-size:26px;letter-spacing:-1px;font-weight:600;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  h3{font-size:17.5px;font-weight:600;margin-top:28px;letter-spacing:-.3px}
+  p,ul,ol,table,pre,.note{margin-top:14px;max-width:72ch}
+  ul,ol{padding-left:22px}
+  li{margin-top:5px}
+  code{font-family:var(--mono);font-size:.875em;background:var(--well);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+  pre{background:#1d1e1a;color:#eceae2;border-radius:9px;padding:16px 18px;overflow-x:auto}
+  pre code{background:none;border:0;padding:0;color:inherit;font-size:13px;line-height:1.65}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;display:block;overflow-x:auto}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;white-space:nowrap}
+  td code{white-space:nowrap}
+  .note{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--orange);border-radius:0 9px 9px 0;padding:14px 18px}
+  .note.warn{background:var(--warn-bg);border-left-color:var(--warn-ink)}
+  .note strong{font-weight:650}
+  .note p:first-child{margin-top:0}
+  .steps{counter-reset:s;list-style:none;padding:0}
+  .steps>li{counter-increment:s;position:relative;padding-left:40px;margin-top:22px}
+  .steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:650;display:grid;place-items:center}
+  figure{margin:20px 0 0;max-width:none}
+  figure img{display:block;width:100%;max-width:760px;height:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+  figcaption{margin-top:9px;font-size:13.5px;color:var(--muted);max-width:72ch}
+  figcaption b{color:var(--ink);font-weight:600}
+  .tourstep{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
+  .tourstep:first-of-type{border-top:0;padding-top:0}
+  .tourstep h3{margin-top:0}
+  .where{display:inline-block;font-size:12px;font-weight:650;letter-spacing:.8px;text-transform:uppercase;color:var(--orange-text);background:var(--well);border:1px solid var(--line);border-radius:999px;padding:4px 11px;margin-bottom:9px}
+  footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="mark"><span class="s">&#10033;</span>adcraft<span class="d">.</span></div>
+    <div class="ver">Documentation &middot; v1.0.0</div>
+    <ol>
+      <div class="grp">Start</div>
+      <li><a href="#about">What this is</a></li>
+      <li><a href="#requirements">Requirements</a></li>
+      <li><a href="#install">Install locally</a></li>
+      <li><a href="#firstrun">Your first ad</a></li>
+      <li><a href="#walkthrough">Feature walkthrough</a></li>
+      <div class="grp">Configure</div>
+      <li><a href="#env">Environment keys</a></li>
+      <li><a href="#providers">AI providers</a></li>
+      <li><a href="#platforms">Ad platforms</a></li>
+      <li><a href="#billing">Stripe billing</a></li>
+      <li><a href="#jobs">Background jobs</a></li>
+      <li><a href="#storage">File storage</a></li>
+      <div class="grp">Operate</div>
+      <li><a href="#deploy">Deploy to production</a></li>
+      <li><a href="#admin">Admin console</a></li>
+      <li><a href="#brand">Branding &amp; customisation</a></li>
+      <li><a href="#backups">Backups &amp; health</a></li>
+      <div class="grp">Reference</div>
+      <li><a href="#structure">Code structure</a></li>
+      <li><a href="#api">API reference</a></li>
+      <li><a href="#envref">Environment reference</a></li>
+      <li><a href="#licensing">Third-party licensing</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+      <li><a href="#support">Support</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <h1>Adcraft <strong>documentation</strong></h1>
+    <p class="lede">Everything needed to install, configure, deploy and rebrand your copy. Read
+    <a href="#requirements">Requirements</a> and <a href="#licensing">Third-party licensing</a>
+    before you start — both contain things that are easier to know now than to discover later.</p>
+
+    <section id="about">
+      <h2>What this is</h2>
+      <p>Adcraft is a complete multi-tenant SaaS for making and running paid-social ads with AI. A
+      user imports a brand from a website address, adds a product, writes a brief, gets eight ad
+      concepts from Claude, turns one into static ads, a product video or an AI-presenter video in
+      every placement size, publishes to Meta, TikTok or Google Ads, and reads performance back.</p>
+      <p>It ships as a pnpm monorepo: one Next.js 15 application plus seven internal packages. You host the application. Connected integrations send requests to the services you configure.</p>
+      <div class="note">
+        <p><strong>It runs with zero API keys.</strong> Text concepts return labelled samples without provider keys. Sandbox ad accounts simulate campaigns and metrics. The static ad studio requires a connected image provider before it enables generation. The live HeyGen catalog, voice tools and some other features need a connected provider. Add keys to enable those services.</p>
+      </div>
+    </section>
+
+    <section id="requirements">
+      <h2>Requirements</h2>
+      <table>
+        <tr><th>Node.js</th><td>22 or newer</td></tr>
+        <tr><th>pnpm</th><td>9.15.9 (<code>corepack enable</code> installs it from the repo's own setting)</td></tr>
+        <tr><th>PostgreSQL</th><td>15 or newer, 18 recommended. Optional locally — an embedded database starts automatically when <code>DATABASE_URL</code> is blank.</td></tr>
+        <tr><th>FFmpeg</th><td>Needed for presenter/UGC video only. Installed automatically by <code>ffmpeg-static</code>, or point <code>FFMPEG_PATH</code> at your own build.</td></tr>
+        <tr><th>Hosting</th><td>A persistent Node server — a container host, a VPS, Railway, Render, Fly. <strong>Not</strong> a pure serverless host: video rendering and the job runtime need a long-lived process and a writable disk.</td></tr>
+        <tr><th>RAM</th><td>1&nbsp;GB to run, 2&nbsp;GB+ if you render video on the same machine.</td></tr>
+      </table>
+      <div class="note warn">
+        <p><strong>Shared hosting and cPanel will not work.</strong> This is a Node.js application, not PHP.
+        If your host cannot run <code>node</code> as a persistent process, it cannot run Adcraft.</p>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install locally</h2>
+      <ol class="steps">
+        <li>
+          <h3>Unzip and install dependencies</h3>
+          <pre><code>cd adcraft
+corepack enable
+pnpm install --frozen-lockfile</code></pre>
+        </li>
+        <li>
+          <h3>Create your environment file</h3>
+          <pre><code>cp .env.example .env</code></pre>
+          <p>Open <code>.env</code>, leave <code>DATABASE_URL</code> blank for local use, and set your own secret:</p>
+          <pre><code>AUTH_SECRET=&lt;paste the output of: openssl rand -base64 32&gt;</code></pre>
+        </li>
+        <li>
+          <h3>Start it</h3>
+          <pre><code>pnpm --filter @adcraft/app dev</code></pre>
+          <p>Open <a href="http://localhost:3000">http://localhost:3000</a> for the marketing site and
+          <code>/dashboard</code> for the product. With no email provider configured, the sign-in page shows a
+          development box where any address signs you straight in.</p>
+        </li>
+        <li>
+          <h3>Point it at a real database when you are ready</h3>
+          <p>Set <code>DATABASE_URL</code> in <code>.env</code>, then apply the schema:</p>
+          <pre><code>pnpm --filter @adcraft/db db:migrate</code></pre>
+          <p>Until you do, an embedded PostgreSQL runs from <code>.data/pglite</code> — fine for a look around,
+          not for production.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="firstrun">
+      <h2>Your first ad</h2>
+      <ol>
+        <li>Sign in, and the welcome flow asks for a workspace name, a brand name and a website address.</li>
+        <li>Adcraft reads that website and builds a brand kit: logo, colour palette, fonts, tagline and tone of voice.</li>
+        <li>Paste a product page address. The product is imported and its background removed.</li>
+        <li>Write a brief — or press <strong>Write the brief</strong> and let the model draft it.</li>
+        <li>Eight concepts stream in. Select one and press <strong>Make the ad</strong>.</li>
+        <li>Choose sizes and generate. Each render costs credits; the cost is shown before you commit.</li>
+      </ol>
+      <p>Without a text provider, concepts use sample output. Image generation in the static studio needs a connected image provider. Website import needs internet access; you can also enter the brand and product details by hand.</p>
+    </section>
+
+<section id="walkthrough">
+      <h2>Feature walkthrough</h2>
+      <p>Every screen in the order a user meets it. The label above each heading is where it lives in the left-hand navigation, so you can follow along in your own install.</p>
+      <div class="tourstep">
+        <span class="where">Overview</span>
+        <h3>Dashboard</h3>
+        <p>The landing screen after sign-in. It greets the user by time of day, shows credits remaining against the plan allowance, and surfaces anything needing attention: failed generations, requested changes, fatigued ads and a low-credit warning. The <strong>Create</strong> button opens a menu shortcutting straight to a static ad, a product video or a presenter video.</p>
+        <figure><img src="images/dashboard.jpg" alt="Dashboard"><figcaption>Overview &mdash; <b>Dashboard</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Brand kits</span>
+        <h3>Brand kit</h3>
+        <p>Paste a website address and Adcraft reads it, then fills the kit: logo, five colour roles, heading and body fonts, tone of voice with do-say and don't-say lists, tagline and CTA style. The live preview on the right updates as you type. Every save creates a new version, so ads made earlier keep the kit they were made with.</p>
+        <figure><img src="images/brand.jpg" alt="Brand kit"><figcaption>Brand kits &mdash; <b>Brand kit</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Product library</span>
+        <h3>Product library</h3>
+        <p>Every product available to the brand. Add one by uploading a photo or by pasting a product page address &mdash; Shopify product data, JSON-LD and Open Graph are all read for name, description, price and images.</p>
+        <figure><img src="images/library.jpg" alt="Product library"><figcaption>Product library &mdash; <b>Product library</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Product library</span>
+        <h3>A single product</h3>
+        <p>The product's details with its original photo and the cut-out version beside it. The background is removed automatically on import so the product can sit in any generated layout. <strong>Brief with this product</strong> carries it straight into a new brief.</p>
+        <figure><img src="images/product.jpg" alt="A single product"><figcaption>Product library &mdash; <b>A single product</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Briefs</span>
+        <h3>Writing a brief</h3>
+        <p>The input step: title, product, objective, audience, offer, platforms and formats. Each field has an assist button, and <strong>Write the brief</strong> drafts the whole thing from what little you have. Formats chosen here decide which builders and sizes are offered later.</p>
+        <figure><img src="images/brief.jpg" alt="Writing a brief"><figcaption>Briefs &mdash; <b>Writing a brief</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Briefs</span>
+        <h3>Eight ad ideas</h3>
+        <p>Ideas stream in one at a time as the model writes them, so the first is usable before the last is finished. Each carries a hook, an angle, headline and body copy, a call to action, suggested platforms and a visual direction. Select the ones worth making; reject the rest and they stay on record.</p>
+        <figure><img src="images/concepts.jpg" alt="Eight ad ideas"><figcaption>Briefs &mdash; <b>Eight ad ideas</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Ads</span>
+        <h3>A finished image ad</h3>
+        <p>One idea rendered in every size the brief asked for. Switch sizes with the ratio tabs. The panel on the right offers approval, a share link for a client, a variant, a refinement instruction to regenerate the picture, and a download of every size as a ZIP.</p>
+        <figure><img src="images/creatives.jpg" alt="A finished image ad"><figcaption>Ads &mdash; <b>A finished image ad</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Ads</span>
+        <h3>Product video</h3>
+        <p>The storyboard, one card per scene, each with its still, its clip, an editable caption and the prompt used. Captions re-assemble instantly; changing a prompt regenerates only that scene. The finished cut is produced in landscape, portrait and square.</p>
+        <figure><img src="images/video.jpg" alt="Product video"><figcaption>Ads &mdash; <b>Product video</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Character studio</span>
+        <h3>UGC templates</h3>
+        <p>Six ready-made presenter video structures to start from &mdash; each sets the pacing, the hook placement and where product shots cut in.</p>
+        <figure><img src="images/ugc-templates.jpg" alt="UGC templates"><figcaption>Character studio &mdash; <b>UGC templates</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Character studio</span>
+        <h3>Presenter video builder</h3>
+        <p>Choose the format, the video model for B-roll, the primary size, then who presents it and in which voice. The storyboard below fills in as each part lands: voice-over, presenter take, B-roll clips, then the assembled sizes.</p>
+        <figure><img src="images/ugc-builder-full.jpg" alt="Presenter video builder"><figcaption>Character studio &mdash; <b>Presenter video builder</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Character studio</span>
+        <h3>Cast library</h3>
+        <p>Browse the presenters available through your connected provider account, filtered by gender and by type &mdash; filmed studio, AI avatars and digital twins. Pick a person, then one of their looks.</p>
+        <figure><img src="images/characters.jpg" alt="Cast library"><figcaption>Character studio &mdash; <b>Cast library</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Character studio</span>
+        <h3>Looks</h3>
+        <p>The outfits and settings available for a chosen presenter, so the same face can appear in different contexts across a campaign.</p>
+        <figure><img src="images/looks.jpg" alt="Looks"><figcaption>Character studio &mdash; <b>Looks</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Campaigns</span>
+        <h3>Campaign builder</h3>
+        <p>Five steps: where it runs, who sees it, placements and budget, which ads, then review. The review step validates every asset against that placement's exact specification and runs the claims check over the copy. Campaigns publish paused.</p>
+        <figure><img src="images/campaign-builder.jpg" alt="Campaign builder"><figcaption>Campaigns &mdash; <b>Campaign builder</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Campaigns</span>
+        <h3>Campaigns</h3>
+        <p>Every campaign with its platform, status and spend. Connect Meta, TikTok or Google Ads here; without credentials each platform runs in sandbox so the whole flow stays testable.</p>
+        <figure><img src="images/campaigns.jpg" alt="Campaigns"><figcaption>Campaigns &mdash; <b>Campaigns</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Performance</span>
+        <h3>Performance</h3>
+        <p>Spend, impressions, clicks, CTR, CPA and ROAS per campaign and per creative, synced hourly. Fatigue alerts flag ads whose performance is sliding, with one click to open a fresh brief pre-filled from the winner, or to pause.</p>
+        <figure><img src="images/performance.jpg" alt="Performance"><figcaption>Performance &mdash; <b>Performance</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Ads</span>
+        <h3>Client review</h3>
+        <p>A share link lets a client see every size, leave comments and approve, with no account and no access to anything else in the workspace.</p>
+        <figure><img src="images/review.jpg" alt="Client review"><figcaption>Ads &mdash; <b>Client review</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Settings</span>
+        <h3>Team</h3>
+        <p>Invite people as owner, editor or viewer. Owners manage billing and approve spend above the threshold; editors create and publish; viewers look and comment.</p>
+        <figure><img src="images/team.jpg" alt="Team"><figcaption>Settings &mdash; <b>Team</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Settings</span>
+        <h3>Plans and credits</h3>
+        <p>The subscription plans, the current balance and the credit ledger. Every generation reserves credits up front and refunds them if it fails.</p>
+        <figure><img src="images/billing.jpg" alt="Plans and credits"><figcaption>Settings &mdash; <b>Plans and credits</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Settings</span>
+        <h3>Guardrails</h3>
+        <p>Workspace limits: the daily budget above which an owner must approve, the monthly credit cap, and generation rate limits.</p>
+        <figure><img src="images/guardrails.jpg" alt="Guardrails"><figcaption>Settings &mdash; <b>Guardrails</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Settings</span>
+        <h3>API access</h3>
+        <p>Create bearer API keys and register webhook endpoints. Keys are shown once and stored hashed.</p>
+        <figure><img src="images/api.jpg" alt="API access"><figcaption>Settings &mdash; <b>API access</b></figcaption></figure>
+      </div>
+      <div class="tourstep">
+        <span class="where">Admin</span>
+        <h3>Admin console</h3>
+        <p>Platform-wide: organisations, users, billing, provider health, cost per model, the AI model catalogue, recorded errors, the audit log and feature flags. Available to any address listed in <code>ADMIN_EMAILS</code>.</p>
+        <figure><img src="images/admin.jpg" alt="Admin console"><figcaption>Admin &mdash; <b>Admin console</b></figcaption></figure>
+      </div>
+    </section>
+
+    <section id="env">
+      <h2>Environment keys</h2>
+      <p><code>.env.example</code> lists all 59 settings with comments. The ones that matter most:</p>
+      <table>
+        <tr><th><code>AUTH_SECRET</code></th><td><strong>Required.</strong> <code>openssl rand -base64 32</code></td></tr>
+        <tr><th><code>AUTH_URL</code></th><td>Your public address in production, e.g. <code>https://ads.example.com</code></td></tr>
+        <tr><th><code>DATABASE_URL</code></th><td>PostgreSQL connection string. Blank uses the embedded database.</td></tr>
+        <tr><th><code>ADMIN_EMAILS</code></th><td>Comma-separated. These addresses become platform admins on sign-in.</td></tr>
+        <tr><th><code>DEV_LOGIN</code></th><td>Set to <code>0</code> in production to hide the development sign-in box.</td></tr>
+        <tr><th><code>TOKEN_ENCRYPTION_KEY</code></th><td>Encrypts stored ad-platform tokens. Defaults to a key derived from <code>AUTH_SECRET</code>.</td></tr>
+      </table>
+      <div class="note">
+        <p><strong>Admin &rarr; Providers</strong> shows the same list with live status, so you can see at a
+        glance which integrations are on. <strong>Admin &rarr; Models</strong> lets you add, disable or
+        re-point any AI model without a redeploy.</p>
+      </div>
+    </section>
+
+    <section id="providers">
+      <h2>AI providers</h2>
+      <p>None are required. Add the keys for the capabilities you want.</p>
+      <table>
+        <tr><th>Capability</th><th>Key</th><th>Get one from</th></tr>
+        <tr><td>Concepts, copy, brief assistant</td><td><code>ANTHROPIC_API_KEY</code></td><td>console.anthropic.com</td></tr>
+        <tr><td>Images, video, background removal</td><td><code>FAL_KEY</code></td><td>fal.ai</td></tr>
+        <tr><td>Alternative image models</td><td><code>OPENAI_API_KEY</code>, <code>XAI_API_KEY</code></td><td>OpenAI, x.ai</td></tr>
+        <tr><td>More models</td><td><code>REPLICATE_API_TOKEN</code>, <code>RUNWAYML_API_SECRET</code></td><td>Replicate, Runway</td></tr>
+        <tr><td>AI presenters, avatars, digital twins</td><td><code>HEYGEN_API_KEY</code></td><td>heygen.com</td></tr>
+        <tr><td>Voice-over and voice cloning</td><td><code>ELEVENLABS_API_KEY</code></td><td>elevenlabs.io</td></tr>
+      </table>
+      <div class="note warn">
+        <p><strong>These are your costs, metered by each provider.</strong> Adcraft bills your customers in
+        credits and records the real provider cost of every call under <strong>Admin &rarr; Generations</strong>,
+        so you can see margin per model. Set the credit prices to suit your own rates — they live in one
+        place, <code>CREDIT_COSTS</code> in <code>apps/app/src/server/billing.ts</code>.</p>
+      </div>
+      <p>Note that <code>XAI_API_KEY</code> is for xAI's Grok (keys begin <code>xai-</code>).
+      <code>GROQ_API_KEY</code> is the unrelated Groq inference host; they are easy to confuse.</p>
+    </section>
+
+    <section id="platforms">
+      <h2>Ad platforms</h2>
+      <p>Each platform needs a developer application of your own. Without one, that platform runs in
+      sandbox mode: campaigns are simulated and metrics are generated, which is enough to demonstrate and
+      test the entire publishing flow.</p>
+      <table>
+        <tr><th>Meta (Facebook &amp; Instagram)</th><td><code>META_APP_ID</code>, <code>META_APP_SECRET</code></td><td>developers.facebook.com &mdash; Marketing API</td></tr>
+        <tr><th>TikTok</th><td><code>TIKTOK_APP_ID</code>, <code>TIKTOK_APP_SECRET</code></td><td>business-api.tiktok.com</td></tr>
+        <tr><th>Google Ads</th><td><code>GOOGLE_ADS_CLIENT_ID</code>, <code>GOOGLE_ADS_CLIENT_SECRET</code>, <code>GOOGLE_ADS_DEVELOPER_TOKEN</code></td><td>Google Ads API centre</td></tr>
+      </table>
+      <p>Set the OAuth redirect of each application to
+      <code>https://your-domain.com/api/connect/&lt;platform&gt;/callback</code>.</p>
+      <div class="note warn">
+        <p><strong>Platform review takes time.</strong> Meta, TikTok and Google each review an application
+        before it may serve users other than you. Plan for days to weeks. Until then your app works on your
+        own ad accounts, and everyone else sees sandbox mode. This is how every ad tool works; it is not a
+        limitation of this item.</p>
+      </div>
+    </section>
+
+    <section id="billing">
+      <h2>Stripe billing</h2>
+      <p>Three subscription plans and a credit top-up are defined in <code>apps/app/src/server/billing.ts</code>. Create matching products and prices in your own Stripe account:</p>
+      <ol><li>Create monthly and yearly recurring prices for Starter, Studio and Agency. Set product metadata <code>plan</code> to <code>starter</code>, <code>studio</code> or <code>agency</code>, and <code>credits</code> to the matching plan allowance in <code>billing.ts</code>.</li>
+      <li>Create a one-time credit top-up price. Set its product metadata <code>credits</code> to the top-up amount defined in <code>billing.ts</code>.</li>
+      <li>Copy the price IDs into the matching <code>STRIPE_PRICE_*</code> fields in <code>.env</code>. Set <code>STRIPE_SECRET_KEY</code>.</li>
+      <li>Create a webhook at <code>https://your-domain.com/api/stripe/webhook</code> for <code>checkout.session.completed</code>, <code>customer.subscription.created</code>, <code>customer.subscription.updated</code>, <code>customer.subscription.deleted</code> and <code>invoice.paid</code>. Set its signing secret as <code>STRIPE_WEBHOOK_SECRET</code>.</li>
+      <li>Test checkout, credits and cancellation with Stripe test mode before enabling live billing.</li></ol>
+      <p>Billing is optional. Leave <code>STRIPE_SECRET_KEY</code> blank and the plan pages hide themselves;
+      grant credits by hand from <strong>Admin &rarr; Organisations</strong>.</p>
+    </section>
+
+    <section id="jobs">
+      <h2>Background jobs</h2>
+      <p>Generation and publishing run as background jobs with retries, concurrency limits and cron
+      schedules, through <a href="https://www.inngest.com">Inngest</a>.</p>
+      <ul>
+        <li><strong>Without configuration</strong> the same pipelines run inline in the web process. Simplest, and fine for a small installation.</li>
+        <li><strong>With <code>INNGEST_EVENT_KEY</code> and <code>INNGEST_SIGNING_KEY</code></strong> jobs move to Inngest Cloud, which adds retries, a dashboard and the hourly insights sync. Point its app at <code>https://your-domain.com/api/inngest</code>.</li>
+      </ul>
+      <p>Locally, <code>pnpm inngest</code> starts the Inngest dev server against your app.</p>
+    </section>
+
+    <section id="storage">
+      <h2>File storage</h2>
+      <p>Generated images and video are written to a local directory by default
+      (<code>LOCAL_STORAGE_DIR</code>, served through <code>/api/files</code>). Set the four
+      <code>R2_*</code> variables to use Cloudflare R2 — or any S3-compatible bucket — instead. Keys are
+      scoped per workspace, and a file is served only to members of the workspace that owns it.</p>
+      <div class="note warn">
+        <p><strong>On a container host, point storage at a mounted volume or a bucket.</strong> A container's
+        own filesystem is wiped on every deploy, taking every generated asset with it.</p>
+      </div>
+    </section>
+
+    <section id="deploy">
+      <h2>Deploy to production</h2>
+      <p>A <code>Dockerfile</code> is included and builds a production image that runs as an unprivileged
+      user, applies database migrations on boot and serves on <code>$PORT</code>. Any host that runs a
+      container will do.</p>
+      <ol class="steps">
+        <li><h3>Provision PostgreSQL</h3><p>Set <code>DATABASE_URL</code>. Migrations run automatically at startup.</p></li>
+        <li><h3>Set the environment</h3><p>Set <code>AUTH_SECRET</code>, <code>AUTH_URL</code>, <code>DATABASE_URL</code>, <code>ADMIN_EMAILS</code> and <code>DEV_LOGIN=0</code>. Configure Resend or Google sign-in: development sign-in is disabled in production.</p></li>
+        <li><h3>Attach durable storage</h3><p>A mounted volume at <code>LOCAL_STORAGE_DIR</code>, or the <code>R2_*</code> variables.</p></li>
+        <li><h3>Build and run</h3><pre><code>docker build -t adcraft .
+docker run -p 3000:3000 --env-file .env adcraft</code></pre></li>
+        <li><h3>Check it</h3><p><code>GET /api/health</code> reports the database, storage and job runtime with latency, and returns 503 when the database or storage is failing. Point your uptime monitor at it.</p></li>
+      </ol>
+      <p><code>documentation/DEPLOY.md</code> in the package has host-specific notes.</p>
+    </section>
+
+    <section id="admin">
+      <h2>Admin console</h2>
+      <p>Any address in <code>ADMIN_EMAILS</code> gets <code>/admin</code> on next sign-in:</p>
+      <table>
+        <tr><th>Organisations &amp; Users</th><td>Plans, credit balances, notes, suspension</td></tr>
+        <tr><th>Billing</th><td>Subscriptions, top-ups, plan distribution, price list</td></tr>
+        <tr><th>Models</th><td>Add, disable or re-point any text, image or video model without a redeploy</td></tr>
+        <tr><th>Providers</th><td>Live status, activity and cost per provider</td></tr>
+        <tr><th>Generations</th><td>Every AI call with model, usage, real cost and status</td></tr>
+        <tr><th>Campaigns</th><td>Every campaign and connected ad account across all customers</td></tr>
+        <tr><th>Errors</th><td>Unhandled server errors with route, message, stack and repeat counts</td></tr>
+        <tr><th>Audit</th><td>Platform-wide log of meaningful actions</td></tr>
+        <tr><th>Settings</th><td>Maintenance banner, signups on/off, trial credits, guardrail defaults, plan features</td></tr>
+      </table>
+    </section>
+
+    <section id="brand">
+      <h2>Branding and customisation</h2>
+      <p>Adcraft is meant to be sold under your own name. Nothing below needs a build step beyond restarting the dev server.</p>
+
+      <h3>1. Colours</h3>
+      <p>Every colour in the application comes from one token file, <code>packages/ui/src/tokens.css</code>. Change a value there and the whole product follows &mdash; buttons, panels, charts, emails and the admin console. The same file defines the dark theme further down, so set both.</p>
+      <pre><code>:root {
+  --paper:   #f8f7f3;   /* page background        */
+  --ink:     #242521;   /* primary text           */
+  --muted:   #75756d;   /* secondary text         */
+  --orange:  #e65c32;   /* accent: buttons, links */
+  --line:    #e4e3dc;   /* borders and dividers   */
+  --surface: #ffffff;   /* cards and panels       */
+}</code></pre>
+      <p><code>packages/ui/src/tokens.ts</code> mirrors the same values for code that needs them in JavaScript (the ad renderers, chart colours). Keep the two in step.</p>
+
+      <h3>2. Logo and wordmark</h3>
+      <p>The mark is a single component at <code>apps/app/src/components/spark.tsx</code>, which exports both the symbol and the full wordmark. Replace the SVG inside it with your own and every placement updates: the sidebar, the sign-in page, the onboarding screens, the email templates and the ad end-cards.</p>
+      <p>Sizes are passed as props rather than hard-coded, so a wider logo needs no layout changes.</p>
+
+      <h3>3. Favicons and app icons</h3>
+      <p>Replace these in <code>apps/app/public</code>, keeping the file names:</p>
+      <ul>
+        <li><code>favicon.svg</code> &mdash; modern browsers</li>
+        <li><code>favicon.ico</code> &mdash; Safari and older browsers; needs 16, 32 and 48px frames inside the one file</li>
+        <li><code>favicon-32.png</code>, <code>apple-touch-icon.png</code> &mdash; 32&times;32 and 180&times;180</li>
+      </ul>
+
+      <h3>4. Typography</h3>
+      <p>Heading and body faces are set in <code>tokens.css</code> as <code>--sans</code> and <code>--serif</code>. The project loads them from Google Fonts in <code>apps/app/src/app/layout.tsx</code>; swap the link and the token together. The fonts offered to <em>your customers</em> for their own brand kits are a separate list in <code>apps/app/src/lib/brand-kit.ts</code> (<code>KIT_FONTS</code>).</p>
+
+      <h3>5. Product name and copy</h3>
+      <p>Search the project for <code>Adcraft</code>. It appears in page titles, the sign-in and welcome screens, email subjects and the legal pages. The legal pages themselves &mdash; terms, privacy and DPA &mdash; are at <code>apps/app/src/app/(legal)/</code> and must be reviewed for your own company before you launch.</p>
+
+      <h3>6. Marketing website</h3>
+      <p>The public site lives in <code>dist/</code> as plain HTML, CSS and JavaScript with no build step: <code>index.html</code>, <code>style.css</code> and <code>app.js</code>, plus the showcase and pricing pages. It is copied into the application's public folder automatically whenever you run <code>dev</code> or <code>build</code>, so edit it in place and refresh.</p>
+
+      <h3>7. Plans, prices and credit costs</h3>
+      <p>Both live in <code>apps/app/src/server/billing.ts</code>: <code>PLANS</code> sets the names, monthly prices, credit allowances and per-plan limits; <code>CREDIT_COSTS</code> sets what each action costs a customer. Change them before running the Stripe setup script so your catalogue matches.</p>
+
+      <h3>8. Ad layouts</h3>
+      <p>The four image-ad templates are React components in <code>packages/render/src/static/templates.tsx</code>. Each receives the brand kit, the copy and the product cut-out, so a new layout is a new component in the same shape plus an entry in the exported list.</p>
+    </section>
+
+    <section id="backups">
+      <h2>Backups &amp; health</h2>
+      <p>A nightly job dumps the database with <code>pg_dump</code>, gzips it, writes it to your bucket under
+      <code>db/</code> and prunes past <code>BACKUP_RETENTION_DAYS</code> (14 by default). It needs a
+      <code>pg_dump</code> whose major version matches your server; the included Dockerfile installs the
+      PostgreSQL 18 client.</p>
+      <p>Unhandled server errors are recorded and listed at <strong>Admin &rarr; Errors</strong>. Set
+      <code>SENTRY_DSN</code> to mirror them to Sentry as well.</p>
+    </section>
+
+    <section id="structure">
+      <h2>Code structure</h2>
+      <pre><code>apps/app/                 Next.js 15 application
+  src/app/(auth)/         sign-in, welcome, invites, share links
+  src/app/(app)/          the workspace: dashboard, library, briefs,
+                          creatives, videos, characters, campaigns,
+                          performance, brands, settings
+  src/app/(admin)/        platform admin
+  src/app/api/            route handlers
+  src/server/             data access and server actions, one per domain
+  src/pipelines/          the long-running work
+  src/inngest/            job definitions
+  e2e/                    Playwright smoke suite
+packages/
+  db/        Drizzle schema, migrations, client
+  ai/        provider adapters: text, image, video, voice, presenter
+  ads/       Meta, TikTok, Google adapters, sandbox, spec + claims checks
+  render/    static renderer (Satori + resvg) and video (Remotion)
+  specs/     placement specs: sizes, durations, copy limits
+  storage/   object storage, workspace-scoped keys
+  ui/        design tokens and primitives
+documentation/  buyer guide and deployment instructions</code></pre>
+      <p>The application source and workspace packages are included. Internal design documents and media-generation tools are excluded.</p>
+    </section>
+
+    <section id="api">
+      <h2>API reference</h2>
+      <p>A read API for pulling finished creatives into your own systems, plus outbound webhooks. Create keys at <strong>Settings &rarr; API access</strong>; a key is displayed once and stored hashed.</p>
+
+      <h3>Authentication</h3>
+      <p>Send the key as a bearer token. Every request is scoped to the organisation that owns the key.</p>
+      <pre><code>curl https://your-domain.com/api/v1/creatives \
+  -H "Authorization: Bearer ak_live_..."</code></pre>
+      <p>A missing or invalid key returns <code>401</code> with a JSON error body.</p>
+
+      <h3>GET /api/v1/creatives</h3>
+      <p>Lists the organisation's creatives, newest first, each with a render URL per size.</p>
+      <table>
+        <tr><th>Parameter</th><th>Notes</th></tr>
+        <tr><td><code>brandId</code></td><td>Optional. Restrict to one brand.</td></tr>
+        <tr><td><code>limit</code></td><td>Optional integer 1&ndash;200, default 50. Anything else returns <code>400 invalid_limit</code>.</td></tr>
+        <tr><td><code>cursor</code></td><td>Optional. Pass the previous response's <code>next_cursor</code> for the next page.</td></tr>
+      </table>
+      <p>Responds with <code>{ "data": [ ... ], "next_cursor": "..." }</code>. When <code>next_cursor</code> is null there are no further pages.</p>
+
+      <h3>GET /api/v1/creatives/:id</h3>
+      <p>One creative with its concept, every size and the render status of each. Returns <code>404</code> when the id does not belong to the key's organisation.</p>
+
+      <h3>GET /api/v1/files/:key</h3>
+      <p>Streams a stored file. Keys are workspace-scoped, so a key can only read files belonging to its own organisation.</p>
+
+      <h3>Webhooks</h3>
+      <p>Register endpoints at <strong>Settings &rarr; API access</strong>. Each delivery is signed with the endpoint's secret so you can verify it came from your installation.</p>
+      <table>
+        <tr><th>Event</th><th>Fires when</th></tr>
+        <tr><td><code>creative.rendered</code></td><td>Every size of a creative has finished rendering</td></tr>
+        <tr><td><code>approval.approved</code></td><td>A creative is approved</td></tr>
+        <tr><td><code>approval.changes_requested</code></td><td>A reviewer requests changes</td></tr>
+        <tr><td><code>comment.added</code></td><td>A comment is added, including from a share link</td></tr>
+      </table>
+    </section>
+
+    <section id="envref">
+      <h2>Environment reference</h2>
+      <p>Every setting lives in <code>.env</code>; <code>.env.example</code> ships with all 59 documented inline. Blank means that integration is off and, where possible, a sandbox stands in for it.</p>
+
+      <h3>Required</h3>
+      <table>
+        <tr><td><code>AUTH_SECRET</code></td><td>Session signing key. <code>openssl rand -base64 32</code>. The only value needed to start.</td></tr>
+      </table>
+
+      <h3>Core</h3>
+      <table>
+        <tr><td><code>AUTH_URL</code></td><td>Your public address in production. Sign-in links and OAuth callbacks return here.</td></tr>
+        <tr><td><code>DATABASE_URL</code></td><td>PostgreSQL connection string. Blank starts an embedded database for local evaluation.</td></tr>
+        <tr><td><code>ADMIN_EMAILS</code></td><td>Comma-separated addresses promoted to platform admin on sign-in.</td></tr>
+        <tr><td><code>DEV_LOGIN</code></td><td><code>0</code> in production; hides the development sign-in box.</td></tr>
+        <tr><td><code>TOKEN_ENCRYPTION_KEY</code></td><td>Encrypts stored ad-platform tokens. Defaults to a key derived from <code>AUTH_SECRET</code>.</td></tr>
+        <tr><td><code>NEXT_PUBLIC_APP_VERSION</code></td><td>Shown by <code>/api/health</code>; useful for confirming what is deployed.</td></tr>
+      </table>
+
+      <h3>Email and sign-in</h3>
+      <table>
+        <tr><td><code>RESEND_API_KEY</code>, <code>EMAIL_FROM</code></td><td>Magic-link sign-in, invites and finish notifications. <code>EMAIL_FROM</code> must use a domain verified in Resend.</td></tr>
+        <tr><td><code>AUTH_GOOGLE_ID</code>, <code>AUTH_GOOGLE_SECRET</code></td><td>Optional Google sign-in.</td></tr>
+      </table>
+
+      <h3>AI providers</h3>
+      <table>
+        <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Ad ideas, copy and the brief assistant.</td></tr>
+        <tr><td><code>FAL_KEY</code></td><td>Image generation, video generation and background removal.</td></tr>
+        <tr><td><code>OPENAI_API_KEY</code>, <code>XAI_API_KEY</code></td><td>Additional image models. <code>XAI_API_KEY</code> takes keys beginning <code>xai-</code>; <code>GROQ_API_KEY</code> is an unrelated host.</td></tr>
+        <tr><td><code>REPLICATE_API_TOKEN</code>, <code>RUNWAYML_API_SECRET</code></td><td>Further image and video models.</td></tr>
+        <tr><td><code>HEYGEN_API_KEY</code></td><td>Presenters, looks, avatars and digital twins.</td></tr>
+        <tr><td><code>ELEVENLABS_API_KEY</code></td><td>Voice-over, the voice catalogue and voice cloning.</td></tr>
+      </table>
+
+      <h3>Billing</h3>
+      <table>
+        <tr><td><code>STRIPE_SECRET_KEY</code>, <code>STRIPE_WEBHOOK_SECRET</code></td><td>Subscriptions and credit top-ups.</td></tr>
+        <tr><td><code>STRIPE_PRICE_*</code></td><td>Seven price ids. <code>node scripts/stripe-setup.mjs --url https://your-domain.com</code> creates them and prints the values.</td></tr>
+      </table>
+
+      <h3>Ad platforms</h3>
+      <table>
+        <tr><td><code>META_APP_ID</code>, <code>META_APP_SECRET</code></td><td>Facebook and Instagram publishing.</td></tr>
+        <tr><td><code>TIKTOK_APP_ID</code>, <code>TIKTOK_APP_SECRET</code></td><td>TikTok in-feed publishing.</td></tr>
+        <tr><td><code>GOOGLE_ADS_CLIENT_ID</code>, <code>GOOGLE_ADS_CLIENT_SECRET</code>, <code>GOOGLE_ADS_DEVELOPER_TOKEN</code>, <code>GOOGLE_ADS_LOGIN_CUSTOMER_ID</code></td><td>Demand Gen, Display and YouTube.</td></tr>
+      </table>
+
+      <h3>Storage, jobs and operations</h3>
+      <table>
+        <tr><td><code>R2_ACCOUNT_ID</code>, <code>R2_ACCESS_KEY_ID</code>, <code>R2_SECRET_ACCESS_KEY</code>, <code>R2_BUCKET</code></td><td>Object storage. Blank writes to <code>LOCAL_STORAGE_DIR</code>.</td></tr>
+        <tr><td><code>LOCAL_STORAGE_DIR</code></td><td>Where files go without a bucket. Point at a mounted volume in production.</td></tr>
+        <tr><td><code>INNGEST_EVENT_KEY</code>, <code>INNGEST_SIGNING_KEY</code></td><td>Move background jobs to Inngest Cloud. Blank runs them inline.</td></tr>
+        <tr><td><code>SENTRY_DSN</code></td><td>Mirror unhandled server errors to Sentry. They are recorded in Admin &rarr; Errors either way.</td></tr>
+        <tr><td><code>BACKUP_RETENTION_DAYS</code></td><td>How long nightly database dumps are kept. Default 14.</td></tr>
+        <tr><td><code>FFMPEG_PATH</code></td><td>Use your own FFmpeg build instead of the one fetched at install.</td></tr>
+      </table>
+    </section>
+
+<section id="licensing">
+      <h2>Third-party licensing</h2>
+      <p>Read <code>THIRD-PARTY-NOTICES.md</code> in the package. The short version:</p>
+      <div class="note warn">
+        <p><strong>Remotion, used by the product-video renderer, is free for individuals and organisations of
+        up to three people. Larger organisations need a paid licence from remotion.pro,</strong> and because
+        Adcraft renders programmatically, such an organisation falls under Remotion's metered "Automators"
+        tier with a monthly minimum. The obligation is between you and Remotion AG.</p>
+        <p>This affects the product-video feature only. Static ads, presenter/UGC video, publishing and
+        performance never load Remotion, Do not delete renderer source files to disable the feature; avoid using product-video rendering until your licensing requirements are met.</p>
+      </div>
+      <p>FFmpeg (presenter/UGC assembly) is fetched at install time under GPL terms; point
+      <code>FFMPEG_PATH</code> at your own build if you prefer. Satori and resvg are MPL-2.0, which places no
+      obligation on your own source. Everything else is MIT, Apache-2.0 or ISC.</p>
+    </section>
+
+    <section id="trouble">
+      <h2>Troubleshooting</h2>
+      <h3>pnpm install fails</h3>
+      <p>Check <code>node -v</code> is 22 or newer, then <code>corepack enable</code> so the pinned pnpm is used.</p>
+      <h3>The database will not connect</h3>
+      <p>Confirm <code>DATABASE_URL</code>, then run <code>pnpm --filter @adcraft/db db:migrate</code>.
+      <code>/api/health</code> reports which check is failing.</p>
+      <h3>Generation returns obviously fake output</h3>
+      <p>That is sandbox mode: the provider key for that capability is missing. Check
+      <strong>Admin &rarr; Providers</strong>.</p>
+      <h3>Website import finds no colours or logo</h3>
+      <p>Some sites block automated readers, and some render entirely in JavaScript. Set the brand kit by hand
+      in <strong>Brand kits</strong>; nothing downstream depends on the import succeeding.</p>
+      <h3>Video renders fail or run out of memory</h3>
+      <p>Video rendering needs roughly 2&nbsp;GB and a writable temporary directory. Raise the container's
+      memory, or move rendering to a bigger worker.</p>
+      <h3>Stripe checkout succeeds but no credits arrive</h3>
+      <p><code>STRIPE_WEBHOOK_SECRET</code> is missing or wrong. Check the webhook endpoint in your Stripe account and copy its signing secret into the matching environment field.</p>
+      <h3>Published campaigns are not real</h3>
+      <p>No developer credentials for that platform, so it is in sandbox mode. See
+      <a href="#platforms">Ad platforms</a>.</p>
+    </section>
+
+    <section id="support">
+      <h2>Support</h2>
+      <p>For supported purchases, support covers questions about the documented features and reported defects. Installation services and custom development are separate. It does not cover your hosting, third-party accounts and their review processes, provider bills,
+      or custom development.</p>
+      <p>When reporting a problem, include: the page or action, what you expected, what happened, the output of
+      <code>/api/health</code>, and the matching row from <strong>Admin &rarr; Errors</strong>. Remove secrets and customer data before sharing logs.</p>
+    </section>
+
+    <footer>
+      Adcraft v1.0.0 &middot; documentation generated for the CodeCanyon release.
+      Platform names and logos are trademarks of their owners; this item is not affiliated with or endorsed by any of them.
+    </footer>
+  </main>
+</div>
+</body>
+</html>

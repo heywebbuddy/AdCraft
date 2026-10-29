@@ -1,0 +1,57 @@
+{
+  "title": "Adcraft | AI Ad Creator, Video and UGC Studio SaaS",
+  "shortDescription": "Launch your own AI ad and UGC platform. Includes access to HeyGen\u2019s 25,000+ presenter looks through your connected account, voice tools, product ads, editable UGC stories, team reviews, Stripe subscriptions and admin controls.",
+  "tags": [
+    "ai ad creator",
+    "ai video",
+    "ugc video",
+    "saas",
+    "nextjs",
+    "ad generator",
+    "brand kit",
+    "social media",
+    "advertising",
+    "stripe",
+    "typescript",
+    "postgresql",
+    "campaign manager",
+    "ai marketing",
+    "multi tenant"
+  ],
+  "suggestedCategory": "JavaScript / Miscellaneous",
+  "softwareVersions": [
+    "ReactJS",
+    "Node.js"
+  ],
+  "sourceLanguages": [
+    "TypeScript",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "SQL",
+    "JSON"
+  ],
+  "frameworks": [
+    "Next.js 15",
+    "React 19",
+    "Tailwind CSS 4",
+    "Drizzle ORM"
+  ],
+  "requirements": [
+    "Node.js 22+",
+    "Persistent Node server or container",
+    "PostgreSQL",
+    "Provider keys for live AI generation",
+    "Platform apps and permissions for live ad publishing"
+  ],
+  "currency": "USD",
+  "regularPrice": 97,
+  "extendedPrice": 189,
+  "supportSetting": "supported",
+  "supportMonths": 6,
+  "liveDemoUrl": null,
+  "documentationUrl": "https://pub-a73652c6060b4478b32ea08526a6a3ff.r2.dev/codecanyon/adcraft-v5-20261017/index.html",
+  "publicAssetBase": "https://pub-a73652c6060b4478b32ea08526a6a3ff.r2.dev/codecanyon/adcraft-v5-20261017",
+  "status": "queued-for-review",
+  "reviewQueueId": "65560447"
+}

@@ -1,0 +1,132 @@
+{
+  "revision": 4,
+  "panels": 25,
+  "screenshotBlocks": 0,
+  "checks": [
+    {
+      "panel": "01-introduction",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "02-heygen-library",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "02-how-it-works",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "03-brand-kits",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "04-product-library",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "05-ai-ideas",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "06-image-ad-layouts",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "07-edit-and-export",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "08-bulk-generation",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "09-product-videos",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "10-ugc-templates",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "11-ugc-editor",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "12-create-characters",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "13-look-packs",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "14-presenters-and-motion",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "15-voice-tools",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "16-publish-campaigns",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "17-performance",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "18-client-reviews",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "19-teams-and-workspaces",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "20-plans-and-credits",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "21-api-and-webhooks",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "22-admin-panel",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "23-whats-included",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    },
+    {
+      "panel": "24-setup-requirements",
+      "rawScreenshotReferences": 0,
+      "purposeMadeStage": true
+    }
+  ]
+}

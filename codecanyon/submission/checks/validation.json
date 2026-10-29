@@ -1,0 +1,68 @@
+{
+  "checkedAt": "2026-10-16T21:32:33.983075+00:00",
+  "buyerArchive": "adcraft-1.0.0.zip",
+  "sha256": "f9e8d0a6b9350face050ee93ab8cdebf4036ea3cbb12cd1d525a0bee7a58129f",
+  "filesMatchedToTestedExtraction": 411,
+  "buyerLayoutAudit": {
+    "websiteFiles": 119,
+    "referencedMediaFiles": 77,
+    "generatedDemoMediaIncluded": false,
+    "buyerDemoArtwork": "Original editable SVG placeholder; preview photography excluded.",
+    "unusedWebsiteMediaExcluded": 30,
+    "forbiddenDirectoryNames": [
+      "dist",
+      "docs",
+      "scripts"
+    ]
+  },
+  "buyerPackageVerified": true,
+  "uploadedOrSubmitted": true,
+  "checks": {
+    "lockedFreshInstall": "passed",
+    "productionBuild": "passed",
+    "typecheckPackages": 8,
+    "applicationTestsPassed": 5,
+    "renderTestsPassed": 4,
+    "staticRendersPassed": 21,
+    "browserTestsPassed": 6,
+    "browserTestsSkipped": 0,
+    "postgresMigrationAndRepeat": "passed",
+    "embeddedPgliteMigrationAndQuery": "passed",
+    "productionPublicRoutes": 5,
+    "dashboardProtected": true,
+    "productionPublicFilesChecked": 15,
+    "developmentLoginHiddenInProduction": true,
+    "buyerDocumentationWidths": [
+      390,
+      1440
+    ],
+    "zipIntegrity": "passed",
+    "sellerCredentialAudit": "passed",
+    "newWorkspaceAndBrand": "passed",
+    "productUpload": "passed",
+    "sampleConceptsGenerated": 8,
+    "staticStudioOpens": true
+  },
+  "fixtureNotes": [
+    "Fresh buyer extraction with separate PostgreSQL and local media; no customer database used.",
+    "One creative fixture used a PNG from the actual offline renderer for campaign tests.",
+    "Buyer package has no dist, docs or scripts directories. Required website files live in apps/app/public.",
+    "Render smoke harness ran outside the shipped source inventory; developer scripts are excluded."
+  ],
+  "limits": [
+    "No paid live AI generation, live campaigns, Stripe payments or external email were exercised.",
+    "Static studio generation requires a connected image provider; concept samples work without one.",
+    "Docker daemon unavailable on this host; Docker image build was not tested. Native Node production build and server passed.",
+    "Next.js build reports upstream jose Edge Runtime API warnings; compilation and runtime checks passed.",
+    "Catalog figures are a dated snapshot and do not include provider usage credits."
+  ],
+  "beforeSubmission": [],
+  "submission": {
+    "status": "queued-for-review",
+    "queueId": "65560447",
+    "submittedOn": "2026-10-17",
+    "regularItemPrice": 97,
+    "extendedItemPrice": 189,
+    "supportMonths": 6
+  }
+}

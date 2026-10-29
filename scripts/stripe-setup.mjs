@@ -5,7 +5,7 @@
  * found by lookup key, the webhook by URL, so nothing is duplicated.
  *
  *   node scripts/stripe-setup.mjs                 # uses STRIPE_SECRET_KEY from .env
- *   node scripts/stripe-setup.mjs --url https://www.adcrafts.co
+ *   node scripts/stripe-setup.mjs --url https://your-domain.com
  */
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
@@ -25,7 +25,9 @@ for (const line of readFileSync(path.join(root, ".env"), "utf8").split("\n")) {
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) throw new Error("STRIPE_SECRET_KEY is not set in .env");
 const live = key.startsWith("sk_live_") || key.startsWith("rk_live_");
-const appUrl = (process.argv.includes("--url") ? process.argv[process.argv.indexOf("--url") + 1] : process.env.AUTH_URL || "https://www.adcrafts.co").replace(/\/$/, "");
+const appUrlRaw = process.argv.includes("--url") ? process.argv[process.argv.indexOf("--url") + 1] : process.env.AUTH_URL;
+if (!appUrlRaw) throw new Error("Pass --url https://your-domain.com, or set AUTH_URL in .env");
+const appUrl = appUrlRaw.replace(/\/$/, "");
 const stripe = new Stripe(key);
 
 // Mirrors PLANS and TOP_UP in apps/app/src/server/billing.ts. Yearly = 10 months (the site says "Save 20%").

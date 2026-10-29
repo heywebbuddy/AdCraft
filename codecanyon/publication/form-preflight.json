@@ -1,0 +1,218 @@
+[
+  {
+    "id": "name",
+    "type": "text",
+    "value": "Adcraft | AI Ad Creator, Video and UGC Studio SaaS"
+  },
+  {
+    "id": "description",
+    "type": "textarea",
+    "value": {
+      "characters": 5122,
+      "images": 25,
+      "offer": false
+    }
+  },
+  {
+    "id": "temporary_files_to_assign_thumbnail",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "adcraft-thumbnail-80x80.png (1 minute old)",
+        "value": "901645859"
+      }
+    ]
+  },
+  {
+    "id": "temporary_files_to_assign_inline_image_preview",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "adcraft-banner-590x300.jpg (1 minute old)",
+        "value": "901645860"
+      }
+    ]
+  },
+  {
+    "id": "temporary_files_to_assign_source",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "adcraft-1.0.0.zip (1 minute old)",
+        "value": "901645862"
+      }
+    ]
+  },
+  {
+    "id": "temporary_files_to_assign_gallery_preview",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "adcraft-gallery-preview.zip (1 minute old)",
+        "value": "901645861"
+      }
+    ]
+  },
+  {
+    "id": "temporary_files_to_assign_html_preview",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "temporary_files_to_assign_video_preview",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "category",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "    - Miscellaneous",
+        "value": "javascript/miscellaneous"
+      }
+    ]
+  },
+  {
+    "id": "item_item_attributes_attributes_0_boolean_value_yes",
+    "type": "radio",
+    "value": false
+  },
+  {
+    "id": "item_item_attributes_attributes_0_boolean_value_no",
+    "type": "radio",
+    "value": true
+  },
+  {
+    "id": "item_item_attributes_attributes_0_boolean_value_na",
+    "type": "radio",
+    "value": false
+  },
+  {
+    "id": "item_item_attributes_attributes_1_not_applicable",
+    "type": "checkbox",
+    "value": false
+  },
+  {
+    "id": "item_item_attributes_attributes_1_multiple_select_value",
+    "type": "select-multiple",
+    "value": [
+      {
+        "label": "Firefox",
+        "value": "Firefox"
+      },
+      {
+        "label": "Safari",
+        "value": "Safari"
+      },
+      {
+        "label": "Chrome",
+        "value": "Chrome"
+      },
+      {
+        "label": "Edge",
+        "value": "Edge"
+      }
+    ]
+  },
+  {
+    "id": "item_item_attributes_attributes_2_multiple_select_value",
+    "type": "select-multiple",
+    "value": [
+      {
+        "label": "JavaScript JS",
+        "value": "JavaScript JS"
+      },
+      {
+        "label": "JavaScript JSON",
+        "value": "JavaScript JSON"
+      },
+      {
+        "label": "HTML",
+        "value": "HTML"
+      },
+      {
+        "label": "CSS",
+        "value": "CSS"
+      },
+      {
+        "label": "SQL",
+        "value": "SQL"
+      }
+    ]
+  },
+  {
+    "id": "item_item_attributes_attributes_3_not_applicable",
+    "type": "checkbox",
+    "value": false
+  },
+  {
+    "id": "item_item_attributes_attributes_3_multiple_select_value",
+    "type": "select-multiple",
+    "value": [
+      {
+        "label": "ReactJS",
+        "value": "ReactJS"
+      },
+      {
+        "label": "Node.js",
+        "value": "Node.js"
+      }
+    ]
+  },
+  {
+    "id": "item_item_attributes_attributes_4_text_value",
+    "type": "text",
+    "value": ""
+  },
+  {
+    "id": "item_item_attributes_attributes_5_text_value",
+    "type": "text",
+    "value": ""
+  },
+  {
+    "id": "tags_default",
+    "type": "textarea",
+    "value": "ai ad creator, ai video, ugc video, saas, nextjs, ad generator, brand kit, social media, advertising, stripe, typescript, postgresql, campaign manager, ai marketing, multi tenant"
+  },
+  {
+    "id": "provide_item_support",
+    "type": "select-one",
+    "value": [
+      {
+        "label": "Yes",
+        "value": "yes"
+      }
+    ]
+  },
+  {
+    "id": "regular-price",
+    "type": "number",
+    "value": "97"
+  },
+  {
+    "id": "extended-price",
+    "type": "number",
+    "value": "189"
+  },
+  {
+    "id": "comments_to_reviewer",
+    "type": "textarea",
+    "value": "Adcraft 1.0.0 — Next.js 15 / React 19 / TypeScript SaaS. Node.js 22+, pnpm 9.15.9. Buyer ZIP contains source, lockfile, SQL migrations, HTML setup guide and third-party notices. No dist/docs/scripts folders, seller keys, database, dependencies or generated photographic demo media are included. Public documentation: https://pub-a73652c6060b4478b32ea08526a6a3ff.r2.dev/codecanyon/adcraft-v5-20261017/index.html\n\nLocal review: pnpm install --frozen-lockfile; copy .env.example to .env; set a random AUTH_SECRET; leave DATABASE_URL blank; set ADMIN_EMAILS to your test email for admin access; run pnpm --filter @adcraft/app dev. Development sign-in accepts your test email. Create a workspace and brand. Text concepts have labelled offline samples. Static image generation and live HeyGen catalog/voice features require the matching provider key. Sandbox ad accounts let you test campaigns without paid ad spend. Production sign-in requires Resend or Google.\n\nCatalog snapshot checked on 17 October 2026: 1,414 public presenter groups / 25,070 looks and 2,643 voices. Looks are not unique people. Provider accounts and usage credits are not included. Preview panels are purpose-made feature illustrations with sample content. Generated photos/videos are preview-only; the buyer site uses editable SVG placeholders. No real product brands or savings offer are used in the listing artwork.\n\nFresh install, production build, 8 package type checks, PostgreSQL and PGlite migrations, 9 automated tests, 21 static renders and 6 browser smoke tests passed. Live paid generation, payments, email and ad spend were not exercised. Docker could not be run on the validation host; native Node production startup was tested. Product-video rendering uses Remotion under its own licensing terms; see THIRD-PARTY-NOTICES.md. No public app demo is supplied; full local setup instructions are provided."
+  },
+  {
+    "id": "got_proper_licenses",
+    "type": "checkbox",
+    "value": true
+  }
+]

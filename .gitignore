@@ -11,3 +11,20 @@ node_modules/
 # Playwright
 apps/app/test-results/
 apps/app/playwright-report/
+scripts/walkthrough/out/
+codecanyon/build/
+
+# CodeCanyon submission: generated artefacts (rebuild with codecanyon/package.sh and listing-v2/build.py)
+codecanyon/listing-v2/evidence/
+codecanyon/listing-v2/exports/
+codecanyon/listing-v2/assets/
+codecanyon/listing-v2/*.zip
+codecanyon/submission/main-files/
+codecanyon/submission/previews/
+codecanyon/submission/listing/exports/
+codecanyon/preview/preview-1180x600@2x.png
+codecanyon/**/__pycache__/
+output/
+scripts/walkthrough/
+codecanyon/preview/preview-inline.html
+codecanyon/**/evidence/

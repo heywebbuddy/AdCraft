@@ -1,0 +1,27 @@
+Adcraft — CodeCanyon submission kit
+
+1. Main File: main-files/adcraft-1.0.0.zip — buyer source, editable SVG placeholders,
+   lockfile, HTML documentation and third-party notices. No root dist/docs/scripts folders, unused media originals, listing artwork,
+   node_modules, seller environment, database, Git history or generated builds.
+2. Cover: previews/adcraft-cover-2340x1560.jpg. Legacy banner and 80x80 thumbnail
+   are also provided. Gallery files are in previews/gallery (up to 15 images).
+3. Description: listing/description-local.html previews the approved 25 panels.
+   Host listing/exports at an HTTPS URL, then run listing/resolve-description.py
+   with that URL to generate description-final.html for the upload form.
+4. Fields: upload-fields.json; reviewer information: reviewer-notes.txt.
+5. Validation: checks/validation.json and buyer-manifest.json.
+
+Submitted settings:
+- Prices: Regular USD 97; Extended USD 189.
+- Six months of item support is selected.
+- Description images use a public HTTPS host; all 25 panel URLs were verified.
+- The savings offer is omitted until item approval, as requested.
+- Use a separate demo environment with no live payments or customer data.
+  A demo is recommended for code items; no public demo was deployed in this task.
+
+Current official references checked 17 October 2026:
+https://help.author.envato.com/hc/en-us/articles/360000471583
+https://help.author.envato.com/hc/en-us/articles/360000424863
+https://www.remotion.dev/docs/license/pricing
+
+This item was submitted for approval on 17 October 2026. Envato review queue: 65560447.

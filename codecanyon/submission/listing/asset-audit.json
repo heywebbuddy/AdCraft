@@ -1,0 +1,77 @@
+{
+  "product": "Adcraft",
+  "preparedOn": "2026-10-17",
+  "status": "queued-for-review",
+  "published": false,
+  "referenceChat": {
+    "threadId": "01a1418f-9876-7321-bd04-8f6c610efc9d",
+    "title": "Create polished product description"
+  },
+  "design": {
+    "primary": "#e65c32",
+    "paper": "#f8f7f3",
+    "ink": "#272923",
+    "secondary": "#ecf0e6",
+    "fonts": [
+      "DM Sans"
+    ],
+    "exportWidth": 2360,
+    "displayWidth": 616,
+    "italicText": false,
+    "fontScope": "All authored illustration and listing text uses regular DM Sans. No application screenshots are embedded."
+  },
+  "offerBanner": {
+    "included": false,
+    "reason": "User requested no savings offer before item approval."
+  },
+  "evidence": {
+    "brandKits": "packages/db/src/schema/brands.ts",
+    "briefsAndConcepts": "packages/db/src/schema/creative.ts",
+    "staticCreativeVariants": "apps/app/src/server/creatives.ts",
+    "characterStudio": "apps/app/src/app/(app)/characters/page.tsx",
+    "campaignBuilder": "apps/app/src/app/(app)/campaigns/new/page.tsx",
+    "performance": "apps/app/src/server/ads.ts",
+    "collaboration": "packages/db/src/schema/collab.ts",
+    "billing": "apps/app/src/server/billing.ts",
+    "adminCatalog": "apps/app/src/app/(admin)/admin/models/page.tsx",
+    "hostingAndLicenses": [
+      "package.json",
+      "THIRD-PARTY-NOTICES.md",
+      "codecanyon/documentation/index.html"
+    ],
+    "completeFeatureCoverage": "feature-coverage.json"
+  },
+  "assetProvenance": {
+    "screenshots": "No application screenshots are used. All sections are purpose-made feature illustrations.",
+    "sampleCreativeImages": "Original built-in ImageGen photographs of unbranded skincare, headphones, coffee and a running shoe. No real product brands or logos.",
+    "characterPreview": "The real product screen displays a clearly labelled illustrative still storyboard.",
+    "fonts": "Existing next/font Google Fonts output. See THIRD-PARTY-NOTICES.md for font provenance.",
+    "icons": "Original inline SVG line artwork; brand mark copied from apps/app/src/app/icon.svg.",
+    "extraPortraits": "Existing generated fictional portrait atlas from dist/assets/studio-portraits.webp. Used as illustrative art and to seed one fictional character in a separate preview database.",
+    "templateSamples": "Four supported editable layouts are described. Product ad concepts and completed marketing illustrations replace all flat smoke-test render examples.",
+    "realProductPhotography": "Removed from the active listing; replaced with original unbranded product photographs.",
+    "heygenCastPreview": "Public HeyGen avatar group preview URLs and live looks counts. Source is the live v3 avatar library API. The preview is a curated gallery, not a captured application screen.",
+    "featureIllustrations": "Recreated in editable HTML/CSS in feature_visuals.py: complete example brand kit and its ads; product library; brief and ad ideas; bulk output; presenter/product storyboard; campaign setup; client review; teams; plans and credits; API events; and admin controls. Additional visual scenes cover editing, video, templates, voice, motion, reports and source delivery.",
+    "banner": "Original built-in ImageGen collage of fictional adult presenters and generic products; exact regular-font banner text composed in HTML/CSS."
+  },
+  "submissionReadiness": {
+    "listingAssets": "Submitted to Envato review queue 65560447.",
+    "buyerZip": "Rebuilt without generated photographic demo media; fresh validation in ../build/validation.json.",
+    "demo": "Production site was not accessed or changed. Set up or verify a separate public demo before submission.",
+    "descriptionHosting": "All 25 panels and documentation uploaded and verified on public HTTPS hosting.",
+    "licenseTerms": "Check current third-party terms before submission. Artwork intentionally avoids numeric Remotion prices or unverified license thresholds."
+  },
+  "officialReferences": [
+    "https://help.author.envato.com/hc/en-us/articles/360000424863-Item-Presentation-Requirements",
+    "https://help.author.envato.com/hc/en-us/articles/360000471066-Item-Information-and-Metadata-Requirements",
+    "https://help.author.envato.com/hc/en-us/articles/360000471583-Code-Item-Preparation-Technical-Requirements"
+  ],
+  "revision": 5,
+  "descriptionPanels": 25,
+  "featureCoverage": "feature-coverage.json",
+  "libraryVerification": {
+    "avatars": "heygen-library-evidence.json",
+    "voices": "heygen-voice-evidence.json"
+  },
+  "presentation": "All 25 panels use purpose-made feature illustrations. No application screenshot blocks are used."
+}

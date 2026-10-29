@@ -1,0 +1,91 @@
+
+<p><img src="{{PUBLIC_ASSET_BASE}}/01-introduction.jpg" width="616" alt="Introduction"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/02-heygen-library.jpg" width="616" alt="Heygen Library"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/02-how-it-works.jpg" width="616" alt="How It Works"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/03-brand-kits.jpg" width="616" alt="Brand Kits"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/04-product-library.jpg" width="616" alt="Product Library"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/05-ai-ideas.jpg" width="616" alt="Ai Ideas"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/06-image-ad-layouts.jpg" width="616" alt="Image Ad Layouts"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/07-edit-and-export.jpg" width="616" alt="Edit And Export"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/08-bulk-generation.jpg" width="616" alt="Bulk Generation"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/09-product-videos.jpg" width="616" alt="Product Videos"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/10-ugc-templates.jpg" width="616" alt="Ugc Templates"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/11-ugc-editor.jpg" width="616" alt="Ugc Editor"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/12-create-characters.jpg" width="616" alt="Create Characters"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/13-look-packs.jpg" width="616" alt="Look Packs"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/14-presenters-and-motion.jpg" width="616" alt="Presenters And Motion"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/15-voice-tools.jpg" width="616" alt="Voice Tools"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/16-publish-campaigns.jpg" width="616" alt="Publish Campaigns"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/17-performance.jpg" width="616" alt="Performance"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/18-client-reviews.jpg" width="616" alt="Client Reviews"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/19-teams-and-workspaces.jpg" width="616" alt="Teams And Workspaces"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/20-plans-and-credits.jpg" width="616" alt="Plans And Credits"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/21-api-and-webhooks.jpg" width="616" alt="Api And Webhooks"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/22-admin-panel.jpg" width="616" alt="Admin Panel"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/23-whats-included.jpg" width="616" alt="Whats Included"></p>
+<p><img src="{{PUBLIC_ASSET_BASE}}/24-setup-requirements.jpg" width="616" alt="Setup Requirements"></p>
+<hr>
+
+<h3>Installation and setup</h3>
+
+<p>Everything below is also in <strong>documentation/index.html</strong> inside the download, so you have it locally without visiting any external link.</p>
+
+<h4>What you need</h4>
+
+<ul>
+<li><strong>Node.js 22 or newer</strong> and <strong>pnpm 9.15.9</strong> (<code>corepack enable</code> installs the pinned version).</li>
+<li><strong>PostgreSQL 15 or newer.</strong> Optional on your own machine: leave <code>DATABASE_URL</code> blank and an embedded database starts automatically.</li>
+<li><strong>A persistent Node server or container.</strong> Shared hosting and cPanel cannot run this item; it is a Node.js application, not PHP. A Dockerfile is included.</li>
+<li><strong>About 1 GB of RAM</strong> to run, 2 GB or more if you render video on the same machine.</li>
+</ul>
+
+<h4>Install it</h4>
+
+<ol>
+<li>Unzip the download and open a terminal in the <code>adcraft</code> folder.</li>
+<li>Run <code>corepack enable</code> and then <code>pnpm install</code>.</li>
+<li>Copy the environment template: <code>cp .env.example .env</code></li>
+<li>Open <code>.env</code> and set <code>AUTH_SECRET</code> to the output of <code>openssl rand -base64 32</code>. That is the only value required to start.</li>
+<li>Start the application: <code>pnpm --filter @adcraft/app dev</code></li>
+<li>Open <code>http://localhost:3000</code> for the website and <code>/dashboard</code> for the product. With no email provider configured, the sign-in page accepts any address so you can look around immediately.</li>
+</ol>
+
+<h4>Point it at a real database</h4>
+
+<p>Set <code>DATABASE_URL</code> in <code>.env</code>, then apply the schema with <code>pnpm --filter @adcraft/db db:migrate</code>. Until you do, an embedded PostgreSQL runs from a local folder, which is fine for evaluation but not for production.</p>
+
+<h4>Connect the services you want</h4>
+
+<p>None are required. Adcraft ships sandbox adapters for every AI provider and ad platform, so with no keys at all the whole product is explorable and returns clearly labelled sample output. Add keys one at a time in <code>.env</code> to switch each piece on:</p>
+
+<ul>
+<li><strong>Ad ideas and copy</strong> — <code>ANTHROPIC_API_KEY</code></li>
+<li><strong>Images, video and background removal</strong> — <code>FAL_KEY</code></li>
+<li><strong>Presenters, looks and avatars</strong> — <code>HEYGEN_API_KEY</code></li>
+<li><strong>Voice-over and voice cloning</strong> — <code>ELEVENLABS_API_KEY</code></li>
+<li><strong>Sign-in emails</strong> — <code>RESEND_API_KEY</code> and <code>EMAIL_FROM</code></li>
+<li><strong>Subscriptions and credits</strong> — the <code>STRIPE_*</code> keys; <code>node scripts/stripe-setup.mjs --url https://your-domain.com</code> creates the products, prices and webhook in your own Stripe account</li>
+<li><strong>Ad publishing</strong> — <code>META_*</code>, <code>TIKTOK_*</code> and <code>GOOGLE_ADS_*</code> credentials from your own developer applications</li>
+</ul>
+
+<p><code>.env.example</code> documents all 59 settings with comments, and <strong>Admin &rarr; Providers</strong> shows the same list with live status once you are signed in.</p>
+
+<h4>Deploy it</h4>
+
+<ol>
+<li>Build the included Dockerfile: <code>docker build -t adcraft .</code></li>
+<li>Provision PostgreSQL and set <code>DATABASE_URL</code>. Migrations run automatically at startup.</li>
+<li>Set <code>AUTH_SECRET</code>, <code>AUTH_URL</code> (your public address), <code>ADMIN_EMAILS</code> and <code>DEV_LOGIN=0</code>.</li>
+<li>Attach durable storage: either a mounted volume at <code>LOCAL_STORAGE_DIR</code>, or the four <code>R2_*</code> variables for any S3-compatible bucket. A container's own filesystem is wiped on every deploy.</li>
+<li>Check <code>/api/health</code>, which reports the database, storage and job runtime with latency.</li>
+</ol>
+
+<h4>Make it yours</h4>
+
+<p>Colours and type live in <code>packages/ui/src/tokens.css</code>; change them once and the whole application follows. The wordmark is a single component, the favicons sit in <code>apps/app/public</code>, and the marketing website is plain HTML and CSS with no build step.</p>
+
+<h4>Third-party terms worth reading first</h4>
+
+<p><strong>Remotion</strong>, which renders the product-video composition, is free for individuals and organisations of up to three people; larger organisations need a licence from remotion.pro. This affects the product-video feature only &mdash; image ads, presenter video, publishing and reporting never load it, and the application builds and runs without it. <strong>FFmpeg</strong> is fetched at install time for presenter video assembly, or point <code>FFMPEG_PATH</code> at your own build. Full detail is in <strong>THIRD-PARTY-NOTICES.md</strong> inside the download.</p>
+
+<p>AI generation and ad spend are billed to you by those providers; no provider accounts, credits or API keys are included with this item.</p>

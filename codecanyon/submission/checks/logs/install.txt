@@ -1,0 +1,16 @@
+Scope: all 9 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +669
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 669, reused 664, downloaded 0, added 211
+Progress: resolved 669, reused 664, downloaded 0, added 453
+Progress: resolved 669, reused 664, downloaded 0, added 665
+Progress: resolved 669, reused 664, downloaded 0, added 669, done
+
+devDependencies:
++ tsx 4.23.13
++ turbo 2.10.13
++ typescript 5.9.3
+
+Done in 4.4s using pnpm v9.15.9

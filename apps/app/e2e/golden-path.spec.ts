@@ -4,11 +4,11 @@ import { test, expect, type Page } from "@playwright/test";
  * The path a paying user takes, minus the provider calls: sign in → dashboard → library →
  * briefs → ads → campaign (sandbox) → performance → guardrails → health.
  *
- * Needs: DEV_LOGIN enabled, a user with a brand (E2E_EMAIL, default ratnesh@adcraft.local),
+ * Needs: DEV_LOGIN enabled, a user with a brand (E2E_EMAIL, default owner@example.com),
  * and at least one finished creative in that brand for the campaign step (it skips politely
  * if there is none).
  */
-const EMAIL = process.env.E2E_EMAIL ?? "ratnesh@adcraft.local";
+const EMAIL = process.env.E2E_EMAIL ?? "owner@example.com";
 
 async function signIn(page: Page) {
   await page.goto("/sign-in");
@@ -56,8 +56,8 @@ test.describe("golden path", () => {
   test("campaign builder: five steps, review, publish paused on a sandbox account", async ({ page }) => {
     await page.goto("/campaigns");
     // Connect a sandbox account if none is connected.
-    if ((await page.getByRole("button", { name: "Connect sandbox" }).count()) === 3) {
-      await page.getByRole("button", { name: "Connect sandbox" }).first().click();
+    if ((await page.getByRole("link", { name: "Connect sandbox", exact: true }).count()) === 3) {
+      await page.getByRole("link", { name: "Connect sandbox", exact: true }).first().click();
       await page.waitForURL(/\/campaigns/);
     }
     await page.goto("/campaigns/new");

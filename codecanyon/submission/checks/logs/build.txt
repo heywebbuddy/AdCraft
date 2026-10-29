@@ -1,0 +1,150 @@
+
+> adcraft@ build /private<buyer>
+> turbo run build
+
+• turbo 2.10.13
+
+   • Packages in scope: @adcraft/ads, @adcraft/ai, @adcraft/app, @adcraft/db, @adcraft/render, @adcraft/specs, @adcraft/storage, @adcraft/ui
+   • Running build in 8 packages
+   • Remote caching disabled
+
+@adcraft/app:build: cache miss, executing c6640bd8c562a877
+@adcraft/app:build: 
+@adcraft/app:build: > @adcraft/app@0.1.0 build /private<buyer>/apps/app
+@adcraft/app:build: > next build
+@adcraft/app:build: 
+@adcraft/app:build:    ▲ Next.js 15.5.25
+@adcraft/app:build:    - Experiments (use with caution):
+@adcraft/app:build:      · serverActions
+@adcraft/app:build: 
+@adcraft/app:build:    Creating an optimized production build ...
+@adcraft/app:build:  ⚠ Compiled with warnings in 819ms
+@adcraft/app:build: 
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/lib/deflate.js
+@adcraft/app:build: A Node.js API is used (CompressionStream at line: 31) which is not supported in the Edge Runtime.
+@adcraft/app:build: Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+@adcraft/app:build: 
+@adcraft/app:build: Import trace for requested module:
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/lib/deflate.js
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/lib/jwe_decrypt.js
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/jwt/decrypt.js
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/index.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/jwt.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/lib/init.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/lib/index.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/index.js
+@adcraft/app:build: ../../node_modules/.pnpm/next-auth@5.0.0-beta.32_next@15.5.25_@opentelemetry+api@1.9.1_@playwright+test@1.63.0_@types+_lr2zzel5gkfkmqcpia65obevaq/node_modules/next-auth/index.js
+@adcraft/app:build: 
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/lib/deflate.js
+@adcraft/app:build: A Node.js API is used (DecompressionStream at line: 34) which is not supported in the Edge Runtime.
+@adcraft/app:build: Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+@adcraft/app:build: 
+@adcraft/app:build: Import trace for requested module:
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/lib/deflate.js
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/lib/jwe_decrypt.js
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/jwt/decrypt.js
+@adcraft/app:build: ../../node_modules/.pnpm/jose@6.2.12/node_modules/jose/dist/webapi/index.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/jwt.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/lib/init.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/lib/index.js
+@adcraft/app:build: ../../node_modules/.pnpm/@auth+core@0.41.3/node_modules/@auth/core/index.js
+@adcraft/app:build: ../../node_modules/.pnpm/next-auth@5.0.0-beta.32_next@15.5.25_@opentelemetry+api@1.9.1_@playwright+test@1.63.0_@types+_lr2zzel5gkfkmqcpia65obevaq/node_modules/next-auth/index.js
+@adcraft/app:build: 
+@adcraft/app:build:  ✓ Compiled successfully in 13.1s
+@adcraft/app:build:    Linting and checking validity of types ...
+@adcraft/app:build:    Collecting page data ...
+@adcraft/app:build:    Generating static pages (0/18) ...
+@adcraft/app:build:    Generating static pages (4/18) 
+@adcraft/app:build:    Generating static pages (8/18) 
+@adcraft/app:build:    Generating static pages (13/18) 
+@adcraft/app:build:  ✓ Generating static pages (18/18)
+@adcraft/app:build:    Finalizing page optimization ...
+@adcraft/app:build:    Collecting build traces ...
+@adcraft/app:build: 
+@adcraft/app:build: Route (app)                                 Size  First Load JS
+@adcraft/app:build: ┌ ○ /_not-found                            997 B         104 kB
+@adcraft/app:build: ├ ƒ /admin                                 205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/audit                           205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/billing                         205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/campaigns                       205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/errors                          205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/generations                     815 B         107 kB
+@adcraft/app:build: ├ ƒ /admin/models                        4.45 kB         111 kB
+@adcraft/app:build: ├ ƒ /admin/orgs                            205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/orgs/[id]                       815 B         107 kB
+@adcraft/app:build: ├ ƒ /admin/providers                       205 B         106 kB
+@adcraft/app:build: ├ ƒ /admin/settings                        815 B         107 kB
+@adcraft/app:build: ├ ƒ /admin/users                           815 B         107 kB
+@adcraft/app:build: ├ ƒ /api/auth/[...nextauth]                183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/auth/reset                        183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/connect/[platform]                183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/connect/[platform]/callback       183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/files/[...key]                    183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/health                            183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/inngest                           183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/performance/export.csv            183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/render/[creativeId]/zip           183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/share/[token]/[...key]            183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/stripe/webhook                    183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/uploads                           183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/v1/creatives                      183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/v1/creatives/[id]                 183 B         103 kB
+@adcraft/app:build: ├ ƒ /api/v1/files/[...key]                 183 B         103 kB
+@adcraft/app:build: ├ ○ /apple-icon.png                          0 B            0 B
+@adcraft/app:build: ├ ƒ /brands                                205 B         106 kB
+@adcraft/app:build: ├ ƒ /brands/[brandId]                    5.67 kB         112 kB
+@adcraft/app:build: ├ ƒ /brands/new                            815 B         107 kB
+@adcraft/app:build: ├ ƒ /briefs                                205 B         106 kB
+@adcraft/app:build: ├ ƒ /briefs/[briefId]                      437 B         107 kB
+@adcraft/app:build: ├ ƒ /briefs/bulk                         1.41 kB         108 kB
+@adcraft/app:build: ├ ƒ /briefs/new                          7.45 kB         114 kB
+@adcraft/app:build: ├ ƒ /campaigns                             474 B         107 kB
+@adcraft/app:build: ├ ƒ /campaigns/[campaignId]              1.04 kB         107 kB
+@adcraft/app:build: ├ ƒ /campaigns/new                       10.6 kB         117 kB
+@adcraft/app:build: ├ ƒ /characters                          22.8 kB         135 kB
+@adcraft/app:build: ├ ○ /check-email                           180 B         106 kB
+@adcraft/app:build: ├ ƒ /creatives                             474 B         107 kB
+@adcraft/app:build: ├ ƒ /creatives/[creativeId]               3.7 kB         110 kB
+@adcraft/app:build: ├ ƒ /creatives/[creativeId]/review         466 B         107 kB
+@adcraft/app:build: ├ ƒ /creatives/new                       10.2 kB         116 kB
+@adcraft/app:build: ├ ƒ /dashboard                             481 B         107 kB
+@adcraft/app:build: ├ ○ /dpa                                   180 B         106 kB
+@adcraft/app:build: ├ ○ /icon.svg                                0 B            0 B
+@adcraft/app:build: ├ ƒ /invite/[token]                        180 B         106 kB
+@adcraft/app:build: ├ ƒ /library                               474 B         107 kB
+@adcraft/app:build: ├ ƒ /library/[productId]                    2 kB         108 kB
+@adcraft/app:build: ├ ƒ /library/new                         2.27 kB         108 kB
+@adcraft/app:build: ├ ƒ /performance                           474 B         107 kB
+@adcraft/app:build: ├ ○ /privacy                               180 B         106 kB
+@adcraft/app:build: ├ ƒ /settings                              977 B         107 kB
+@adcraft/app:build: ├ ƒ /settings/api                          465 B         107 kB
+@adcraft/app:build: ├ ƒ /settings/audit                        205 B         106 kB
+@adcraft/app:build: ├ ƒ /settings/billing                      205 B         106 kB
+@adcraft/app:build: ├ ƒ /settings/guardrails                   205 B         106 kB
+@adcraft/app:build: ├ ƒ /settings/privacy                      205 B         106 kB
+@adcraft/app:build: ├ ƒ /settings/team                       1.32 kB         107 kB
+@adcraft/app:build: ├ ƒ /settings/templates                    359 B         106 kB
+@adcraft/app:build: ├ ƒ /share/[token]                         183 B         103 kB
+@adcraft/app:build: ├ ƒ /sign-in                               803 B         107 kB
+@adcraft/app:build: ├ ƒ /suspended                             183 B         103 kB
+@adcraft/app:build: ├ ○ /terms                                 180 B         106 kB
+@adcraft/app:build: ├ ƒ /videos/[creativeId]                 1.59 kB         108 kB
+@adcraft/app:build: ├ ƒ /videos/new                          5.17 kB         117 kB
+@adcraft/app:build: ├ ƒ /welcome                             3.39 kB         106 kB
+@adcraft/app:build: └ ƒ /welcome/first-ad                      803 B         107 kB
+@adcraft/app:build: + First Load JS shared by all             103 kB
+@adcraft/app:build:   ├ chunks/43c5c1fd-63bae0f628de4bb9.js  54.2 kB
+@adcraft/app:build:   ├ chunks/7461-4f94a7f3c1fca613.js      46.5 kB
+@adcraft/app:build:   └ other shared chunks (total)          1.99 kB
+@adcraft/app:build: 
+@adcraft/app:build: 
+@adcraft/app:build: ƒ Middleware                             86.2 kB
+@adcraft/app:build: 
+@adcraft/app:build: ○  (Static)   prerendered as static content
+@adcraft/app:build: ƒ  (Dynamic)  server-rendered on demand
+@adcraft/app:build: 
+
+ Tasks:    1 successful, 1 total
+Cached:    0 cached, 1 total
+  Time:    33.714s 
+

@@ -1,0 +1,47 @@
+[
+  {
+    "key": "skincare",
+    "prompt": "Use case: product-mockup. Create a premium realistic studio product photograph for a fictional, completely unbranded skincare cream. One matte white round jar with a simple pale blue lid, minimal label reading only DAILY CREAM in plain upright sans serif. No real company name, no logo, no recognizable trademark design. Pale warm stone, cream towel, soft daylight and subtle water drops. Square 1:1 photograph. Jar on center-right, generous clean empty upper-left and left for separate advertising text. Tactile materials, believable photography, high-end ecommerce styling. No extra headline, no UI, no watermark.",
+    "mode": "built-in imagegen",
+    "transparent_background": false,
+    "source": "/Users/ratneshkumar/.codex/generated_images/01a14651-520d-7573-901e-57e380e9ec08/exec-84392b7d-92df-4f55-aa8b-0255d1030651.png",
+    "workspacePath": "assets/product-skincare-v5.png",
+    "usage": "Preview artwork only; excluded from buyer ZIP."
+  },
+  {
+    "key": "headphones",
+    "prompt": "Use case: product-mockup. Premium realistic product photo of completely unbranded over-ear headphones with original generic industrial design: matte charcoal rounded earcups, broad softly padded headband and restrained warm silver hinges. No text, company name, logos or recognizable trademarks anywhere. Three-quarter view center-right on a dark graphite plinth against deep midnight blue with soft luminous teal rim light. Square 1:1 image, generous clean dark negative space upper-left and left for separate ad copy. Beautiful tactile ear pads, precise studio lighting, believable physical object. No UI, no watermark.",
+    "mode": "built-in imagegen",
+    "transparent_background": false,
+    "source": "/Users/ratneshkumar/.codex/generated_images/01a14651-520d-7573-901e-57e380e9ec08/exec-06706b03-4b9e-4c0d-8566-03bb0b250ee6.png",
+    "workspacePath": "assets/product-headphones-v5.png",
+    "usage": "Preview artwork only; excluded from buyer ZIP."
+  },
+  {
+    "key": "coffee",
+    "prompt": "Use case: product-mockup. Premium realistic coffee campaign photograph with completely unbranded matte ivory stand-up coffee bag, small minimal plain upright sans-serif label reading only COFFEE. No company name, logos or recognizable branded packaging. Beside a simple cream ceramic cup with subtle steam and a few roasted beans on warm walnut. Product group center-right. Square 1:1 photograph, generous clean light beige upper-left and left negative space for separate ad copy. Warm natural morning cafe light, believable paper textures. No added ad headline, no badge, no watermark.",
+    "mode": "built-in imagegen",
+    "transparent_background": false,
+    "source": "/Users/ratneshkumar/.codex/generated_images/01a14651-520d-7573-901e-57e380e9ec08/exec-6792bc9c-2c3a-41de-bea6-0a3d06afd3f1.png",
+    "workspacePath": "assets/product-coffee-v5.png",
+    "usage": "Preview artwork only; excluded from buyer ZIP."
+  },
+  {
+    "key": "running-shoe",
+    "prompt": "Use case: product-mockup. Premium realistic sports product photograph of a completely unbranded running shoe with original generic design. White and light gray knit mesh, restrained coral orange midsole detail, cream rubber outsole, no swoosh, stripes, symbols, company names, text or trademarks. One shoe side three-quarter view center-right on pale concrete with long crisp daylight shadow. Square 1:1 photograph, generous uncluttered light gray upper-left and left for separate ad copy. Fine fabric texture, real laces and believable physical object. No added headline, no watermark.",
+    "mode": "built-in imagegen",
+    "transparent_background": false,
+    "source": "/Users/ratneshkumar/.codex/generated_images/01a14651-520d-7573-901e-57e380e9ec08/exec-96539584-9b66-47d8-b8f3-5d779c86d71f.png",
+    "workspacePath": "assets/product-running-shoe-v5.png",
+    "usage": "Preview artwork only; excluded from buyer ZIP."
+  },
+  {
+    "key": "banner-visual",
+    "prompt": "Use case: photorealistic-natural / marketing-banner visual. Create a high-end photographic collage for an AI ad creation software banner. Portrait orientation 4:5. Three floating rounded vertical video cards with diverse fictional adult presenters: a friendly woman with dark curly hair in cream clothing, a smiling man with short dark hair in a sage shirt, and an East Asian woman in a warm coral shirt. Natural expressions, authentic studio daylight, original faces, no celebrity resemblance. Layer two smaller beautifully photographed product-ad cards at bottom with a completely unbranded cream skincare jar and completely unbranded charcoal headphones. Abstract warm ivory and peach background, clean dimensional paper cards with subtle shadows and a small orange circular play icon. Visually polished, calm, readable, generous margins. No text, letters, numbers, logos, company names, product trademarks, badges, discounts, UI controls, browser chrome or watermark. This is artwork placed on the right side of a banner; headline will be typeset separately.",
+    "mode": "built-in imagegen",
+    "transparent_background": false,
+    "source": "/Users/ratneshkumar/.codex/generated_images/01a14651-520d-7573-901e-57e380e9ec08/exec-5322a35d-fbe6-44d1-a3bc-3290f8400e84.png",
+    "workspacePath": "assets/banner-visual-v5.png",
+    "usage": "Preview artwork only; excluded from buyer ZIP."
+  }
+]

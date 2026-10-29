@@ -1,0 +1,8 @@
+{
+  "signIn": true,
+  "newWorkspace": true,
+  "newBrand": true,
+  "productUpload": true,
+  "administratorAccess": true,
+  "pageErrors": []
+}

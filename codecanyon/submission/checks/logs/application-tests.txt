@@ -1,0 +1,264 @@
+
+> adcraft@ test /private<buyer>
+> turbo run test
+
+• turbo 2.10.13
+
+   • Packages in scope: @adcraft/ads, @adcraft/ai, @adcraft/app, @adcraft/db, @adcraft/render, @adcraft/specs, @adcraft/storage, @adcraft/ui
+   • Running test in 8 packages
+   • Remote caching disabled
+
+@adcraft/ai:test: cache bypass, force executing 8112e07b1d4f7104
+@adcraft/app:test: cache bypass, force executing a30deb3e10f15acb
+@adcraft/ai:test: 
+@adcraft/ai:test: > @adcraft/ai@0.1.0 test /private<buyer>/packages/ai
+@adcraft/ai:test: > tsx --test tests/**/*.test.ts
+@adcraft/ai:test: 
+@adcraft/app:test: 
+@adcraft/app:test: > @adcraft/app@0.1.0 test /private<buyer>/apps/app
+@adcraft/app:test: > tsx --conditions=react-server --test tests/**/*.test.ts
+@adcraft/app:test: 
+@adcraft/app:test: TAP version 13
+@adcraft/ai:test: TAP version 13
+@adcraft/app:test: # Subtest: Meta's user-facing message is what the activity log shows
+@adcraft/app:test: ok 1 - Meta's user-facing message is what the activity log shows
+@adcraft/app:test:   ---
+@adcraft/app:test:   duration_ms: 0.498416
+@adcraft/app:test:   type: 'test'
+@adcraft/app:test:   ...
+@adcraft/app:test: # Subtest: an envelope with no human text still summarises
+@adcraft/app:test: ok 2 - an envelope with no human text still summarises
+@adcraft/app:test:   ---
+@adcraft/app:test:   duration_ms: 0.071
+@adcraft/app:test:   type: 'test'
+@adcraft/app:test:   ...
+@adcraft/ai:test: # Subtest: every built-in fal image model has generation and reference-edit contracts
+@adcraft/ai:test: ok 1 - every built-in fal image model has generation and reference-edit contracts
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 1.09225
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: a custom model from the admin catalog needs no code: preset + endpoints + options
+@adcraft/ai:test: ok 2 - a custom model from the admin catalog needs no code: preset + endpoints + options
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.365458
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: photo presenter uploads private bytes and uses the saved image plus exact voice track
+@adcraft/ai:test:     # Subtest: provider rejection is surfaced without a fake success or retry
+@adcraft/ai:test:     ok 1 - provider rejection is surfaced without a fake success or retry
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.692792
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     1..1
+@adcraft/ai:test: ok 3 - photo presenter uploads private bytes and uses the saved image plus exact voice track
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 13.298417
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: prompts are trimmed to a model's limit at a sentence boundary
+@adcraft/ai:test: ok 4 - prompts are trimmed to a model's limit at a sentence boundary
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.144833
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: Replicate specs shape generic image and video inputs from the spec
+@adcraft/ai:test: ok 5 - Replicate specs shape generic image and video inputs from the spec
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.385083
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: Runway specs map our sizes to Runway pixel ratios and pick the right task endpoint
+@adcraft/ai:test: ok 6 - Runway specs map our sizes to Runway pixel ratios and pick the right task endpoint
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.378292
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: HeyGen look names split into person + look for grouping
+@adcraft/ai:test: ok 7 - HeyGen look names split into person + look for grouping
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.711917
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: complete concepts are parsed across every character boundary, including escaped braces and quotes
+@adcraft/ai:test: ok 8 - complete concepts are parsed across every character boundary, including escaped braces and quotes
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 2.438709
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: incomplete or schema-invalid objects are never published
+@adcraft/ai:test: ok 9 - incomplete or schema-invalid objects are never published
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.52575
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: SSE handles CRLF, multibyte text, comments, and one-byte network chunks
+@adcraft/ai:test: ok 10 - SSE handles CRLF, multibyte text, comments, and one-byte network chunks
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 2.920083
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: Anthropic delivers a validated concept before the provider finishes and preserves final usage
+@adcraft/ai:test: ok 11 - Anthropic delivers a validated concept before the provider finishes and preserves final usage
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 16.885708
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: a truncated Anthropic stream keeps the first delivered concept and fails the run
+@adcraft/ai:test: ok 12 - a truncated Anthropic stream keeps the first delivered concept and fails the run
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 1.9705
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: OpenAI-compatible streaming publishes the first idea before EOF and captures usage
+@adcraft/ai:test: ok 13 - OpenAI-compatible streaming publishes the first idea before EOF and captures usage
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.794333
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: OpenAI image adapter contract
+@adcraft/ai:test:     # Subtest: missing configuration fails before making a request
+@adcraft/ai:test:     ok 1 - missing configuration fails before making a request
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 1.3915
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: generation uses documented model, quality and exact ratio
+@adcraft/ai:test:     ok 2 - generation uses documented model, quality and exact ratio
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 11.348458
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: private synthetic reference bytes use multipart edits
+@adcraft/ai:test:     ok 3 - private synthetic reference bytes use multipart edits
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 3.387667
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: missing references fail instead of silently dropping the product
+@adcraft/ai:test:     ok 4 - missing references fail instead of silently dropping the product
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.217958
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: quota failure is explicit and never retried
+@adcraft/ai:test:     ok 5 - quota failure is explicit and never retried
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.296583
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: empty and malformed outputs cannot be billed as an image
+@adcraft/ai:test:     ok 6 - empty and malformed outputs cannot be billed as an image
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 1.194916
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: all output sizes satisfy API constraints
+@adcraft/ai:test:     ok 7 - all output sizes satisfy API constraints
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.104542
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     1..7
+@adcraft/ai:test: ok 14 - OpenAI image adapter contract
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 22.008792
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: Grok Imagine ships as an extra image model and is not the default
+@adcraft/ai:test: ok 15 - Grok Imagine ships as an extra image model and is not the default
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.456166
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: xAI request body uses documented Imagine fields
+@adcraft/ai:test: ok 16 - xAI request body uses documented Imagine fields
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 0.378958
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: # Subtest: xAI image adapter contract
+@adcraft/ai:test:     # Subtest: missing configuration fails before making a request
+@adcraft/ai:test:     ok 1 - missing configuration fails before making a request
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.874041
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: generation posts JSON to Imagine with mapped ratio
+@adcraft/ai:test:     ok 2 - generation posts JSON to Imagine with mapped ratio
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 15.280417
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: private synthetic reference bytes use JSON edits
+@adcraft/ai:test:     ok 3 - private synthetic reference bytes use JSON edits
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 1.932625
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: missing references fail instead of silently dropping the product
+@adcraft/ai:test:     ok 4 - missing references fail instead of silently dropping the product
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.119
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: quota failure is explicit and never retried
+@adcraft/ai:test:     ok 5 - quota failure is explicit and never retried
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 0.248542
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     # Subtest: empty and malformed outputs cannot be billed as an image
+@adcraft/ai:test:     ok 6 - empty and malformed outputs cannot be billed as an image
+@adcraft/ai:test:       ---
+@adcraft/ai:test:       duration_ms: 1.010292
+@adcraft/ai:test:       type: 'test'
+@adcraft/ai:test:       ...
+@adcraft/ai:test:     1..6
+@adcraft/ai:test: ok 17 - xAI image adapter contract
+@adcraft/ai:test:   ---
+@adcraft/ai:test:   duration_ms: 23.505
+@adcraft/ai:test:   type: 'test'
+@adcraft/ai:test:   ...
+@adcraft/ai:test: 1..17
+@adcraft/ai:test: # tests 31
+@adcraft/ai:test: # suites 0
+@adcraft/ai:test: # pass 31
+@adcraft/ai:test: # fail 0
+@adcraft/ai:test: # cancelled 0
+@adcraft/ai:test: # skipped 0
+@adcraft/ai:test: # todo 0
+@adcraft/ai:test: # duration_ms 700.292417
+@adcraft/app:test: # Subtest: character migration and credit reservations are tenant-scoped, atomic and refundable
+@adcraft/app:test: ok 3 - character migration and credit reservations are tenant-scoped, atomic and refundable
+@adcraft/app:test:   ---
+@adcraft/app:test:   duration_ms: 1456.845666
+@adcraft/app:test:   type: 'test'
+@adcraft/app:test:   ...
+@adcraft/app:test: # Subtest: concepts are usable before the stream ends; retries keep selections and charge once
+@adcraft/app:test: ok 4 - concepts are usable before the stream ends; retries keep selections and charge once
+@adcraft/app:test:   ---
+@adcraft/app:test:   duration_ms: 1764.413333
+@adcraft/app:test:   type: 'test'
+@adcraft/app:test:   ...
+@adcraft/app:test: # Subtest: dashboard cast inventory stays scoped to the active brand and organization
+@adcraft/app:test: ok 5 - dashboard cast inventory stays scoped to the active brand and organization
+@adcraft/app:test:   ---
+@adcraft/app:test:   duration_ms: 1484.582958
+@adcraft/app:test:   type: 'test'
+@adcraft/app:test:   ...
+@adcraft/app:test: 1..5
+@adcraft/app:test: # tests 5
+@adcraft/app:test: # suites 0
+@adcraft/app:test: # pass 5
+@adcraft/app:test: # fail 0
+@adcraft/app:test: # cancelled 0
+@adcraft/app:test: # skipped 0
+@adcraft/app:test: # todo 0
+@adcraft/app:test: # duration_ms 2384.853083
+
+ Tasks:    2 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    3.235s 
+

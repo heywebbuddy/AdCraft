@@ -1,0 +1,107 @@
+[
+  {
+    "file": "01-heygen-library.jpg",
+    "source": "02-heygen-library.jpg",
+    "width": 1170,
+    "height": 1473,
+    "bytes": 274955
+  },
+  {
+    "file": "02-brand-kits.jpg",
+    "source": "03-brand-kits.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 196839
+  },
+  {
+    "file": "03-product-library.jpg",
+    "source": "04-product-library.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 223519
+  },
+  {
+    "file": "04-ai-ideas.jpg",
+    "source": "05-ai-ideas.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 216772
+  },
+  {
+    "file": "05-image-ad-layouts.jpg",
+    "source": "06-image-ad-layouts.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 241738
+  },
+  {
+    "file": "06-bulk-generation.jpg",
+    "source": "08-bulk-generation.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 255968
+  },
+  {
+    "file": "07-product-videos.jpg",
+    "source": "09-product-videos.jpg",
+    "width": 1170,
+    "height": 1452,
+    "bytes": 218830
+  },
+  {
+    "file": "08-ugc-templates.jpg",
+    "source": "10-ugc-templates.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 274112
+  },
+  {
+    "file": "09-ugc-editor.jpg",
+    "source": "11-ugc-editor.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 239363
+  },
+  {
+    "file": "10-create-characters.jpg",
+    "source": "12-create-characters.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 179745
+  },
+  {
+    "file": "11-voice-tools.jpg",
+    "source": "15-voice-tools.jpg",
+    "width": 1170,
+    "height": 1333,
+    "bytes": 164852
+  },
+  {
+    "file": "12-publish-campaigns.jpg",
+    "source": "16-publish-campaigns.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 229206
+  },
+  {
+    "file": "13-teams-and-workspaces.jpg",
+    "source": "19-teams-and-workspaces.jpg",
+    "width": 1170,
+    "height": 1483,
+    "bytes": 175597
+  },
+  {
+    "file": "14-plans-and-credits.jpg",
+    "source": "20-plans-and-credits.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 158961
+  },
+  {
+    "file": "15-admin-panel.jpg",
+    "source": "22-admin-panel.jpg",
+    "width": 1170,
+    "height": 1500,
+    "bytes": 151139
+  }
+]

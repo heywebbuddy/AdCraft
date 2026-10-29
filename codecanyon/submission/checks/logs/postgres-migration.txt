@@ -1,0 +1,8 @@
+
+> @adcraft/db@0.1.0 db:migrate /private<buyer>/packages/db
+> drizzle-kit migrate
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/private<buyer>/packages/db/drizzle.config.ts'
+Using 'postgres' driver for database querying
+[⣷] applying migrations...[✓] migrations applied successfully!

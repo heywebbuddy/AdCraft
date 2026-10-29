@@ -1,0 +1,539 @@
+[
+  {
+    "panel": "02-heygen-library",
+    "title": "25,000+ presenter looks. Find the face for your ad.",
+    "features": [
+      "25,070 verified public looks",
+      "1,414 verified public people",
+      "Search",
+      "Gender filters",
+      "Avatar type filters",
+      "Filmed actors",
+      "AI photo avatars",
+      "Digital twins",
+      "Multiple looks",
+      "Orientation fit"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/characters/presenter-library.tsx",
+      "packages/ai/src/presenter/library.ts"
+    ]
+  },
+  {
+    "panel": "01-introduction",
+    "features": [
+      "Product positioning",
+      "Six UGC templates",
+      "Ten preset looks",
+      "Four static layouts"
+    ],
+    "sourceFiles": [
+      "apps/app/src/lib/character-studio.ts",
+      "packages/ai/src/presenter/looks.ts",
+      "packages/render/src/static/document.ts"
+    ]
+  },
+  {
+    "panel": "02-how-it-works",
+    "title": "From product details to a finished ad.",
+    "features": [
+      "Overview",
+      "Shared workflow",
+      "Downloads",
+      "Publishing",
+      "Performance"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/dashboard/page.tsx"
+    ]
+  },
+  {
+    "panel": "03-brand-kits",
+    "title": "Make every ad look like your brand.",
+    "features": [
+      "Website import",
+      "Logo",
+      "Colors",
+      "Fonts",
+      "Tone",
+      "Do-say and do-not-say lists",
+      "Brand kit versions"
+    ],
+    "sourceFiles": [
+      "apps/app/src/server/brand-import.ts",
+      "packages/db/src/schema/brands.ts"
+    ]
+  },
+  {
+    "panel": "04-product-library",
+    "title": "Add your products. Keep them ready for ads.",
+    "features": [
+      "Photo uploads",
+      "Background removal",
+      "Product URL import",
+      "Shopify import",
+      "Product metadata",
+      "Product reuse"
+    ],
+    "sourceFiles": [
+      "apps/app/src/server/library.ts",
+      "apps/app/src/server/product-import.ts"
+    ]
+  },
+  {
+    "panel": "05-ai-ideas",
+    "title": "Tell the AI what to sell. Choose an idea you like.",
+    "features": [
+      "Objective",
+      "Audience",
+      "Offer",
+      "Platforms",
+      "Formats",
+      "Tone",
+      "Constraints",
+      "Suggest",
+      "Improve",
+      "Eight concepts",
+      "Streaming ideas",
+      "Regeneration",
+      "Concept selection"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/briefs/new/brief-form.tsx",
+      "packages/ai/src/text/brief-assist.ts",
+      "packages/ai/src/text/concept-stream.ts"
+    ]
+  },
+  {
+    "panel": "06-image-ad-layouts",
+    "title": "Your products. Ads worth looking at.",
+    "features": [
+      "Real product ad examples",
+      "Beauty",
+      "Electronics",
+      "Food and drink",
+      "Footwear",
+      "Hero layout",
+      "Split layout",
+      "Minimal layout",
+      "Bold layout",
+      "Editable mode",
+      "AI artwork mode",
+      "Model selection",
+      "Brand colors and logo"
+    ],
+    "sourceFiles": [
+      "packages/render/src/static/document.ts",
+      "packages/render/src/static/templates.tsx",
+      "apps/app/src/server/creatives.ts"
+    ]
+  },
+  {
+    "panel": "07-edit-and-export",
+    "title": "Change the details. Download the sizes you need.",
+    "features": [
+      "Text edits",
+      "CTA edits",
+      "Layout change",
+      "Product scale and position",
+      "Alignment",
+      "Text sizing",
+      "Overlay strength",
+      "Regenerate",
+      "Variants",
+      "Placement sizes",
+      "Single download",
+      "ZIP download",
+      "Re-render"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/creatives/[creativeId]/page.tsx",
+      "apps/app/src/app/(app)/creatives/[creativeId]/editor.tsx",
+      "apps/app/src/app/api/render/[creativeId]/zip/route.ts"
+    ]
+  },
+  {
+    "panel": "08-bulk-generation",
+    "title": "Create a batch of ads in one go.",
+    "features": [
+      "Bulk concept selection",
+      "Multiple layouts",
+      "All supported sizes",
+      "Image model choice",
+      "Credit estimate",
+      "Queue progress"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/briefs/bulk/page.tsx",
+      "apps/app/src/app/(app)/briefs/bulk/picker.tsx"
+    ]
+  },
+  {
+    "panel": "09-product-videos",
+    "title": "Turn a product idea into a short video.",
+    "features": [
+      "Storyboard",
+      "Video model choice",
+      "Scenes",
+      "Caption text",
+      "Scene prompts",
+      "Per-scene regeneration",
+      "Retry video",
+      "Job progress",
+      "End card",
+      "Size exports"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/videos/new/video-form.tsx",
+      "apps/app/src/app/(app)/videos/[creativeId]/page.tsx",
+      "apps/app/src/server/videos.ts"
+    ]
+  },
+  {
+    "panel": "10-ugc-templates",
+    "title": "Six ways to tell your product story.",
+    "features": [
+      "introduction",
+      "details",
+      "question",
+      "explainer",
+      "launch",
+      "discovery"
+    ],
+    "sourceFiles": [
+      "apps/app/src/lib/character-studio.ts",
+      "apps/app/src/app/(app)/characters/studio.tsx"
+    ]
+  },
+  {
+    "panel": "11-ugc-editor",
+    "title": "Choose the presenter. Write the message. Create the video.",
+    "features": [
+      "Product or service",
+      "Character or stock presenter",
+      "Template picker",
+      "Three hook variations",
+      "Editable script",
+      "CTA",
+      "Four-scene preview",
+      "Voice selection",
+      "Image model selection",
+      "Video model selection",
+      "9:16",
+      "1:1",
+      "16:9",
+      "Presenter animation",
+      "Product B-roll"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/characters/studio.tsx",
+      "apps/app/src/pipelines/ugc.ts"
+    ]
+  },
+  {
+    "panel": "12-create-characters",
+    "title": "Create a presenter your brand can use again.",
+    "features": [
+      "Generated character",
+      "Photo avatar",
+      "Prompt avatar",
+      "Digital twin",
+      "Upload footage",
+      "Consent status",
+      "Saved character profile",
+      "Recurring voice"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/characters/heygen-forms.tsx",
+      "apps/app/src/app/(app)/characters/actions.ts",
+      "packages/ai/src/presenter/looks.ts"
+    ]
+  },
+  {
+    "panel": "13-look-packs",
+    "title": "Give the same character a different look.",
+    "features": [
+      "Modern Corporate",
+      "Stylish Business-Casual",
+      "Scandinavian Minimal",
+      "Cool Tech / Slate",
+      "Healthcare",
+      "Keynote Power Presenter",
+      "Fitness",
+      "Automotive Dealership",
+      "Business Casual",
+      "Podcast",
+      "Custom look prompt",
+      "Library-look remix",
+      "Saved looks",
+      "Gender options",
+      "Aspect ratio selection",
+      "Look credit estimate"
+    ],
+    "sourceFiles": [
+      "packages/ai/src/presenter/looks.ts",
+      "apps/app/src/app/(app)/characters/look-packs.tsx"
+    ]
+  },
+  {
+    "panel": "14-presenters-and-motion",
+    "title": "Find a presenter that fits your message.",
+    "features": [
+      "Cast search",
+      "Cast filters",
+      "Filmed studio",
+      "Photo avatars",
+      "Digital twins",
+      "Presenter looks",
+      "Orientation hints",
+      "Calm motion",
+      "Natural motion",
+      "Energetic motion",
+      "Gesture prompt"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/characters/presenter-library.tsx",
+      "apps/app/src/app/(app)/characters/studio.tsx"
+    ]
+  },
+  {
+    "panel": "15-voice-tools",
+    "title": "2,600+ HeyGen voices. Make the message yours.",
+    "features": [
+      "ElevenLabs catalog",
+      "HeyGen catalog",
+      "Voice search",
+      "Language filter",
+      "Gender filter",
+      "Provider filter",
+      "Audio preview",
+      "Audition",
+      "Clone from recording",
+      "Design from prompt",
+      "Compare designed voices",
+      "Save private brand voice",
+      "Delete private voice",
+      "Recurring character voice"
+    ],
+    "sourceFiles": [
+      "apps/app/src/components/voice-picker.tsx",
+      "apps/app/src/app/(app)/characters/voice-tools.tsx",
+      "apps/app/src/server/brand-voices.ts"
+    ]
+  },
+  {
+    "panel": "16-publish-campaigns",
+    "title": "Create a campaign without leaving the studio.",
+    "features": [
+      "Meta connection",
+      "TikTok connection",
+      "Google Ads connection",
+      "OAuth",
+      "Audience",
+      "Placements",
+      "Budget",
+      "Creative selection",
+      "Placement validation",
+      "Claims review",
+      "Budget approval",
+      "Paused launch",
+      "Activate",
+      "Pause",
+      "Sandbox accounts"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/campaigns/new/builder.tsx",
+      "apps/app/src/server/ads-actions.ts",
+      "packages/ads/src/index.ts"
+    ]
+  },
+  {
+    "panel": "17-performance",
+    "title": "See how the ads perform. Decide what to try next.",
+    "features": [
+      "Spend",
+      "Impressions",
+      "CTR",
+      "CPA",
+      "ROAS",
+      "Creative results",
+      "Date ranges",
+      "Daily charts",
+      "CSV export",
+      "Fatigue alerts",
+      "Disapproved ads",
+      "Refresh variations"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/performance/page.tsx",
+      "apps/app/src/server/ads.ts"
+    ]
+  },
+  {
+    "panel": "18-client-reviews",
+    "title": "Send a link. Get feedback in one place.",
+    "features": [
+      "Review links",
+      "No account for external reviewers",
+      "Comments",
+      "Resolve comments",
+      "Approve",
+      "Request changes",
+      "Revoke links",
+      "Save template",
+      "Brand template",
+      "Shared template"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(app)/creatives/[creativeId]/review/page.tsx",
+      "apps/app/src/server/collab.ts",
+      "apps/app/src/components/review-panel.tsx"
+    ]
+  },
+  {
+    "panel": "19-teams-and-workspaces",
+    "title": "Keep each customer\u2019s work in its own space.",
+    "features": [
+      "Separate organizations",
+      "Multiple brands",
+      "Brand switcher",
+      "Owner",
+      "Editor",
+      "Viewer",
+      "Email invites",
+      "Audit log",
+      "Workspace guardrails",
+      "Workspace deletion request"
+    ],
+    "sourceFiles": [
+      "packages/db/src/schema/orgs.ts",
+      "apps/app/src/app/(app)/settings/team/page.tsx",
+      "apps/app/src/app/(app)/settings/privacy/page.tsx"
+    ]
+  },
+  {
+    "panel": "20-plans-and-credits",
+    "title": "Run your own subscription platform.",
+    "features": [
+      "Monthly plans",
+      "Annual plans",
+      "Stripe checkout",
+      "Billing portal",
+      "Credit topups",
+      "Ledger",
+      "Reservation",
+      "Refunds",
+      "Trial credits",
+      "Plan features"
+    ],
+    "sourceFiles": [
+      "apps/app/src/server/billing.ts",
+      "apps/app/src/server/generation-credits.ts",
+      "apps/app/src/app/api/stripe/webhook/route.ts"
+    ]
+  },
+  {
+    "panel": "21-api-and-webhooks",
+    "title": "Connect the studio to other tools.",
+    "features": [
+      "API keys",
+      "Key revocation",
+      "List creatives",
+      "Get creative",
+      "Read render files",
+      "Pagination",
+      "Brand filtering",
+      "Rendered webhook",
+      "Approval webhook",
+      "Changes requested webhook",
+      "Comment webhook",
+      "Webhook signature"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/api/v1/creatives/route.ts",
+      "apps/app/src/app/api/v1/creatives/[id]/route.ts",
+      "apps/app/src/server/webhooks.ts"
+    ]
+  },
+  {
+    "panel": "22-admin-panel",
+    "title": "Manage the people, models and running costs.",
+    "features": [
+      "Users",
+      "Organizations",
+      "Billing admin",
+      "Campaign admin",
+      "Model catalog",
+      "Model defaults",
+      "Model credits",
+      "Model test",
+      "Provider health",
+      "Cost records",
+      "Generation history",
+      "Errors",
+      "Audit",
+      "Signups",
+      "Trials",
+      "Maintenance banner",
+      "Plan feature flags",
+      "Provider budget guardrails"
+    ],
+    "sourceFiles": [
+      "apps/app/src/app/(admin)/admin/models/page.tsx",
+      "apps/app/src/app/(admin)/admin/settings/page.tsx",
+      "apps/app/src/server/platform-settings.ts"
+    ]
+  },
+  {
+    "panel": "23-whats-included",
+    "title": "Make it your product. Build on the included code.",
+    "features": [
+      "Full source",
+      "Next.js",
+      "React",
+      "TypeScript",
+      "PostgreSQL",
+      "Migrations",
+      "Magic links",
+      "Google login",
+      "Workspace search",
+      "Activity",
+      "Light theme",
+      "Dark theme",
+      "Background jobs",
+      "Inline fallback",
+      "Retries",
+      "Health endpoint",
+      "Backup script",
+      "Dockerfile",
+      "Setup docs",
+      "Marketing site",
+      "Showcase"
+    ],
+    "sourceFiles": [
+      "package.json",
+      "apps/app/src/auth.ts",
+      "apps/app/src/components/workspace-topbar.tsx",
+      "apps/app/src/server/jobs.ts",
+      "scripts/backup-db.sh",
+      "codecanyon/documentation/index.html"
+    ]
+  },
+  {
+    "panel": "24-setup-requirements",
+    "title": "What you need to run Adcraft.",
+    "features": [
+      "Hosting requirements",
+      "External service costs",
+      "Ad permissions",
+      "FFmpeg",
+      "Remotion disclosure",
+      "Sandbox mode"
+    ],
+    "sourceFiles": [
+      "package.json",
+      "THIRD-PARTY-NOTICES.md",
+      ".env.example"
+    ]
+  }
+]

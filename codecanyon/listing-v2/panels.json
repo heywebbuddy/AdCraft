@@ -1,0 +1,102 @@
+[
+  {
+    "slug": "01-introduction",
+    "title": "Introduction"
+  },
+  {
+    "slug": "02-heygen-library",
+    "title": "Heygen Library"
+  },
+  {
+    "slug": "02-how-it-works",
+    "title": "How It Works"
+  },
+  {
+    "slug": "03-brand-kits",
+    "title": "Brand Kits"
+  },
+  {
+    "slug": "04-product-library",
+    "title": "Product Library"
+  },
+  {
+    "slug": "05-ai-ideas",
+    "title": "Ai Ideas"
+  },
+  {
+    "slug": "06-image-ad-layouts",
+    "title": "Image Ad Layouts"
+  },
+  {
+    "slug": "07-edit-and-export",
+    "title": "Edit And Export"
+  },
+  {
+    "slug": "08-bulk-generation",
+    "title": "Bulk Generation"
+  },
+  {
+    "slug": "09-product-videos",
+    "title": "Product Videos"
+  },
+  {
+    "slug": "10-ugc-templates",
+    "title": "Ugc Templates"
+  },
+  {
+    "slug": "11-ugc-editor",
+    "title": "Ugc Editor"
+  },
+  {
+    "slug": "12-create-characters",
+    "title": "Create Characters"
+  },
+  {
+    "slug": "13-look-packs",
+    "title": "Look Packs"
+  },
+  {
+    "slug": "14-presenters-and-motion",
+    "title": "Presenters And Motion"
+  },
+  {
+    "slug": "15-voice-tools",
+    "title": "Voice Tools"
+  },
+  {
+    "slug": "16-publish-campaigns",
+    "title": "Publish Campaigns"
+  },
+  {
+    "slug": "17-performance",
+    "title": "Performance"
+  },
+  {
+    "slug": "18-client-reviews",
+    "title": "Client Reviews"
+  },
+  {
+    "slug": "19-teams-and-workspaces",
+    "title": "Teams And Workspaces"
+  },
+  {
+    "slug": "20-plans-and-credits",
+    "title": "Plans And Credits"
+  },
+  {
+    "slug": "21-api-and-webhooks",
+    "title": "Api And Webhooks"
+  },
+  {
+    "slug": "22-admin-panel",
+    "title": "Admin Panel"
+  },
+  {
+    "slug": "23-whats-included",
+    "title": "Whats Included"
+  },
+  {
+    "slug": "24-setup-requirements",
+    "title": "Setup Requirements"
+  }
+]

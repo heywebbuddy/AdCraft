@@ -1,0 +1,603 @@
+{
+  "revision": 5,
+  "status": "queued-for-review",
+  "queueId": "65560447",
+  "descriptionPanels": [
+    {
+      "slug": "01-introduction",
+      "title": "Introduction"
+    },
+    {
+      "slug": "02-heygen-library",
+      "title": "Heygen Library"
+    },
+    {
+      "slug": "02-how-it-works",
+      "title": "How It Works"
+    },
+    {
+      "slug": "03-brand-kits",
+      "title": "Brand Kits"
+    },
+    {
+      "slug": "04-product-library",
+      "title": "Product Library"
+    },
+    {
+      "slug": "05-ai-ideas",
+      "title": "Ai Ideas"
+    },
+    {
+      "slug": "06-image-ad-layouts",
+      "title": "Image Ad Layouts"
+    },
+    {
+      "slug": "07-edit-and-export",
+      "title": "Edit And Export"
+    },
+    {
+      "slug": "08-bulk-generation",
+      "title": "Bulk Generation"
+    },
+    {
+      "slug": "09-product-videos",
+      "title": "Product Videos"
+    },
+    {
+      "slug": "10-ugc-templates",
+      "title": "Ugc Templates"
+    },
+    {
+      "slug": "11-ugc-editor",
+      "title": "Ugc Editor"
+    },
+    {
+      "slug": "12-create-characters",
+      "title": "Create Characters"
+    },
+    {
+      "slug": "13-look-packs",
+      "title": "Look Packs"
+    },
+    {
+      "slug": "14-presenters-and-motion",
+      "title": "Presenters And Motion"
+    },
+    {
+      "slug": "15-voice-tools",
+      "title": "Voice Tools"
+    },
+    {
+      "slug": "16-publish-campaigns",
+      "title": "Publish Campaigns"
+    },
+    {
+      "slug": "17-performance",
+      "title": "Performance"
+    },
+    {
+      "slug": "18-client-reviews",
+      "title": "Client Reviews"
+    },
+    {
+      "slug": "19-teams-and-workspaces",
+      "title": "Teams And Workspaces"
+    },
+    {
+      "slug": "20-plans-and-credits",
+      "title": "Plans And Credits"
+    },
+    {
+      "slug": "21-api-and-webhooks",
+      "title": "Api And Webhooks"
+    },
+    {
+      "slug": "22-admin-panel",
+      "title": "Admin Panel"
+    },
+    {
+      "slug": "23-whats-included",
+      "title": "Whats Included"
+    },
+    {
+      "slug": "24-setup-requirements",
+      "title": "Setup Requirements"
+    }
+  ],
+  "sourceAssets": [
+    "assets/banner-visual-v5.png",
+    "assets/dm-sans.woff2",
+    "assets/heygen-public-selection.json",
+    "assets/mark.svg",
+    "assets/product-coffee-v5.png",
+    "assets/product-headphones-v5.png",
+    "assets/product-running-shoe-v5.png",
+    "assets/product-skincare-v5.png",
+    "assets/studio-portraits.webp"
+  ],
+  "offerIncluded": false,
+  "realProductBrandsIncluded": false,
+  "fonts": "Regular DM Sans; no italic text.",
+  "files": [
+    {
+      "file": "01-introduction.html",
+      "bytes": 2452,
+      "sha256": "1b5cdffa1ad951ed72986c572ad07c85658d64a841c415c0c14dad2f92cfa25b"
+    },
+    {
+      "file": "02-heygen-library.html",
+      "bytes": 3535,
+      "sha256": "53e9e2054f9a82f402d3de5d3beddbb47fab508963c094bf654cc39adba9933b"
+    },
+    {
+      "file": "02-how-it-works.html",
+      "bytes": 3372,
+      "sha256": "3bda1fe18c83cbb12566f03de47b4b272721143cacfbeed723cdc91f04216649"
+    },
+    {
+      "file": "03-brand-kits.html",
+      "bytes": 4611,
+      "sha256": "114c91b083584a45c8a790d22d3c80f238c4d457731e05f065297daea67d4469"
+    },
+    {
+      "file": "04-product-library.html",
+      "bytes": 3542,
+      "sha256": "9c96ea038015d6ca9610f9025a688025d24ab7a685cb37d68fe062a7b30d63f4"
+    },
+    {
+      "file": "05-ai-ideas.html",
+      "bytes": 3670,
+      "sha256": "da5f986fcefbbeea179bc538065fb03485f1703f1d1ba8db6a5780ee5f3a37a0"
+    },
+    {
+      "file": "06-image-ad-layouts.html",
+      "bytes": 3568,
+      "sha256": "7d7165872b917b50ba65b9f14a8bcb41a6d943f51b8335aef0e888165f78e82d"
+    },
+    {
+      "file": "07-edit-and-export.html",
+      "bytes": 4127,
+      "sha256": "05116868b2edada816c6a73e3cc2ff7820009aacd1ad9294110548f175b300ab"
+    },
+    {
+      "file": "08-bulk-generation.html",
+      "bytes": 4534,
+      "sha256": "29adef332358f2f078365acba28fb01fee2b31dd15a6855309ec924ef07be246"
+    },
+    {
+      "file": "09-product-videos.html",
+      "bytes": 3202,
+      "sha256": "8bf6b1acb14755c6075a8279b54074c6965e62e1490ee77da00fd4ceeb64ff2c"
+    },
+    {
+      "file": "10-ugc-templates.html",
+      "bytes": 4347,
+      "sha256": "c5f4c30683b4fd39d45af76d12c43fbe6009ebbb4e64940fdd74570e167c601b"
+    },
+    {
+      "file": "11-ugc-editor.html",
+      "bytes": 4371,
+      "sha256": "20f95c2d876391aaad676a75ac0098785b13d3a4515e75cdfdf1b19a00c90e91"
+    },
+    {
+      "file": "12-create-characters.html",
+      "bytes": 3261,
+      "sha256": "130d6e87b363e44d97676758cb8e1bcd0eb2e61c27808ca1be8628afc6d97871"
+    },
+    {
+      "file": "13-look-packs.html",
+      "bytes": 4196,
+      "sha256": "a52e528ee60f5236a49f47dd1738f2a8fb826101f568329a7dad1aaca7f4c973"
+    },
+    {
+      "file": "14-presenters-and-motion.html",
+      "bytes": 2866,
+      "sha256": "7e55424d9c0c644fe30151192eac8dd761e3d94584b0d18112549cd865042450"
+    },
+    {
+      "file": "15-voice-tools.html",
+      "bytes": 3327,
+      "sha256": "5dde5853d26bfb81aae4646a35b741735c85a6236584f36d90f2a6a492aa705a"
+    },
+    {
+      "file": "16-publish-campaigns.html",
+      "bytes": 3449,
+      "sha256": "9c88aea6a979693fb63dce7ea9ed675115546e44b3ae4cd371aeadea013d5132"
+    },
+    {
+      "file": "17-performance.html",
+      "bytes": 3356,
+      "sha256": "dc7f61d31bee28dfcac7545f84c88fdc9bcfbe33e1026fc8d9cd3fc7dbd5cb4c"
+    },
+    {
+      "file": "18-client-reviews.html",
+      "bytes": 3469,
+      "sha256": "a01039b5594874ec4b84ce05749162318ccd79fd46eb72c24e599b2d47ad709f"
+    },
+    {
+      "file": "19-teams-and-workspaces.html",
+      "bytes": 4386,
+      "sha256": "c4028d252069f87783352492079fb361ead20e1e6a5d5568fad343331db35b8b"
+    },
+    {
+      "file": "20-plans-and-credits.html",
+      "bytes": 3667,
+      "sha256": "810dd4a413bc14b294411f8ff09bcdd7d385e997299b8a2c33d31bb9427bf8b7"
+    },
+    {
+      "file": "21-api-and-webhooks.html",
+      "bytes": 2807,
+      "sha256": "c6b6f4c4c9b6fb9360ce02cf7227c05e439ebc95beca549bfe98bde77fc5bd66"
+    },
+    {
+      "file": "22-admin-panel.html",
+      "bytes": 5141,
+      "sha256": "d8809f53ea8742a069f30a70c01eda85fbcb1d45c69eaad0a4b7a3275d9cca27"
+    },
+    {
+      "file": "23-whats-included.html",
+      "bytes": 4872,
+      "sha256": "6c1e10374ac3df3f59a8c61f8933f9d3c2cd219302a33b92dfd8ff26ef53cd54"
+    },
+    {
+      "file": "24-setup-requirements.html",
+      "bytes": 3149,
+      "sha256": "8e6bf331bf172fc489bff4de0153447dfb3ce507bc25af00f457ce90b60e44db"
+    },
+    {
+      "file": "README.txt",
+      "bytes": 1821,
+      "sha256": "7351f46af3ada0ca9c74c6853d96328176e71e2a3dda04b6d2dc276f032f16d2"
+    },
+    {
+      "file": "ad-coffee.html",
+      "bytes": 413,
+      "sha256": "9585bdfcfc61d58f957819920dcba5d6cacdcbfa71817c600ecd20eec296dee0"
+    },
+    {
+      "file": "ad-headphones.html",
+      "bytes": 417,
+      "sha256": "f60f3061da308af3e396316bfbc6643e31b90d626c5446537ad35edfb0616f36"
+    },
+    {
+      "file": "ad-running-shoe.html",
+      "bytes": 426,
+      "sha256": "d386d6b02508fc3d28f10670d3f7853b18f885a52e6387eeea5b61218bd9d947"
+    },
+    {
+      "file": "ad-skincare.html",
+      "bytes": 411,
+      "sha256": "b2a5ac6bbdd01788f3429e680c4ad8e90b43d375bd8332af5bd3d72512068451"
+    },
+    {
+      "file": "asset-audit.json",
+      "bytes": 4635,
+      "sha256": "7da9ea853c0238812daa058e45f2655c47600937820dac90c6f3572e58cc3197"
+    },
+    {
+      "file": "assets/banner-visual-v5.png",
+      "bytes": 2116163,
+      "sha256": "c3a1f1de831a1bc217a5790954672440c15c086fad9ebc294b05f7533531c490"
+    },
+    {
+      "file": "assets/dm-sans.woff2",
+      "bytes": 36980,
+      "sha256": "468d56b6b25b05b70190b6c233d773f6f1770e8579827ce022a57f03fa8002fb"
+    },
+    {
+      "file": "assets/heygen-public-selection.json",
+      "bytes": 2337,
+      "sha256": "984240614f2c66a3dedd6dd9c1af93e9ce0b6a75f7a6c0ff58dfd818ffdb7a03"
+    },
+    {
+      "file": "assets/mark.svg",
+      "bytes": 448,
+      "sha256": "722cdef4adaa7374e2a058aba2857d8639ce8a7ff0bcd283cf2237376101312e"
+    },
+    {
+      "file": "assets/product-coffee-v5.png",
+      "bytes": 1868139,
+      "sha256": "f1e519f5d5ffcb7198fd1a3984b8af60b2c5fac6a5fff7ecae790977563d1d56"
+    },
+    {
+      "file": "assets/product-headphones-v5.png",
+      "bytes": 2021472,
+      "sha256": "88b22b6d4f4f5ce858b9adf1849d2b185e4f3bc51dc24ff17f1db8b0e11a1227"
+    },
+    {
+      "file": "assets/product-running-shoe-v5.png",
+      "bytes": 2340410,
+      "sha256": "91b481cb631849a9ca11fbfea34cc1b6b8a55c4053cac7dae0af3d4c1663f954"
+    },
+    {
+      "file": "assets/product-skincare-v5.png",
+      "bytes": 1900451,
+      "sha256": "5784688d697d31b5d6e533976966b22070322eb5053efc3932ace470c64c5711"
+    },
+    {
+      "file": "assets/studio-portraits.webp",
+      "bytes": 449854,
+      "sha256": "8e52c444c2324235c943867f557593f9d4016ce82b0f97f668da427b3c73f63d"
+    },
+    {
+      "file": "banner.html",
+      "bytes": 1068,
+      "sha256": "d49757b9e2f42a9ce5637c13b8ea63dd3aba4a90b1e6f328339bb31367316fd6"
+    },
+    {
+      "file": "build.py",
+      "bytes": 57708,
+      "sha256": "15e55bd509cbffc88ca1ab039443013e82ad675bd60f88db96cc273c6def1725"
+    },
+    {
+      "file": "cover.html",
+      "bytes": 1074,
+      "sha256": "751bb8e7c193c839171fb19f915b182bc638bf0cb739b35491e0f4503e9690b4"
+    },
+    {
+      "file": "description-copy.txt",
+      "bytes": 26537,
+      "sha256": "d4bc6dfb7b8d315de7e308eff5a8dcfd74ca77f5f3d6a256339d3f30eea14038"
+    },
+    {
+      "file": "description-images.local.html",
+      "bytes": 2052,
+      "sha256": "fa784b4f4fbf560dfcc71fcd23d162653c522e824d97e3955a58576e4e95a6ab"
+    },
+    {
+      "file": "export-checks.json",
+      "bytes": 6350,
+      "sha256": "5a57c5201cd947f2f8e7482202815781ba1380f974f21fc5a62c77ac603cef1d"
+    },
+    {
+      "file": "exports/01-introduction.jpg",
+      "bytes": 1247795,
+      "sha256": "fb7705a3fe3743980a91d5c2cb0af54b26db3cabb8b1624b0813f27951f8ced8"
+    },
+    {
+      "file": "exports/02-heygen-library.jpg",
+      "bytes": 1509722,
+      "sha256": "246af1b5146743bd0f04746d30f4399b5b046ff117ae169ed3cd69a836cd7c04"
+    },
+    {
+      "file": "exports/02-how-it-works.jpg",
+      "bytes": 598154,
+      "sha256": "b2c6500c2b379c6375f073e94fe3eea753a292d46648fd7429b80adc1fadcc4d"
+    },
+    {
+      "file": "exports/03-brand-kits.jpg",
+      "bytes": 1130489,
+      "sha256": "8b8b836bb33b9b9d589e61f010c2f51470d3ed2da47d6d17aba9aae6bedc815a"
+    },
+    {
+      "file": "exports/04-product-library.jpg",
+      "bytes": 1078960,
+      "sha256": "b332781cdbdbd03f147bb61a4934b0f0a7c09a82f8fbd0cca053961c86fbe271"
+    },
+    {
+      "file": "exports/05-ai-ideas.jpg",
+      "bytes": 731414,
+      "sha256": "48558e195948c7bc4618f09f6fd8b1d92194d368c0ed7eda93b7bd758e7799a6"
+    },
+    {
+      "file": "exports/06-image-ad-layouts.jpg",
+      "bytes": 2011608,
+      "sha256": "c6e81cf9ac69840bb8274a62615b7eb82e45065c17872582951f4228fe03247d"
+    },
+    {
+      "file": "exports/07-edit-and-export.jpg",
+      "bytes": 1016677,
+      "sha256": "cc54a1f6f5d18946378ad7d70319700a0b44498acb23636a103fc936109fc0ad"
+    },
+    {
+      "file": "exports/08-bulk-generation.jpg",
+      "bytes": 1423995,
+      "sha256": "36c9141891a595033dfc0f4c0cd681ed97c8838cc336d5ec831f5066848abe6d"
+    },
+    {
+      "file": "exports/09-product-videos.jpg",
+      "bytes": 1141333,
+      "sha256": "b46e974b7fa8b5f80945a95c5fceb4bffb4eb69ae8a61a1597ad5ea0db022f1e"
+    },
+    {
+      "file": "exports/10-ugc-templates.jpg",
+      "bytes": 1500544,
+      "sha256": "cd75620e26ef2b3135f6610a3abeb9c30cf8176f543a5cfc4b88ddd24c6dde95"
+    },
+    {
+      "file": "exports/11-ugc-editor.jpg",
+      "bytes": 1106307,
+      "sha256": "c043123d05c682c67838daf529ac6dc544fbb74d86b3f0fd27845d1a4e1ba1b1"
+    },
+    {
+      "file": "exports/12-create-characters.jpg",
+      "bytes": 737805,
+      "sha256": "5de9043f1e6ece63655fed9ea15e00b0a1aa5333a5dbcf56126f5c32019af9fd"
+    },
+    {
+      "file": "exports/13-look-packs.jpg",
+      "bytes": 949937,
+      "sha256": "aac6257c778c6dd5ce391eaf218659309df3db88fc138c2affc16517396df3de"
+    },
+    {
+      "file": "exports/14-presenters-and-motion.jpg",
+      "bytes": 616396,
+      "sha256": "6e3bd4115b2494ec9f2ecace0c427032644eaecbd078b87ca161c525eeea7627"
+    },
+    {
+      "file": "exports/15-voice-tools.jpg",
+      "bytes": 648999,
+      "sha256": "628a573ad39c1e6721cfa7ed470417f849ddcadefa4955fd102366921da081aa"
+    },
+    {
+      "file": "exports/16-publish-campaigns.jpg",
+      "bytes": 966191,
+      "sha256": "d44eae270fd8c5540aa22744f097d602c764dba92c9b75e097d03da6d6106db2"
+    },
+    {
+      "file": "exports/17-performance.jpg",
+      "bytes": 529446,
+      "sha256": "9003bcf4184c7458563ef0f8aec5635a5760c61c7da7fe8cd9ee013f215d1db8"
+    },
+    {
+      "file": "exports/18-client-reviews.jpg",
+      "bytes": 936645,
+      "sha256": "e0cc6bb188bd0ded6c72d346b98e9da658a8b118cb8beee2fcfc6d920af8182b"
+    },
+    {
+      "file": "exports/19-teams-and-workspaces.jpg",
+      "bytes": 681919,
+      "sha256": "6a5de6c71d017d7bc4f3f3b40d0859816f17db224a1ded28ff94328e1dc68aa8"
+    },
+    {
+      "file": "exports/20-plans-and-credits.jpg",
+      "bytes": 747875,
+      "sha256": "0115d17177c65adce4f6c6c06be709dcb364d43f504aa0d3356a3e2db194cf2d"
+    },
+    {
+      "file": "exports/21-api-and-webhooks.jpg",
+      "bytes": 614520,
+      "sha256": "5eca9188566e88ffd8209fcbffa6ffd77383473a3701ff5a2bdff510a495e0a3"
+    },
+    {
+      "file": "exports/22-admin-panel.jpg",
+      "bytes": 740913,
+      "sha256": "a14359ce9cbf0d841f89359f199286c71eb594dcadcd6e585053a7313ce498c9"
+    },
+    {
+      "file": "exports/23-whats-included.jpg",
+      "bytes": 591581,
+      "sha256": "53137003874945a93492cdfaa8f6022ff7e3da866003b7e39077bbc4d6230bd5"
+    },
+    {
+      "file": "exports/24-setup-requirements.jpg",
+      "bytes": 544223,
+      "sha256": "1dc4b4e3011343c1f1b0400a8ee071a1093b8381dd7dccb54d5128ceba6366c0"
+    },
+    {
+      "file": "exports/ad-coffee.jpg",
+      "bytes": 987250,
+      "sha256": "4fc62010517d80fb4279f99414b9157ac2adfadda769b3b0f4e16d6d7c6fc446"
+    },
+    {
+      "file": "exports/ad-headphones.jpg",
+      "bytes": 1020469,
+      "sha256": "ad1a72704d9a29338dc11997eb4e3f8d03de324749bb8bb95f62feff4e2b432d"
+    },
+    {
+      "file": "exports/ad-running-shoe.jpg",
+      "bytes": 1316400,
+      "sha256": "65dbd64adeaae39377f20849b5497ab3c87a1567623368306774d9c86a4aeb33"
+    },
+    {
+      "file": "exports/ad-skincare.jpg",
+      "bytes": 1025814,
+      "sha256": "beec5b7c51da8b056c3b881564f5c540cd7b253395ca0b7fe5cb8d6a0ddd0a9e"
+    },
+    {
+      "file": "exports/adcraft-banner-2360x1200.jpg",
+      "bytes": 630253,
+      "sha256": "1a4b3a59b6485b2e48f87a8ea898dc91248d20f700e0c5b11bd29271d0c77e26"
+    },
+    {
+      "file": "exports/adcraft-banner-590x300.jpg",
+      "bytes": 109195,
+      "sha256": "ff942c82b7f80a7f8f9bad6713520a4b40d5645eec43344cd786c14c497f711a"
+    },
+    {
+      "file": "exports/adcraft-cover-2340x1560.jpg",
+      "bytes": 737921,
+      "sha256": "b769b063020c4c299190006c4f3f250aaf69a90ae9177b8de19a8051b620d95b"
+    },
+    {
+      "file": "exports/adcraft-thumbnail-80x80.png",
+      "bytes": 2232,
+      "sha256": "bf3fa1275bf3fb7d53781d04c0feb8eb6022a90550f0c90a4b263ccb5860d05a"
+    },
+    {
+      "file": "exports/banner.jpg",
+      "bytes": 630253,
+      "sha256": "1a4b3a59b6485b2e48f87a8ea898dc91248d20f700e0c5b11bd29271d0c77e26"
+    },
+    {
+      "file": "exports/cover.jpg",
+      "bytes": 737921,
+      "sha256": "b769b063020c4c299190006c4f3f250aaf69a90ae9177b8de19a8051b620d95b"
+    },
+    {
+      "file": "exports/thumbnail.jpg",
+      "bytes": 29972,
+      "sha256": "b613538a2d6d905b201c989dca98acecdac009bb24371ab3bd6588a12b03efee"
+    },
+    {
+      "file": "feature-coverage.html",
+      "bytes": 12695,
+      "sha256": "49d40f91f7fc4c7137bacc4ed90d675a8dd1d4d5b9e124882e5159abfe5d705d"
+    },
+    {
+      "file": "feature-coverage.json",
+      "bytes": 13325,
+      "sha256": "3ead87c2d658194b4661cc8cd389b33e54c9583be975e5e69b68e31ffa10406e"
+    },
+    {
+      "file": "feature_visuals.py",
+      "bytes": 46190,
+      "sha256": "c9d0533ad3408e2500353873d93c6fa423d92efe736730a6bca73f35ec6a6f79"
+    },
+    {
+      "file": "heygen-library-evidence.json",
+      "bytes": 171,
+      "sha256": "8457a165e4e0323fec9b11452a87d13fb0c7e1b46acc9e53ed19fccd9d09fc0c"
+    },
+    {
+      "file": "heygen-voice-evidence.json",
+      "bytes": 758,
+      "sha256": "1eeff065a34b8ae2ba4f5701a27bf3bb23dc6042a599f6a27ac00c154d97628c"
+    },
+    {
+      "file": "imagegen-prompts.json",
+      "bytes": 5387,
+      "sha256": "e0452aca38c8dcad1b9f6550f31dc0f8b7367b69d0723f6062036305acc87aa2"
+    },
+    {
+      "file": "index.html",
+      "bytes": 5629,
+      "sha256": "7de211d732239e05ce27e421a17395d17c8d40736e8d92badc8817da47ea3f76"
+    },
+    {
+      "file": "listing-metadata.json",
+      "bytes": 953,
+      "sha256": "b727f51500c5e4b9d8dbcc2318698906904426a5b35a1eaba3d6aafd5c7b050a"
+    },
+    {
+      "file": "panels.json",
+      "bytes": 1804,
+      "sha256": "5a87b19c38533a5e5de8c5d81da204647b8b3fb95cd331ff0489b2bcac18bad8"
+    },
+    {
+      "file": "preview-checks.json",
+      "bytes": 109,
+      "sha256": "e8753d10b20dca308c15b497fe75eabe97c1cd251fb7e65363b92837732ec0a2"
+    },
+    {
+      "file": "render.cjs",
+      "bytes": 3317,
+      "sha256": "723266909534201004201890c415e7278245d227eb72665808cb8bef9f53557f"
+    },
+    {
+      "file": "style.css",
+      "bytes": 40574,
+      "sha256": "1fcc4fb7b7998b3407136e3d691373a03c33b47ddc5edd5a0d991d446d2bd55a"
+    },
+    {
+      "file": "submission-notes.html",
+      "bytes": 2386,
+      "sha256": "3a38d671a53b7ca0de5cbda6b8a109d2f8f68495f4c08a1df008e369df96003e"
+    },
+    {
+      "file": "thumbnail.html",
+      "bytes": 147,
+      "sha256": "d31e6f2699f8306ec1b501af37ac27d14a9ca10f03126c624be563757f9b82a9"
+    }
+  ]
+}

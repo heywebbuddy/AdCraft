@@ -1,0 +1,26 @@
+Adcraft — reviewer notes
+
+Source: Next.js 15 / React 19 / TypeScript monorepo. Node.js 22+ and pnpm 9.15.9.
+Start with adcraft/documentation/index.html in the Main File ZIP.
+
+Local review: install with pnpm install --frozen-lockfile, copy .env.example to .env,
+set a random AUTH_SECRET, leave DATABASE_URL blank, and run:
+pnpm --filter @adcraft/app dev
+Development sign-in accepts a test email. Create a workspace and brand to begin.
+Set ADMIN_EMAILS to that email before starting if you want admin access.
+
+Text concepts offer sample output. The static studio, public HeyGen
+catalogs and live generation need provider keys; accounts and usage are not included.
+Use sandbox ad accounts to review publishing without creating paid campaigns.
+Production sign-in needs Resend or Google; development sign-in is disabled there.
+
+Preview panels are purpose-made feature illustrations with sample content, not
+screenshots or evidence of brand clients, endorsements or campaign performance.
+The buyer ZIP uses original SVG placeholders. Generated photographic demo images
+and videos are preview-only and are not included in the buyer download.
+The HeyGen counts refer to a public catalog snapshot, not bundled characters:
+1,414 people / 25,070 looks; 2,643 voices. Catalog access depends on the provider.
+See the dated evidence files; no API keys are included.
+
+Read THIRD-PARTY-NOTICES.md for Remotion and other dependency terms.
+A public reviewer demo and its access details have not been configured in this kit.

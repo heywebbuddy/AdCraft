@@ -1,0 +1,55 @@
+
+> adcraft@ typecheck /private<buyer>
+> turbo run typecheck
+
+• turbo 2.10.13
+
+   • Packages in scope: @adcraft/ads, @adcraft/ai, @adcraft/app, @adcraft/db, @adcraft/render, @adcraft/specs, @adcraft/storage, @adcraft/ui
+   • Running typecheck in 8 packages
+   • Remote caching disabled
+
+@adcraft/ai:typecheck: cache miss, executing fdb913836911185d
+@adcraft/db:typecheck: cache miss, executing f4dfe249b33c3021
+@adcraft/specs:typecheck: cache miss, executing b0021bf49e583374
+@adcraft/ui:typecheck: cache miss, executing 90d2471ef854a6e2
+@adcraft/storage:typecheck: cache miss, executing af075d4b2b7e96a7
+@adcraft/storage:typecheck: 
+@adcraft/storage:typecheck: > @adcraft/storage@0.1.0 typecheck /private<buyer>/packages/storage
+@adcraft/storage:typecheck: > tsc --noEmit
+@adcraft/storage:typecheck: 
+@adcraft/db:typecheck: 
+@adcraft/db:typecheck: > @adcraft/db@0.1.0 typecheck /private<buyer>/packages/db
+@adcraft/db:typecheck: > tsc --noEmit
+@adcraft/db:typecheck: 
+@adcraft/ai:typecheck: 
+@adcraft/ai:typecheck: > @adcraft/ai@0.1.0 typecheck /private<buyer>/packages/ai
+@adcraft/ai:typecheck: > tsc --noEmit
+@adcraft/ai:typecheck: 
+@adcraft/ui:typecheck: 
+@adcraft/ui:typecheck: > @adcraft/ui@0.1.0 typecheck /private<buyer>/packages/ui
+@adcraft/ui:typecheck: > tsc --noEmit
+@adcraft/ui:typecheck: 
+@adcraft/specs:typecheck: 
+@adcraft/specs:typecheck: > @adcraft/specs@0.1.0 typecheck /private<buyer>/packages/specs
+@adcraft/specs:typecheck: > tsc --noEmit
+@adcraft/specs:typecheck: 
+@adcraft/render:typecheck: cache miss, executing 1c666faea4fcfacf
+@adcraft/ads:typecheck: cache miss, executing 697e69829a9e5f75
+@adcraft/ads:typecheck: 
+@adcraft/ads:typecheck: > @adcraft/ads@0.1.0 typecheck /private<buyer>/packages/ads
+@adcraft/ads:typecheck: > tsc --noEmit
+@adcraft/ads:typecheck: 
+@adcraft/render:typecheck: 
+@adcraft/render:typecheck: > @adcraft/render@0.1.0 typecheck /private<buyer>/packages/render
+@adcraft/render:typecheck: > tsc --noEmit
+@adcraft/render:typecheck: 
+@adcraft/app:typecheck: cache miss, executing b39749577ea3099c
+@adcraft/app:typecheck: 
+@adcraft/app:typecheck: > @adcraft/app@0.1.0 typecheck /private<buyer>/apps/app
+@adcraft/app:typecheck: > tsc --noEmit
+@adcraft/app:typecheck: 
+
+ Tasks:    8 successful, 8 total
+Cached:    0 cached, 8 total
+  Time:    9.773s 
+

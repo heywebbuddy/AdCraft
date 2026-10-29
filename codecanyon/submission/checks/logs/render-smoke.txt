@@ -1,0 +1,22 @@
+hero     1:1     1080x1080   402 KB  611 ms
+hero     4:5     1080x1350   465 KB  143 ms
+hero     9:16    1080x1920   498 KB  268 ms
+hero     1.91:1  1200x628    252 KB  141 ms
+hero     16:9    1920x1080   496 KB  336 ms
+split    1:1     1080x1080   266 KB  119 ms
+split    4:5     1080x1350   311 KB  133 ms
+split    9:16    1080x1920   406 KB  174 ms
+split    1.91:1  1200x628    181 KB  94 ms
+split    16:9    1920x1080   404 KB  199 ms
+minimal  1:1     1080x1080   428 KB  110 ms
+minimal  4:5     1080x1350   499 KB  129 ms
+minimal  9:16    1080x1920   525 KB  253 ms
+minimal  1.91:1  1200x628    244 KB  141 ms
+minimal  16:9    1920x1080   495 KB  312 ms
+bold     1:1     1080x1080   381 KB  142 ms
+bold     4:5     1080x1350   440 KB  165 ms
+bold     9:16    1080x1920   467 KB  307 ms
+bold     1.91:1  1200x628    364 KB  149 ms
+bold     16:9    1920x1080   727 KB  328 ms
+
+21 renders in 4324 ms -> /private<buyer>/packages/render/out
