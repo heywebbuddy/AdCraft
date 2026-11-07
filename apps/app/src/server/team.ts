@@ -10,6 +10,7 @@ import { db, dbReady, invites, memberships, organizations } from "@adcraft/db";
 import { requireOrg, requireViewer, ORG_COOKIE, BRAND_COOKIE } from "./org";
 import { logAudit } from "./audit";
 import { baseUrl } from "./url";
+import { emailEnabled, sendEmail as sendMail } from "./mail";
 
 const ROLES = ["owner", "editor", "viewer"] as const;
 type Role = (typeof ROLES)[number];
@@ -20,11 +21,8 @@ function isRole(v: string): v is Role {
 }
 
 async function sendInviteEmail(to: string, orgName: string, inviter: string, url: string): Promise<boolean> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return false;
+  if (!emailEnabled()) return false;
   try {
-    const { Resend } = await import("resend");
-    const resend = new Resend(key);
     const { html, text } = renderEmail({
       preview: `${inviter} invited you to ${orgName} on Adcraft.`,
       title: `Join ${orgName}`,
@@ -34,13 +32,7 @@ async function sendInviteEmail(to: string, orgName: string, inviter: string, url
       note: `This invite expires in ${INVITE_TTL_DAYS} days. If you weren’t expecting it, you can ignore this email.`,
       footer: orgName,
     });
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM || "Adcraft <onboarding@resend.dev>",
-      to,
-      subject: `${inviter} invited you to ${orgName} on Adcraft`,
-      text,
-      html,
-    });
+    await sendMail({ to, subject: `${inviter} invited you to ${orgName} on Adcraft`, text, html });
     return true;
   } catch (err) {
     console.error("[team] invite email failed", err);

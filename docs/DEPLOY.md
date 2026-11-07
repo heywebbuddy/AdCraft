@@ -49,7 +49,7 @@ service. Create a Cloudflare **R2 Object Read & Write** API token and add `R2_AC
    - Required: `DATABASE_URL` (Neon or Supabase Postgres), `AUTH_SECRET`, `AUTH_URL` (the deployed origin), `ANTHROPIC_API_KEY`, `FAL_KEY`
    - Storage: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_BASE`
    - Jobs: `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` (create an Inngest app pointed at `/api/inngest`)
-   - Email: `RESEND_API_KEY`, `EMAIL_FROM`; Google sign-in: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
+   - Email: `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS` (any SMTP provider, used first) or `RESEND_API_KEY`, plus `EMAIL_FROM`; Google sign-in: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
    - Billing: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*`
    - Video/UGC: `ELEVENLABS_API_KEY`, `HEYGEN_API_KEY`
    - Ads (leave unset to keep sandbox providers): `META_*`, `TIKTOK_*`, `GOOGLE_ADS_*`, `TOKEN_ENCRYPTION_KEY`

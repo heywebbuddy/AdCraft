@@ -3,10 +3,11 @@ import { and, eq, inArray } from "drizzle-orm";
 import { db, dbReady, memberships, users, organizations } from "@adcraft/db";
 import { renderEmail } from "@/lib/email-template";
 import { getOrgSettings } from "./platform-settings";
+import { emailEnabled, sendEmail as sendMail } from "./mail";
 
 /**
  * Finish emails for long jobs (videos, character ads, characters, twins, look packs).
- * Sent through Resend when configured, to the workspace's owners and editors, unless the
+ * Sent through SMTP or Resend when configured, to the workspace's owners and editors, unless the
  * workspace turned them off. Pages still update themselves; this is for people who left.
  */
 const APP_URL = () => (process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -22,19 +23,17 @@ async function recipients(orgId: string): Promise<string[]> {
 }
 
 export async function sendEmail(to: string[], subject: string, content: Parameters<typeof renderEmail>[0]): Promise<boolean> {
-  const key = process.env.RESEND_API_KEY;
   // Never mail the read-only demo world (`@demo.invalid`, server/demo.ts).
   to = to.filter((addr) => !addr.trim().toLowerCase().endsWith(".invalid"));
-  if (!key || !to.length) return false;
+  if (!emailEnabled() || !to.length) return false;
   const { html, text } = renderEmail(content);
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: process.env.EMAIL_FROM || "Adcraft <onboarding@resend.dev>", to, subject, html, text }),
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) console.warn("[notify] resend failed", res.status, (await res.text()).slice(0, 200));
-  return res.ok;
+  try {
+    await sendMail({ to, subject, html, text });
+    return true;
+  } catch (err) {
+    console.warn("[notify] email failed", err instanceof Error ? err.message : err);
+    return false;
+  }
 }
 
 export type FinishEvent =

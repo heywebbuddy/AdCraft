@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/workspace-ui";
+import { emailEnabled } from "@/server/mail";
 import { requireOrg } from "@/server/org";
 import { listMembers, listPendingInvites } from "@/server/team-data";
 import { changeMemberRole, inviteMember, removeMember, revokeInvite } from "@/server/team";
@@ -35,7 +36,7 @@ export default async function TeamPage({
   const { ok, error, invite: newInviteId, email: sentTo } = await searchParams;
   const [members, invites, origin] = await Promise.all([listMembers(ctx.org.id), listPendingInvites(ctx.org.id), baseUrl()]);
   const isOwner = ctx.role === "owner";
-  const emailConfigured = Boolean(process.env.RESEND_API_KEY);
+  const emailConfigured = emailEnabled();
   const fresh = newInviteId ? invites.find((i) => i.id === newInviteId) : null;
 
   return (
@@ -160,7 +161,7 @@ export default async function TeamPage({
               </button>
               {!emailConfigured ? (
                 <p className="m-0 text-[12px] text-muted">
-                  Set <code className="rounded bg-paper px-1">RESEND_API_KEY</code> to email invites automatically. Until then you get a link to share.
+                  Set <code className="rounded bg-paper px-1">SMTP_HOST</code> (or <code className="rounded bg-paper px-1">RESEND_API_KEY</code>) to email invites automatically. Until then you get a link to share.
                 </p>
               ) : null}
             </form>

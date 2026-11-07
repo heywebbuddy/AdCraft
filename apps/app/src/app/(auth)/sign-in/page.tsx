@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { emailEnabled } from "@/server/mail";
 import { PendingButton } from "@/components/pending-button";
 import { Wordmark } from "@/components/spark";
 import { LegalLinks } from "@/components/legal-links";
@@ -10,7 +11,7 @@ import { DEMO_DOORS } from "@/lib/demo";
 import { demoModeEnabled } from "@/server/demo";
 
 const hasGoogle = Boolean(process.env.AUTH_GOOGLE_ID);
-const hasEmail = Boolean(process.env.RESEND_API_KEY);
+const hasEmail = emailEnabled();
 const demoMode = demoModeEnabled();
 
 const inputClass =
@@ -134,7 +135,7 @@ export default async function SignInPage({
               <p className="text-sm text-muted">
                 {hasEmail
                   ? "Any address signs you straight in, no email needed. Hidden in production."
-                  : <>No email provider is configured, so any address signs you straight in. Add <code className="rounded bg-paper px-1">RESEND_API_KEY</code> to switch to magic links.</>}
+                  : <>No email provider is configured, so any address signs you straight in. Add <code className="rounded bg-paper px-1">SMTP_HOST</code> (or <code className="rounded bg-paper px-1">RESEND_API_KEY</code>) to switch to magic links.</>}
               </p>
               <input name="email" type="email" required placeholder="you@brand.com" className={inputClass} />
               <PendingButton className="btn btn-orange h-11 justify-between" pendingLabel="Signing in…">
@@ -144,7 +145,7 @@ export default async function SignInPage({
           ) : null}
 
           {!hasEmail && !hasGoogle && !devLoginEnabled && !demoMode ? (
-            <p className="text-sm text-muted">No sign-in method is configured. Set RESEND_API_KEY or AUTH_GOOGLE_ID.</p>
+            <p className="text-sm text-muted">No sign-in method is configured. Set SMTP_HOST, RESEND_API_KEY or AUTH_GOOGLE_ID.</p>
           ) : null}
         </div>
         <p className="mt-10 text-[12px] text-muted">

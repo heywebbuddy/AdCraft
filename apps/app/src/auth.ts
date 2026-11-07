@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import Resend from "next-auth/providers/resend";
+import { emailEnabled, emailFrom, sendEmail as sendMail } from "@/server/mail";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { renderEmail } from "@/lib/email-template";
@@ -25,13 +25,18 @@ export const devLoginEnabled = process.env.NODE_ENV !== "production" && process.
 
 const providers = [
   ...(process.env.AUTH_GOOGLE_ID ? [Google] : []),
-  ...(process.env.RESEND_API_KEY
+  ...(emailEnabled()
     ? [
-        Resend({
-          apiKey: process.env.RESEND_API_KEY,
-          from: process.env.EMAIL_FROM || "Adcraft <onboarding@resend.dev>",
+        {
+          // id stays "resend" so the sign-in page's signIn("resend") keeps working whichever provider sends.
+          id: "resend",
+          type: "email" as const,
+          name: "Email",
+          from: emailFrom(),
+          maxAge: 24 * 60 * 60,
+          options: {},
           // Branded magic-link email (default is Auth.js's grey "Sign in to host:port" card).
-          async sendVerificationRequest({ identifier, url, provider }) {
+          async sendVerificationRequest({ identifier, url }: { identifier: string; url: string }) {
             const { html, text } = renderEmail({
               preview: "Your one-time sign-in link for Adcraft.",
               title: "Your sign-in link",
@@ -40,14 +45,9 @@ const providers = [
               cta: { label: "Sign in to Adcraft", url },
               note: "If you didn’t request this email, you can safely ignore it — nobody can sign in without the link.",
             });
-            const res = await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { Authorization: `Bearer ${provider.apiKey}`, "Content-Type": "application/json" },
-              body: JSON.stringify({ from: provider.from, to: identifier, subject: "Sign in to Adcraft", html, text }),
-            });
-            if (!res.ok) throw new Error(`Resend error: ${await res.text()}`);
+            await sendMail({ to: identifier, subject: "Sign in to Adcraft", html, text });
           },
-        }),
+        },
       ]
     : []),
   ...(devLoginEnabled
