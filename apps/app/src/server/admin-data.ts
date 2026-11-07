@@ -659,9 +659,11 @@ export type ProviderStatus = {
   lastError: string | null;
   total24h: number;
   failed24h: number;
+  /** Per variable: where its value comes from, and a masked hint (never the secret). */
+  fields: { key: string; source: "database" | "environment" | "missing"; hint: string }[];
 };
 
-const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "lastSuccessAt" | "lastFailureAt" | "lastError" | "total24h" | "failed24h">> = [
+export const PROVIDER_DEFS: Array<Omit<ProviderStatus, "fields" | "configured" | "missing" | "lastSuccessAt" | "lastFailureAt" | "lastError" | "total24h" | "failed24h">> = [
   { id: "anthropic", name: "Anthropic", area: "Concepts, copy, scripts", env: ["ANTHROPIC_API_KEY"], eventKey: "anthropic", note: "Falls back to sample concepts when unset." },
   { id: "openai", name: "OpenAI", area: "GPT Image, GPT text models, any OpenAI-compatible endpoint", env: ["OPENAI_API_KEY"], eventKey: "openai", note: "Compatible endpoints (Gemini, Groq…) use their own key env var set on the model." },
   { id: "xai", name: "xAI", area: "Grok Imagine Image 2.0 for static ads", env: ["XAI_API_KEY"], eventKey: "xai", note: "Ships as a built-in image model. Run Test in Admin → Models after adding the key." },
@@ -681,8 +683,14 @@ const PROVIDER_DEFS: Array<Omit<ProviderStatus, "configured" | "missing" | "last
   { id: "google-ads", name: "Google Ads API", area: "Publishing, insights", env: ["GOOGLE_ADS_CLIENT_ID", "GOOGLE_ADS_CLIENT_SECRET", "GOOGLE_ADS_DEVELOPER_TOKEN"], note: "Sandbox provider while unset." },
 ];
 
+/** Every environment variable the Providers page may set. Nothing else is ever stored. */
+export const PROVIDER_ENV_KEYS = [...new Set(PROVIDER_DEFS.flatMap((d) => d.env))];
+
 export async function loadProviders(): Promise<ProviderStatus[]> {
   await dbReady;
+  const { applyProviderKeys, storedProviderKeys, describeKey } = await import("./provider-keys");
+  await applyProviderKeys(PROVIDER_ENV_KEYS).catch(() => undefined);
+  const storedKeys = await storedProviderKeys().catch(() => ({}) as Record<string, string>);
   const scope = await adminScope();
   const d1 = since(1);
   const rows = await db
@@ -714,6 +722,7 @@ export async function loadProviders(): Promise<ProviderStatus[]> {
       note,
       configured: missing.length === 0,
       missing,
+      fields: d.env.map((key) => ({ key, ...describeKey(key, storedKeys) })),
       lastSuccessAt: r?.lastSuccessAt ? new Date(r.lastSuccessAt) : null,
       lastFailureAt: r?.lastFailureAt ? new Date(r.lastFailureAt) : null,
       lastError: d.eventKey ? (lastErrors.find((e) => e.provider === d.eventKey)?.error ?? null) : null,

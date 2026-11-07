@@ -1,19 +1,31 @@
 import { PageHeader } from "@/components/workspace-ui";
 import { requireAdmin } from "@/server/admin";
 import { loadProviders } from "@/server/admin-data";
-import { Chip, Kpi, Kpis, ago, int } from "@/components/admin/ui";
+import { Chip, Flash, Kpi, Kpis, ago, int } from "@/components/admin/ui";
+import { PendingButton } from "@/components/pending-button";
+import { saveProviderKeysAction } from "@/server/admin-actions";
+import { isPlainKey } from "@/server/provider-keys";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminProvidersPage() {
+const SOURCE_LABEL = { database: "saved here", environment: "from server environment", missing: "not set" } as const;
+
+export default async function AdminProvidersPage({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   await requireAdmin();
+  const { ok, error } = await searchParams;
   const providers = await loadProviders();
   const configured = providers.filter((p) => p.configured).length;
   const failing = providers.filter((p) => p.failed24h > 0).length;
 
   return (
     <>
-      <PageHeader title="Providers" description="Which integrations have credentials in this environment, and how each one has behaved lately according to generation events. Read-only." />
+      <PageHeader title="Providers" description="Add or change each integration's keys here, and see how it has behaved lately according to generation events. Keys are stored encrypted and take priority over the server's environment variables." />
+
+      <Flash ok={ok} error={error} messages={{
+        "ok:none": "Nothing changed.",
+        "error:provider": "Unknown provider.",
+        ...Object.fromEntries(providers.map((p) => [`ok:${p.id}`, `${p.name} saved.${["smtp", "resend", "google-auth"].includes(p.id) ? " Sign-in methods apply after the app restarts." : " It applies to the next request."}`])),
+      }} />
 
       <Kpis label="Provider summary">
         <Kpi label="Configured" value={int(configured)} sub={`of ${providers.length}`} />
@@ -34,13 +46,35 @@ export default async function AdminProvidersPage() {
                 </div>
                 <Chip tone={tone}>{label}</Chip>
               </div>
-              <div className="env-list" aria-label="Environment variables">
-                {p.env.map((k) => (
-                  <code key={k} className={p.missing.includes(k) ? "missing" : ""}>
-                    {k}
-                  </code>
+              <form action={saveProviderKeysAction} className="admin-form provider-keys">
+                <input type="hidden" name="provider" value={p.id} />
+                {p.fields.map((f) => (
+                  <label key={f.key}>
+                    <span>
+                      <code className={f.source === "missing" ? "missing" : ""}>{f.key}</code>{" "}
+                      <small>
+                        {SOURCE_LABEL[f.source]}
+                        {f.hint ? ` · ${f.hint}` : ""}
+                      </small>
+                    </span>
+                    <input
+                      name={`key_${f.key}`}
+                      type={isPlainKey(f.key) ? "text" : "password"}
+                      autoComplete="off"
+                      spellCheck={false}
+                      placeholder={f.source === "missing" ? "Paste value" : "Leave blank to keep"}
+                    />
+                    {f.source === "database" ? (
+                      <span className="check">
+                        <input type="checkbox" name={`clear_${f.key}`} /> <small>Remove the saved value</small>
+                      </span>
+                    ) : null}
+                  </label>
                 ))}
-              </div>
+                <div className="admin-form-actions">
+                  <PendingButton>Save</PendingButton>
+                </div>
+              </form>
               {p.eventKey ? (
                 <dl>
                   <dt>Last success</dt>

@@ -256,3 +256,30 @@ function f(fd: FormData, plan: PlanId): PlanFeatures {
     publishing: fd.get(`${plan}:publishing`) === "on",
   };
 }
+
+// ---- Provider keys -----------------------------------------------------------------------
+
+/**
+ * Save the keys for one provider. A blank field leaves its value alone; the "remove" box
+ * deletes the saved value (the server's environment variable, if any, applies again).
+ * Values are encrypted before storage and never logged; the audit entry names keys only.
+ */
+export async function saveProviderKeysAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const { PROVIDER_ENV_KEYS, PROVIDER_DEFS } = await import("./admin-data");
+  const { saveProviderKeys } = await import("./provider-keys");
+  const providerId = str(formData, "provider");
+  const def = PROVIDER_DEFS.find((p) => p.id === providerId);
+  if (!def) redirect("/admin/providers?error=provider");
+  const changes: Record<string, string | null> = {};
+  for (const k of def.env) {
+    if (formData.get(`clear_${k}`)) changes[k] = null;
+    else {
+      const v = String(formData.get(`key_${k}`) ?? "").trim();
+      if (v) changes[k] = v;
+    }
+  }
+  const touched = await saveProviderKeys(changes, PROVIDER_ENV_KEYS, admin.userId);
+  await logAudit(null, admin.userId, "admin.provider_keys_updated", "platform_settings", null, { provider: def.id, keys: touched });
+  redirect(`/admin/providers?ok=${touched.length ? def.id : "none"}`);
+}

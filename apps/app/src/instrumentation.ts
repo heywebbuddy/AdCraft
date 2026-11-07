@@ -48,6 +48,13 @@ export async function register() {
   // visitor's door click is instant. Idempotent; the door awaits the same promise if it is
   // still running. Only on the Node runtime, which can reach the database.
   // The runtime check must wrap the import (not return early) so the edge bundle drops it.
+  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PHASE !== "phase-production-build") {
+    // Provider keys saved in Admin → Providers override the environment. Applied here, before
+    // any route loads, so sign-in and every provider client see them from the first request.
+    await Promise.all([import("./server/provider-keys"), import("./server/admin-data")])
+      .then(([keys, data]) => keys.applyProviderKeys(data.PROVIDER_ENV_KEYS))
+      .catch((err) => console.error("[providers] could not load saved keys", err));
+  }
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const demoMode = ["1", "true", "yes", "on"].includes((process.env.DEMO_MODE ?? "").trim().toLowerCase());
     if (demoMode && process.env.NEXT_PHASE !== "phase-production-build") {
