@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -18,7 +19,7 @@ const globalDb = globalThis as unknown as { __adcraftDb?: unknown; __adcraftRead
 const storageDir = fs.mkdtempSync(path.join(os.tmpdir(), "adcraft-demo-test-"));
 const saved = { ...process.env };
 before(async () => {
-  await migrate(database, { migrationsFolder: new URL("../../../packages/db/drizzle", import.meta.url).pathname });
+  await migrate(database, { migrationsFolder: fileURLToPath(new URL("../../../packages/db/drizzle", import.meta.url)) });
   globalDb.__adcraftDb = database;
   globalDb.__adcraftReady = Promise.resolve();
   delete globalDb.__adcraftStorage;
@@ -36,7 +37,7 @@ after(async () => {
   fs.rmSync(storageDir, { recursive: true, force: true });
 });
 
-const assetsDir = new URL("../../../dist/assets/ads", import.meta.url).pathname;
+const assetsDir = fileURLToPath(new URL("../../../dist/assets/ads", import.meta.url));
 
 test("demo accounts are recognised by their reserved domain only", async () => {
   const { isDemoEmail, isDemoReadOnlyError, DEMO_READ_ONLY_DIGEST } = await import("../src/lib/demo");
@@ -97,7 +98,7 @@ test("ADMIN_EMAILS sync keeps the demo admin while DEMO_MODE is on, and demotes 
 });
 
 test("only read-only actions skip the demo guard (readOrg callers are pinned)", () => {
-  const root = new URL("../src", import.meta.url).pathname;
+  const root = fileURLToPath(new URL("../src", import.meta.url));
   const callers: string[] = [];
   const walk = (dir: string) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

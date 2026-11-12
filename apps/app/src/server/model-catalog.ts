@@ -40,7 +40,7 @@ export function providerConnected(spec: ModelSpec): boolean {
   if (spec.apiKeyEnv) return Boolean(process.env[spec.apiKeyEnv]?.trim());
   switch (spec.provider) {
     case "fal":
-      return isFalConfigured;
+      return isFalConfigured();
     case "openai":
       return isOpenAIConfigured();
     case "xai":

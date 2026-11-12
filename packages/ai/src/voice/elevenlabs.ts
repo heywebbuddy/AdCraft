@@ -11,7 +11,7 @@ import { probeBufferDurationSec, silenceMp3 } from "../video/ffmpeg";
  * Voice cloning is deliberately not exposed here: PLAN.md §4 requires an explicit consent
  * flow before any cloned voice is created.
  */
-export const isElevenLabsConfigured = Boolean(process.env.ELEVENLABS_API_KEY);
+export const isElevenLabsConfigured = () => Boolean(process.env.ELEVENLABS_API_KEY?.trim());
 
 const API_BASE = process.env.ELEVENLABS_API_BASE ?? "https://api.elevenlabs.io";
 
@@ -51,7 +51,7 @@ let voiceCache: { at: number; list: VoiceOption[] } | null = null;
 /** The account's voices (ElevenLabs premade + cloned), cached for an hour. */
 export async function listVoices(): Promise<VoiceOption[]> {
   if (voiceCache && Date.now() - voiceCache.at < 60 * 60_000) return voiceCache.list;
-  if (!isElevenLabsConfigured) return STOCK_VOICES;
+  if (!isElevenLabsConfigured()) return STOCK_VOICES;
   try {
     const res = await fetch(`${API_BASE}/v1/voices`, { headers: headers() });
     if (!res.ok) throw new Error(`ElevenLabs /v1/voices ${res.status}`);
@@ -81,7 +81,7 @@ export async function synthesizeVoice(req: VoiceRequest): Promise<GenerationResu
 
   let bytes: Buffer;
   let offline = false;
-  if (!isElevenLabsConfigured) {
+  if (!isElevenLabsConfigured()) {
     offline = true;
     bytes = await silenceMp3(estimateSpeechSeconds(req.text) / (req.speed ?? 1));
   } else {

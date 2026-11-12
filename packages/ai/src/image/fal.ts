@@ -9,7 +9,7 @@ import { defaultModel, getModel } from "../models";
  * flows keep working locally: `removeBackground` returns the original image and
  * `generateImage` returns a gradient placeholder PNG rendered with sharp.
  */
-export const isFalConfigured = Boolean(process.env.FAL_KEY);
+export const isFalConfigured = () => Boolean(process.env.FAL_KEY?.trim());
 
 import { falImageInput } from "./fal-input";
 
@@ -94,7 +94,7 @@ export async function removeBackground(input: string | Buffer | Uint8Array): Pro
   const startedAt = Date.now();
   const bytes = typeof input === "string" ? await fetchBytes(input) : Buffer.from(input);
 
-  if (!isFalConfigured) {
+  if (!isFalConfigured()) {
     const sharp = await loadSharp();
     const img = sharp(bytes).rotate().png();
     const png = await img.toBuffer();
@@ -219,7 +219,7 @@ export async function generateImage(req: FalImageRequest): Promise<GenerationRes
   const modelId = req.model || defaultModel("image").id;
   const count = Math.max(1, Math.min(req.count ?? 1, 4));
 
-  if (!isFalConfigured) {
+  if (!isFalConfigured()) {
     const output = await Promise.all(Array.from({ length: count }, (_, i) => placeholderImage(req, i)));
     return {
       output,

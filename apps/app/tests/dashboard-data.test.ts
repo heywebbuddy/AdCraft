@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PGlite } from "@electric-sql/pglite";
@@ -8,7 +9,7 @@ import * as schema from "../../../packages/db/src/schema";
 test("dashboard cast inventory stays scoped to the active brand and organization", async () => {
   const client = new PGlite();
   const database = drizzle(client, { schema });
-  await migrate(database, { migrationsFolder: new URL("../../../packages/db/drizzle", import.meta.url).pathname });
+  await migrate(database, { migrationsFolder: fileURLToPath(new URL("../../../packages/db/drizzle", import.meta.url)) });
   const globalDb = globalThis as unknown as { __adcraftDb?: unknown; __adcraftReady?: Promise<void> };
   globalDb.__adcraftDb = database;
   globalDb.__adcraftReady = Promise.resolve();

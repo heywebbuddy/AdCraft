@@ -60,7 +60,7 @@ function effortOf(req: TextRequest): "low" | "medium" | "high" | "max" {
 
 /** True when the Anthropic SDK can find credentials (API key or auth token). */
 export function isAnthropicConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+  return Boolean(process.env.ANTHROPIC_API_KEY?.trim() || process.env.ANTHROPIC_AUTH_TOKEN?.trim());
 }
 
 function refusalError(message: { stop_reason: string | null; stop_details?: { category?: string | null } | null }) {

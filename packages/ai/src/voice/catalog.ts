@@ -132,14 +132,14 @@ export async function listElevenLabsCatalog(): Promise<CatalogVoice[]> {
 
 /** Everything, ElevenLabs first (they are the account's curated set). */
 export async function listAllVoices(): Promise<CatalogVoice[]> {
-  const [eleven, heygen] = await Promise.all([isElevenLabsConfigured ? listElevenLabsCatalog() : Promise.resolve([] as CatalogVoice[]), listHeyGenVoices()]);
+  const [eleven, heygen] = await Promise.all([isElevenLabsConfigured() ? listElevenLabsCatalog() : Promise.resolve([] as CatalogVoice[]), listHeyGenVoices()]);
   return [...eleven, ...heygen];
 }
 
 /** Resolve a stored voice id to its provider and details. */
 export async function findVoice(id: string): Promise<CatalogVoice | null> {
   if (!id) return null;
-  const eleven = isElevenLabsConfigured ? await listElevenLabsCatalog() : [];
+  const eleven = isElevenLabsConfigured() ? await listElevenLabsCatalog() : [];
   const hit = eleven.find((v) => v.id === id);
   if (hit) return hit;
   return (await listHeyGenVoices()).find((v) => v.id === id) ?? null;

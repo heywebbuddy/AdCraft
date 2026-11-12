@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { PGlite } from "@electric-sql/pglite";
@@ -12,7 +13,7 @@ const client = new PGlite();
 const database = drizzle(client, { schema });
 const globalDb = globalThis as unknown as { __adcraftDb?: unknown; __adcraftReady?: Promise<void> };
 before(async () => {
-  await migrate(database, { migrationsFolder: new URL("../../../packages/db/drizzle", import.meta.url).pathname });
+  await migrate(database, { migrationsFolder: fileURLToPath(new URL("../../../packages/db/drizzle", import.meta.url)) });
   globalDb.__adcraftDb = database; globalDb.__adcraftReady = Promise.resolve();
 });
 after(async () => { await client.close(); delete globalDb.__adcraftDb; delete globalDb.__adcraftReady; });

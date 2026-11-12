@@ -37,9 +37,9 @@ export async function characterStudioData(orgId: string, brandId: string) {
     presenterGroups: library.groups,
     presenterLibraryLoading: library.loading,
     videoModels: catalog.list("video").map(m => ({ id: m.id, label: m.label, default: m.id === catalog.default("video").id, notes: m.notes ?? "" })),
-    videoConnected: isFalConfigured && isHeyGenConfigured,
-    heygenConnected: isHeyGenConfigured,
-    missingVideoProviders: [!isFalConfigured && "fal.ai", !isHeyGenConfigured && "HeyGen"].filter(Boolean) as string[],
+    videoConnected: isFalConfigured() && isHeyGenConfigured(),
+    heygenConnected: isHeyGenConfigured(),
+    missingVideoProviders: [!isFalConfigured() && "fal.ai", !isHeyGenConfigured() && "HeyGen"].filter(Boolean) as string[],
   };
 }
 export type CharacterStudioData = Awaited<ReturnType<typeof characterStudioData>>;

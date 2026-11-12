@@ -92,7 +92,7 @@ export async function runStaticPipeline({ orgId, creativeId, model, mode, instru
         label: `${row.creative.name} · scene`,
         detail: `${spec.label} · ${SCENE_RATIO}`,
         template: doc.template,
-        offline: !isFalConfigured,
+        offline: !isFalConfigured(),
       },
     })
     .returning({ id: generationEvents.id });
@@ -133,7 +133,7 @@ export async function runStaticPipeline({ orgId, creativeId, model, mode, instru
         durationMs: Date.now() - startedAt,
         costUsd: usage.costUsd !== undefined ? String(usage.costUsd) : null,
         units: String(usage.units ?? 1),
-        meta: { label: `${row.creative.name} · scene`, detail: `${spec.label} · ${SCENE_RATIO}`, template: doc.template, sceneKey: key, offline: !isFalConfigured },
+        meta: { label: `${row.creative.name} · scene`, detail: `${spec.label} · ${SCENE_RATIO}`, template: doc.template, sceneKey: key, offline: !isFalConfigured() },
       })
       .where(eq(generationEvents.id, event.id));
 

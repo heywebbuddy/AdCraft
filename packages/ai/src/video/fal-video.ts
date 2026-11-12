@@ -10,7 +10,7 @@ import { kenBurnsMp4 } from "./ffmpeg";
  * with ffmpeg from the start image (or a flat brand-coloured frame), so the whole video
  * pipeline runs end to end without any keys.
  */
-export const isFalVideoConfigured = Boolean(process.env.FAL_KEY);
+export const isFalVideoConfigured = () => Boolean(process.env.FAL_KEY?.trim());
 
 /** Output pixel size per ratio (1080p class). */
 export const VIDEO_RATIO_SIZES: Record<AspectRatio, { width: number; height: number }> = {
@@ -175,7 +175,7 @@ export async function placeholderVideo(req: FalVideoRequest): Promise<GeneratedV
 /** Kick off a generation on fal's queue. */
 export async function submitVideo(req: FalVideoRequest): Promise<VideoJob> {
   const modelId = req.model || defaultModel("video").id;
-  if (!isFalVideoConfigured) throw new Error("fal is not configured (FAL_KEY); use generateVideo() for the offline placeholder");
+  if (!isFalVideoConfigured()) throw new Error("fal is not configured (FAL_KEY); use generateVideo() for the offline placeholder");
   const imageUrl = req.image ? await resolveImageUrl(req.image) : undefined;
   const endImageUrl = req.endImage ? await resolveImageUrl(req.endImage) : undefined;
   const endpoint = endpointFor(modelId, Boolean(imageUrl));
@@ -209,7 +209,7 @@ export async function generateVideo(
   const startedAt = Date.now();
   const modelId = req.model || defaultModel("video").id;
 
-  if (!isFalVideoConfigured) {
+  if (!isFalVideoConfigured()) {
     const output = await placeholderVideo({ ...req, model: modelId });
     return { output, usage: usageFor(modelId, output.durationSec ?? OFFLINE_CLIP_SECONDS, startedAt, true) };
   }

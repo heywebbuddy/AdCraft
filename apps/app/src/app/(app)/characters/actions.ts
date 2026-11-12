@@ -128,7 +128,7 @@ export async function setCharacterVoiceAction(characterId: string, voiceId: stri
 export async function createCharacterAdAction(form: FormData): Promise<{ creativeId?: string; error?: string }> {
   try {
     const ctx = await editor();
-    if (!isFalConfigured || !isHeyGenConfigured) throw new Error("Connect fal.ai and HeyGen before generating a character ad.");
+    if (!isFalConfigured() || !isHeyGenConfigured()) throw new Error("Connect fal.ai and HeyGen before generating a character ad.");
     if (ctx.credits.balance < CREDIT_COSTS.ugcVideo30s) throw new Error(`You need ${CREDIT_COSTS.ugcVideo30s} credits to generate this ad.`);
     const imageModel = await selectedImageModel(form);
     const model = field(form, "videoModel", 100);
@@ -153,7 +153,7 @@ export async function createCharacterAdAction(form: FormData): Promise<{ creativ
     if (!voice) throw new Error("Choose a voice for this presenter.");
     if (voice.status === "processing") throw new Error("That voice is still being cloned. Give it a minute.");
     if (voice.status === "failed") throw new Error("That voice clone failed. Pick another voice.");
-    if (voice.provider === "elevenlabs" && !isElevenLabsConfigured) throw new Error("That voice needs ElevenLabs; pick a HeyGen voice or connect ElevenLabs.");
+    if (voice.provider === "elevenlabs" && !isElevenLabsConfigured()) throw new Error("That voice needs ElevenLabs; pick a HeyGen voice or connect ElevenLabs.");
     const presenterName = character?.name ?? stockAvatar!.person ?? stockAvatar!.label;
     const tone = character?.personality ?? "Warm and conversational";
     const productId = field(form, "productId", 80);
@@ -249,7 +249,7 @@ export async function applyLookPackAction(form: FormData): Promise<{ error?: str
   let reservation: { orgId: string; eventId: string } | null = null;
   try {
     const ctx = await editor();
-    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to generate looks.");
+    if (!isHeyGenConfigured()) throw new Error("Connect HeyGen to generate looks.");
     const characterId = field(form, "characterId", 80);
     const [character] = await db.select().from(characters).where(and(eq(characters.id, characterId), eq(characters.orgId, ctx.org.id), eq(characters.brandId, ctx.brand.id)));
     if (!character) throw new Error("Character not found in this brand.");
@@ -306,7 +306,7 @@ async function assertVoiceSlot(orgId: string, brandId: string) {
 export async function cloneVoiceAction(form: FormData): Promise<{ voice?: CatalogVoice; error?: string }> {
   try {
     const ctx = await editor();
-    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to clone voices.");
+    if (!isHeyGenConfigured()) throw new Error("Connect HeyGen to clone voices.");
     await assertVoiceSlot(ctx.org.id, ctx.brand.id);
     const name = field(form, "name", 60);
     if (!name) throw new Error("Name the voice.");
@@ -332,7 +332,7 @@ export type DesignedVoice = { voiceId: string; name: string; gender?: "male" | "
 export async function designVoicesAction(input: { prompt: string; gender?: "male" | "female"; locale?: string; seed?: number }): Promise<{ voices?: DesignedVoice[]; seed?: number; error?: string }> {
   try {
     await editor();
-    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to design voices.");
+    if (!isHeyGenConfigured()) throw new Error("Connect HeyGen to design voices.");
     const prompt = String(input.prompt ?? "").trim().slice(0, 1000);
     if (prompt.length < 20) throw new Error("Describe the voice in a full sentence — tone, age, accent, pace and what it is for.");
     const res = await designHeyGenVoices({ prompt, gender: input.gender === "male" || input.gender === "female" ? input.gender : undefined, locale: input.locale ? String(input.locale).slice(0, 10) : undefined, seed: Math.max(0, Math.min(20, Number(input.seed) || 0)) });
@@ -393,7 +393,7 @@ export async function createAvatarAction(form: FormData): Promise<{ id?: string;
   let reservation: { orgId: string; eventId: string; characterId?: string } | null = null;
   try {
     const ctx = await editor();
-    if (!isHeyGenConfigured) throw new Error("Connect HeyGen to create avatars.");
+    if (!isHeyGenConfigured()) throw new Error("Connect HeyGen to create avatars.");
     const typeField = field(form, "type", 20);
     const type = typeField === "digital_twin" ? "digital_twin" : typeField === "prompt" ? "prompt" : "photo";
     const name = field(form, "name", 60);

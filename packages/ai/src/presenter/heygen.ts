@@ -10,7 +10,7 @@ import { estimateSpeechSeconds } from "../voice/elevenlabs";
  * "presenter card": a brand-coloured video with the script captions burned in, muxed with
  * the supplied voice track, so UGC assembly can be tested end to end.
  */
-export const isHeyGenConfigured = Boolean(process.env.HEYGEN_API_KEY);
+export const isHeyGenConfigured = () => Boolean(process.env.HEYGEN_API_KEY?.trim());
 
 const API_BASE = process.env.HEYGEN_API_BASE ?? "https://api.heygen.com";
 const UPLOAD_BASE = process.env.HEYGEN_UPLOAD_BASE ?? "https://upload.heygen.com";
@@ -99,7 +99,7 @@ const AVATAR_CACHE_MS = 6 * 60 * 60_000;
  * never listed here — those are a customer's own uploads.
  */
 export async function listAvatars(): Promise<Avatar[]> {
-  if (!isHeyGenConfigured) return STOCK_AVATARS;
+  if (!isHeyGenConfigured()) return STOCK_AVATARS;
   if (avatarCache && Date.now() - avatarCache.at < AVATAR_CACHE_MS) return avatarCache.list;
   try {
     const res = await fetch(`${API_BASE}/v2/avatars`, { headers: headers(), signal: AbortSignal.timeout(30_000) });
@@ -248,7 +248,7 @@ export async function generatePresenter(
   opts: { pollMs?: number; timeoutMs?: number } = {},
 ): Promise<GenerationResult<PresenterClip>> {
   const startedAt = Date.now();
-  if (!isHeyGenConfigured) {
+  if (!isHeyGenConfigured()) {
     const output = await placeholderPresenter(req);
     const usage: Usage = { provider: "heygen", model: `${HEYGEN_MODEL} (offline)`, durationMs: Date.now() - startedAt, costUsd: 0, units: output.durationSec };
     return { output, usage };

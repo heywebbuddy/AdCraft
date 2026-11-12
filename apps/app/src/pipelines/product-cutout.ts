@@ -27,7 +27,7 @@ export async function runProductCutout({ orgId, productId }: { orgId: string; pr
       credits: 0,
       units: "1",
       operationId: `product.cutout:${productId}:${startedAt}`,
-      meta: { productId, brandId: product.brandId, label: `Cutout · ${product.name}`, detail: isFalConfigured ? "Removing background" : "Offline · original kept" },
+      meta: { productId, brandId: product.brandId, label: `Cutout · ${product.name}`, detail: isFalConfigured() ? "Removing background" : "Offline · original kept" },
     })
     .returning({ id: generationEvents.id });
 
