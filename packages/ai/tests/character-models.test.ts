@@ -74,6 +74,12 @@ test("photo presenter uploads private bytes and uses the saved image plus exact 
     assert.deepEqual(body.image, { type: "asset_id", asset_id: "asset-1" });
     assert.equal(body.audio_asset_id, "asset-2"); assert.equal(body.script, undefined); assert.equal(body.voice_id, undefined);
     assert.equal(body.aspect_ratio, "9:16"); assert.equal(result.output.durationSec, 12);
+    // HeyGen infers Avatar IV from `type: "image"` and rejects the request outright if we
+    // name the engine ourselves ("Extra inputs are not permitted"), which silently broke
+    // every character video. Motion fields are still accepted and must survive.
+    assert.equal(body.engine, undefined, "a photo presenter must not name an engine");
+    assert.equal(body.expressiveness, "high");
+    assert.equal(typeof body.motion_prompt, "string");
     await t.test("provider rejection is surfaced without a fake success or retry", async () => {
       let count = 0; globalThis.fetch = async () => { count++; return new Response("", { status: 403 }); };
       await assert.rejects(generatePhotoPresenter(req), /upload failed \(403\)/); assert.equal(count, 2);

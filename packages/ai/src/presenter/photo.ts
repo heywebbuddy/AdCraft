@@ -41,7 +41,9 @@ export async function generatePhotoPresenter(
       ...(audioId ? { audio_asset_id: audioId } : { script: req.script, voice_id: req.voiceId }),
       aspect_ratio: req.ratio === "1.91:1" ? "16:9" : req.ratio,
       resolution: "1080p",
-      engine: { type: "avatar_iv" },
+      // No `engine` here: for `type: "image"` HeyGen picks Avatar IV itself and now rejects
+      // the field outright ("Extra inputs are not permitted"). The avatar path in library.ts
+      // still sends it, which HeyGen does accept.
       expressiveness: req.expressiveness ?? "high",
       motion_prompt: req.motionPrompt ?? presenterMotionPrompt(),
       title: "Adcraft character ad",
